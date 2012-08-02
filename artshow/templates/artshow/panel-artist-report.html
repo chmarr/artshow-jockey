@@ -1,0 +1,12 @@
+{% extends "base_generic.html" %}
+{% block title %}Panel to Artist Report{% endblock %}
+{% block content %}
+
+<table border="1">
+<tr><th>Location</th><th>Artists</th></tr>
+{% for l in locations %}
+<tr><td>{{ l.location }}</td><td>{% for a in l.artists %}{{ a }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td></tr>
+{% endfor %}
+</table>
+
+{% endblock %}

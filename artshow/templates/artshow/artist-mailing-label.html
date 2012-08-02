@@ -1,0 +1,7 @@
+<html><body>
+<p>{{ artist.name|upper }}<br>
+{{ artist.address1|upper }}<br>{% if artist.address2 %}
+{{ artist.address2|upper }}<br>{% endif %}
+{{ artist.city|upper }}{% if artist.state %} {{ artist.state|upper }}{% endif %}&nbsp;&nbsp;{{ artist.postcode|upper }}<br>{% if artist.country != "USA" %}
+{{ artist.country|upper }}<br>{% endif %}</p>
+</body></html>

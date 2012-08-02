@@ -1,0 +1,39 @@
+Artshow-Jockey - Art Show Management Software
+Copyright (c) 2009,2010 Chris Cogdon
+
+Installation
+------------
+
+This is a Django application. Install Django by following the standard Django instructions
+and create a new project. Copy the "artshow" directory from this installation into
+your project (or symlink from there to here) and make the following modifications
+to the top-level files:
+
+to urls.py, urlpatters, add:
+
+	(r'^artshow/', include ( 'yourprojectname.artshow.urls' ) ),
+
+you should also enable django's administration interface, if you haven't already,
+as Artshow Jockey relies heavily on it.
+
+to settings.py, TEMPLATE_DIRS, add:
+
+	"/full/path/to/yourprojectname/artshow/templates/",
+
+to settings.py, INSTALLED_APPS, add:
+
+	"yourprojectname.artshow',
+
+and add the following to settings.py as well, with appropriate mods:
+
+ARTSHOW_SHOW_NAME = "MY AWESOME ART SHOW"
+ARTSHOW_TAX_RATE = "0.0925"
+ARTSHOW_TAX_DESCRIPTION = "%9.25 CA TAX"
+
+Once all that's done, you should be able to go ./manage.py syncdb and get everything set up.
+
+Setting up the data
+-------------------
+
+First thing you'll want to do is add some space types so you can allocate spaces.
+

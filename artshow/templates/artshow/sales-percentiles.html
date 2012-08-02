@@ -1,0 +1,12 @@
+<html><body>
+
+<table>
+<tr><th>Percentile</th><th>Amount</th></tr>
+{% for a in perc_amounts %}
+<tr><td>{{ a.perc }}</td><td>{{ a.amount }}</td></tr>
+{% endfor %}
+</table>
+
+</body></html>
+
+

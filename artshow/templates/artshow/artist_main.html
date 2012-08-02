@@ -1,0 +1,18 @@
+{% extends "artist_generic.html" %}
+{% block title %}Artshow Setup{% endblock %}
+{% block content %}
+<p>Hello! Thank you for choosing to set up your pieces on-line.</p>
+
+{{ if artists }}
+<p>You have access to manage the following artists:</p>
+<ul>
+{{ for a in artists }}
+<li>Artist {{ a.publicname }} has {{ a.pieces.count }} pieces entered.<br>
+<a href="{% url artshow.artist.pieces %}">Edit</a>.</li>
+{{ endfor }}
+</ul>
+{{ else }}
+<p>Oops. You do not have access to manage any artists. Please contact ArtShow administration to arrange access.</p>
+{{ endif }}
+
+{% endblock %}

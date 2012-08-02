@@ -1,0 +1,51 @@
+<html><body>
+<h1>Show Summary</h1>
+
+<table border=1>
+<tr><th></th><th>All</th><th>General</th><th>Adult</th></tr>
+<tr><th>Number of Pieces</th><td align="right">{{ all_stats.pieces }}</td><td align="right">{{ general_stats.pieces }}</td><td align="right">{{ adult_stats.pieces }}</td></tr>
+<tr><th>Pieces with Bids</th><td align="right">{{ all_stats.bids }}</td><td align="right">{{ general_stats.bids }}</td><td align="right">{{ adult_stats.bids }}</td></tr>
+<tr><th>Pieces in Voice Auction</th><td align="right">{{ all_stats.pieces_va }}</td><td align="right">{{ general_stats.pieces_va }}</td><td align="right">{{ adult_stats.pieces_va }}</td></tr>
+<tr><th>Total Bid Amounts</th><td align="right">${{ all_stats.bidamt|stringformat:"0.2f" }}</td><td align="right">${{ general_stats.bidamt|stringformat:"0.2f" }}</td><td align="right">${{ adult_stats.bidamt|stringformat:"0.2f" }}</td></tr>
+<tr><th>Bid Amounts in Voice Auction</th><td align="right">${{ all_stats.bidamt_va|stringformat:"0.2f" }}</td><td align="right">${{ general_stats.bidamt_va|stringformat:"0.2f" }}</td><td align="right">${{ adult_stats.bidamt_va|stringformat:"0.2f" }}</td></tr>
+<tr><th>Highest Bid</th><td align="right">${{ all_stats.highest_amt|stringformat:"0.2f" }}</td><td align="right">${{ general_stats.highest_amt|stringformat:"0.2f" }}</td><td align="right">${{ adult_stats.highest_amt|stringformat:"0.2f" }}</td></tr>
+<tr><th>Highest Bid in Voice Auction</th><td align="right">${{ all_stats.highest_amt_va|stringformat:"0.2f" }}</td><td align="right">${{ general_stats.highest_amt_va|stringformat:"0.2f" }}</td><td align="right">${{ adult_stats.highest_amt_va|stringformat:"0.2f" }}</td></tr>
+<tr><th>Highest Bid in Silent Auction</th><td align="right">${{ all_stats.highest_amt_sa|stringformat:"0.2f" }}</td><td align="right">${{ general_stats.highest_amt_sa|stringformat:"0.2f" }}</td><td align="right">${{ adult_stats.highest_amt_sa|stringformat:"0.2f" }}</td></tr>
+</table>
+<br>
+
+<table border=1>
+<tr><th>Artists Showing</th><td>{{ num_showing_artists }}</td></tr>
+</table>
+<br>
+
+<h3>Artist Payments, Charges and Assignments</h3>
+
+<table border=1>
+{% for pt in payment_types %}
+<tr><th>{{ pt }}</th><td align="right">${{ pt.total_payments }}</td></tr>
+{% endfor %}
+<tr><th>Balance</th><td align="right">${{ total_payments }}</td></tr>
+</table>
+
+<h3>Charges to Bidders</h3>
+
+<table border=1>
+<tr><th>Type</th><th>Amount</th></tr>
+<tr><td>Pieces</td><td align="right">{{ piece_charges }}</td></tr>
+<tr><td>Tax Paid</td><td align="right">{{ tax_paid }}</td></tr>
+<tr><td>Total</td><td align="right">{{ total_charges }}</td></tr>
+</table>
+
+<h3>Payments From Bidders</h3>
+
+<table border=1>
+<tr><th>Type</th><th>Amount</th></tr>
+{% for ip in invoice_payments %}
+<tr><td>{{ ip.payment_method_desc }}</td><td align="right">{{ ip.total }}</td></tr>
+{% endfor %}
+<tr><td>Total</td><td align="right">{{ total_invoice_payments }}</td></tr>
+</table>
+
+</body></html>
+

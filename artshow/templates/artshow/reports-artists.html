@@ -1,0 +1,18 @@
+{% extends "base_generic.html" %}
+
+{% block title %}{{ section.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ section.title }}</h1>
+
+{% if artists %}
+  <ul>
+  {% for a in artists %}
+    <li>{% if a.website %}<a href="{{ a.website }}">{{ a.artistname }}</a>{% else %}{{ a.artistname }}{% endif %}</li>
+  {% endfor %}
+  </ul>
+{% else %}
+  <p>No Artists Entered Yet</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,10 @@
+table.winning-bidders-report { border-collapse:collapse; border: 2px white; font:helvetica }
+table.winning-bidders-report tr { page-break-inside: avoid; }
+table.winning-bidders-report thead { display: table-header-group; }
+table.winning-bidders-report tbody { border: 3px solid black; page-break-inside: avoid; page-break-after: always; }
+table.winning-bidders-report td { padding-left:4px; padding-right:4px; border: 2px solid white; }
+table.winning-bidders-report th { padding-left:4px; padding-right:4px; text-align:left; border: 2px solid white; }
+table.winning-bidders-report tr:nth-child(even) { background-color:white; }
+table.winning-bidders-report tr:nth-child(odd) { background-color:lightgray; }
+table.winning-bidders-report tr.header { background-color:white; }
+table.winning-bidders-report th.bidder { background-color:black; color:white; border: 3px solid white; }

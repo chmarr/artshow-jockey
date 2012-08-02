@@ -1,0 +1,10 @@
+{% extends "base_generic.html" %}
+
+{% block title %}{{ section.title }}{% endblock %}
+
+{% block content %}
+<h1>Data Entry</h1>
+<ul>
+<li><a href="{% url artshow.addbidder.bulk_add %}">Add Bidders</a></li>
+</ul>
+{% endblock %}

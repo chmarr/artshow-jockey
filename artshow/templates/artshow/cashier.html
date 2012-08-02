@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+{% block title %}Search For Bidder {% endblock %}
+{% block content %}
+<h1>Search For Bidder</h1>
+<h2>Please ask for the bidder's name, or bidder ID</h2>
+<form action="{% url artshow.cashier.cashier %}" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+{% if bidders %}
+<hr>
+<h2>Verify the bidder's identification, and click on the appropriate bidder below</h2>
+<ul>
+{% for b in bidders %}
+<li><a href="{% url artshow.cashier.cashier_bidder bidder_id=b.id %}">{{ b }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
+

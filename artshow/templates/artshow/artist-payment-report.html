@@ -1,0 +1,23 @@
+<html><body>
+<style type="text/css">
+table.report { border-collapse:collapse; border: 2px black; };
+table.report tbody { border: 3px solid black; };
+table.report td { border: 2px solid black; };
+
+</style>
+
+<h1>Artist Payment Report</h1>
+
+<table class="report" >
+{% for a in artists %}
+<tr><th colspan=2">{{ a }}</tr>
+<tbody>
+{% for p in a.payment_set.all %}
+<tr><td>{{ p.description }}</td><td align="right">{{ p.amount|floatformat:2 }}</td></tr>{% endfor %}
+<tr><th>Balance</th><th align="right">{{ a.total|floatformat:2 }}</th></tr>
+</tbody>
+<tr></tr>
+{% endfor %}
+</table>
+
+</body></html>

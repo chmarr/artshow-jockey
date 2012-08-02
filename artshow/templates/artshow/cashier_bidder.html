@@ -1,0 +1,47 @@
+{% extends "base_generic.html" %}
+{% block title %}Bidder Information{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ STATIC_URL }}cashierstyle.css" />
+  <title>Bidder Information</title>
+  <script src="{{ STATIC_URL }}jquery.min.js"></script>
+  <script src="{{ STATIC_URL }}cashierscript.js"></script>
+{% endblock %}
+{% block content %}
+<h1>Bidder Information</h1>
+<p>Name: {{ bidder.name }}</p>
+<p>Bidder ID{{ bidder.bidder_ids|pluralize }}: {{ bidder.bidder_ids|join:", " }}</p>
+{% if pending_bids %}
+<hr>
+<p>{{ bidder.name }} has <strong>{{ pending_bids|length }}</strong> piece{{ pending_bids|pluralize }} with a top bid but pending resolution</p>
+<ul>
+{% for b in pending_bids %}
+<li>{{ b.piece }} - {{ b.pending_reason }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+<hr>
+<form action="{% url artshow.cashier.cashier_bidder bidder_id=bidder.id %}" method="POST">{% csrf_token %}
+<table border="1" class="selectables">
+<tr><td>Select All<input type="checkbox" class="select_all"/></td><th>Piece</th><th>Artist</th><th>Amount</th></tr>
+{% for bid in available_bids %}
+<tr class="item"><td>{{ bid.form.select }}{{ bid.form.bid }}</td><td>{{ bid.piece.name }}</td><td>{{ bid.piece.artist.artistname }}</td><td class="amount">{{ bid.amount }}</td></tr>
+{% endfor %}
+<tr><td></td><td colspan="2">Subtotal:</td><td id="total"></td></tr>
+<tr><td></td><td colspan="2">Tax:</td><td>{{ tax_form.tax_paid }}</td></tr>
+<tr><td></td><td colspan="2">Total with Tax:</td><td id="totalwithtax"></td></tr>
+</table>
+
+<h3>Payments</h3>
+
+<div class="repeatable">
+{{ payment_formset.management_form }}
+<ul class="repeatables">{% for f in payment_formset %}
+<li>{{ f.payment_method }} {{ f.amount }}</li>
+{% endfor %}</ul>
+<p><a class="more">More</a></p>
+</div>
+
+<input type="submit" value="Create Invoice"/>
+</form>
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base_generic.html" %}
+{% block content %}
+<html><body>
+<form action="/artshow/bidder/bulkadd/" method="post">
+{% csrf_token %}
+<table>
+<tr><th>Bidder ID</th><th>Name</th><th>Reg ID</th></tr>
+{% for form in forms %}
+<tr>{% for field in form %}<td><div class="fieldWrapper">{{ field.errors }}{{ field }}</div></td>{% endfor %}
+</tr>
+{% endfor %}
+</table>
+<input type="submit" value="Submit" />
+</form>
+</body></html>
+{% endblock %}

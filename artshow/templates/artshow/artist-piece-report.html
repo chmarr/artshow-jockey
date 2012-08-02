@@ -1,0 +1,10 @@
+<html><body>
+
+<h1>{{ artist.artistname }}</h1>
+
+<table border=1>
+{% for p in pieces %}
+<tr><td>{{ p }}</td><td>{{ p.top_bid }}</td><td>{% if p.invoiceitem %}{{ p.invoiceitem.invoice }}{% else %}No Invoice{% endif %}</td></tr>{% endfor %}
+</table>
+
+</body></html>

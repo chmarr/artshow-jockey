@@ -1,0 +1,7 @@
+<html><body>
+<table border=1>
+<tr><th>Name</th><th>Control Forms</th><th>Bid Sheets</th><th>Sticker Sheets</th></tr>
+{% for a in artists %}
+<tr><td>{{ a.name }}</td><td>{{ a.num_control_forms }}</td><td>{{ a.num_bid_sheets }}</td><td>{{ a.num_sticker_sheets }}</td></tr>
+{% endfor %}
+</table>

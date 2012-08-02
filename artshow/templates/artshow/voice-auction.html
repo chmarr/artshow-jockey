@@ -1,0 +1,19 @@
+<html><head>
+<style type="text/css">
+table.report ( border-collapse:collapse; border: 2px; font:helvetica }
+table tr:nth-child(even) { background-color:white; }
+table tr:nth-child(odd) { background-color:lightgray; }
+
+</style>
+</head><body>
+<table class="report">
+<h1>Voice Auction Status</h1>
+<thead>
+<tr class="header"><th>Artist</th><th>Piece ID</th><th>Title</th><th>Amount</th></tr>
+</thead>
+{% for p in pieces %}
+<tr><td>{{ p.artist.artistname }}</td><td>{{ p.code }}</td><td>{{ p.name }}</td><td>{{ p.top_bid.amount }}</td></tr>
+{% endfor %}
+</table>
+
+</body></html>

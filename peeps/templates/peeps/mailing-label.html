@@ -1,0 +1,7 @@
+<html><body>
+<p>{{ person.name|upper }}<br>
+{{ person.address1|upper }}<br>{% if person.address2 %}
+{{ person.address2|upper }}<br>{% endif %}
+{{ person.city|upper }}{% if person.state %} {{ person.state|upper }}{% endif %}&nbsp;&nbsp;{{ person.postcode|upper }}<br>{% if person.country != "USA" %}
+{{ person.country|upper }}<br>{% endif %}</p>
+</body></html>

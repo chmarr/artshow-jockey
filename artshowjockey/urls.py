@@ -7,5 +7,6 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^artshow/', include('artshow.urls')),
+    url(r'^peeps/', include('peeps.urls')),
     ('^$', redirect_to, {'url': '/artshow/'}),
 )

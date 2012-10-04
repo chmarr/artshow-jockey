@@ -12,7 +12,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '/PROJDIR/data/artshowjockey.db',                      # Or path to database file if using sqlite3.
+        'NAME': '/Users/ccogdon/dev/artshow-peeps/data/artshowjockey.db',                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -119,6 +119,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'peeps',
     'artshow',
     'south',
     # Uncomment the next line to enable admin documentation:
@@ -167,3 +168,5 @@ Generic Art Show Lead.
 artshow@example.com - http://www.example.com/artshow
 """
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
+
+ARTSHOW_PERSON_CLASS = "peeps.Person"

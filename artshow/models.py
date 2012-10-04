@@ -9,6 +9,7 @@ import mod11codes
 from django.core import urlresolvers
 from django.contrib.auth.models import User
 from decimal import Decimal
+from django.conf import settings
 import artshow_settings
 
 class Space ( models.Model ):
@@ -41,30 +42,6 @@ class Checkoff ( models.Model ):
 	def __unicode__ ( self ):
 		return "%s (%s)" % ( self.name, self.shortname )
 
-
-class Person ( models.Model ):
-	name = models.CharField ( max_length = 100 )
-	address1 = models.CharField ( max_length = 100, blank=True )
-	address2 = models.CharField ( max_length = 100, blank=True )
-	city = models.CharField ( max_length = 100, blank=True )
-	state = models.CharField ( max_length = 40, blank=True )
-	postcode = models.CharField ( max_length = 20, blank=True )
-	country = models.CharField ( max_length = 40, blank=True )
-	phone = models.CharField ( max_length = 40, blank=True )
-	email = models.CharField ( max_length = 100, blank=True )
-	regid = models.CharField ( max_length = 10, blank=True )
-	def regid_empty ( self ):
-		return self.regid==None or self.regid==""
-	class Meta:
-		abstract = True
-	def clickable_email ( self ):
-		return '<a href="mailto:%s">%s</a>' % ( self.email, self.email )
-	clickable_email.allow_tags = True
-	def mailing_label ( self ):
-		return u'<a href="javascript:w=window.open(\'%s\',\'blank\',\'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=300,height=100\');">ML&rarr;</a>' % ( urlresolvers.reverse('artshow.views.artist_mailing_label',args=(self.pk,)), )
-		# return '<a href="%s">ML</a>' % urlresolvers.reverse('artshow.views.artist_mailing_label',args=(self.pk,))
-		return "Hello"
-	mailing_label.allow_tags = True
 	
 	
 class ManageableArtistManager ( models.Manager ):
@@ -72,21 +49,20 @@ class ManageableArtistManager ( models.Manager ):
 		pass
 
 
-class Artist ( Person ):
+class Artist ( models.Model ):
 	artistid = models.IntegerField ( primary_key=True )
+	person = models.ForeignKey ( settings.ARTSHOW_PERSON_CLASS )
 	publicname = models.CharField ( max_length = 100, blank=True )
 	website = models.CharField ( max_length = 200, blank=True )
 	mailin = models.BooleanField ()
-	agent = models.CharField ( max_length = 100, blank=True, null=True )
+	agents = models.ManyToManyField ( settings.ARTSHOW_PERSON_CLASS, related_name="agent_for" )
 	reservationdate = models.DateField ( blank=True, null=True )
 	notes = models.TextField ( blank=True )
 	spaces = models.ManyToManyField ( Space, through="Allocation" )
 	checkoffs = models.ManyToManyField ( Checkoff, blank=True )
-	name_for_cheque = models.CharField ( max_length = 100, blank = True )
+	payment_to = models.ForeignKey ( settings.ARTSHOW_PERSON_CLASS, null=True, blank=True, related_name="receiving_payment_for" )
 	def artistname ( self ):
-		return self.publicname or self.name
-	def chequename ( self ):
-		return self.name_for_cheque or self.name
+		return self.publicname or self.person.name
 	def is_showing ( self ):
 		return self.allocation_set.aggregate(alloc=Sum('allocated'))['alloc'] > 0
 	def is_active ( self ):
@@ -110,7 +86,8 @@ class Allocation ( models.Model ):
 		return "%s (%s) - %s/%s %s" % ( self.artist.artistname(), self.artist.artistid, self.allocated, self.requested, self.space.name )
 
 
-class Bidder ( Person ):
+class Bidder ( models.Model ):
+	person = models.OneToOneField ( settings.ARTSHOW_PERSON_CLASS )
 	notes = models.TextField ( blank=True )
 	def bidder_ids ( self ):
 		return [ b_id.id for b_id in self.bidderid_set.all().order_by('id') ]
@@ -123,7 +100,7 @@ class Bidder ( Person ):
 		return results
 	def __unicode__ ( self ):
 		ids = [ bidderid.id for bidderid in self.bidderid_set.all() ]
-		return "%s (%s)" % ( self.name, ",".join(ids) )
+		return "%s (%s)" % ( self.person.name, ",".join(ids) )
 
 
 class BidderId ( models.Model ):

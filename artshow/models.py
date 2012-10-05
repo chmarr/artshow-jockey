@@ -55,7 +55,7 @@ class Artist ( models.Model ):
 	publicname = models.CharField ( max_length = 100, blank=True )
 	website = models.CharField ( max_length = 200, blank=True )
 	mailin = models.BooleanField ()
-	agents = models.ManyToManyField ( settings.ARTSHOW_PERSON_CLASS, related_name="agent_for" )
+	agents = models.ManyToManyField ( settings.ARTSHOW_PERSON_CLASS, related_name="agent_for", blank=True )
 	reservationdate = models.DateField ( blank=True, null=True )
 	notes = models.TextField ( blank=True )
 	spaces = models.ManyToManyField ( Space, through="Allocation" )

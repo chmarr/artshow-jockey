@@ -16,6 +16,8 @@ from django.core.mail import send_mail
 import artshow_settings
 import smtplib, datetime, decimal
 from django.http import HttpResponse
+from ajax_select import make_ajax_form
+from ajax_select.admin import AjaxSelectAdmin
 
 class FormfieldOverrider ( object ):
 	def formfield_for_dbfield ( self, db_field, **kwargs ):
@@ -90,11 +92,12 @@ class PaymentInline ( admin.TabularInline ):
 	model = Payment
 	extra = 1
 
-class ArtistAdmin ( admin.ModelAdmin ):
+class ArtistAdmin ( AjaxSelectAdmin ):
+	form = make_ajax_form(Artist,{'person':'person','agents':'person'})
 	list_display = ( 'person_name', 'publicname', 'artistid', 'person_clickable_email', 'requested_spaces', 'allocated_spaces', 'person_mailing_label' )
 	list_filter = ( 'mailin', 'person__country', 'checkoffs' )
 	search_fields = ( 'person__name', 'publicname', 'person__email', 'notes', 'artistid' )
-	fields = [ 'artistid', 'person', 'publicname', ( 'reservationdate', 'mailin' ), 'notes', 'checkoffs', 'payment_to' ]
+	fields = [ 'artistid', 'person', 'publicname', ( 'reservationdate', 'mailin' ), 'agents', 'notes', 'checkoffs', 'payment_to' ]
 	raw_id_fields = [ 'person' ]
 	inlines = [ArtistAccessInline,AllocationInline,PieceInline,PaymentInline]
 	def requested_spaces ( self, artist ):

@@ -122,6 +122,7 @@ INSTALLED_APPS = (
     'peeps',
     'artshow',
     'south',
+    'ajax_select',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
@@ -170,3 +171,12 @@ artshow@example.com - http://www.example.com/artshow
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
 
 ARTSHOW_PERSON_CLASS = "peeps.Person"
+
+AJAX_LOOKUP_CHANNELS = {
+    #   pass a dict with the model and the field to search against
+    'person'  : {'model':'peeps.person', 'search_field':'name'}
+}
+# magically include jqueryUI/js/css
+AJAX_SELECT_BOOTSTRAP = True
+AJAX_SELECT_INLINES = 'inline'
+

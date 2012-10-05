@@ -11,8 +11,13 @@ class Person ( models.Model ):
 	country = models.CharField ( max_length = 40, blank=True )
 	phone = models.CharField ( max_length = 40, blank=True )
 	email = models.CharField ( max_length = 100, blank=True )
+	reg_id = models.CharField ( max_length = 40, blank=True )
+	differentiator = models.CharField ( max_length = 40, blank=True )
 	def __unicode__ ( self ):
-		return self.name
+		if self.reg_id or self.differentiator:
+			return "%s (%s)" % ( self.name, ",".join([x for x in (self.reg_id,self.differentiator) if x ]) )
+		else:
+			return self.name
 	def clickable_email ( self ):
 		return '<a href="mailto:%s">%s</a>' % ( self.email, self.email )
 	clickable_email.allow_tags = True
@@ -21,3 +26,5 @@ class Person ( models.Model ):
 		# return '<a href="%s">ML</a>' % urlresolvers.reverse('artshow.views.artist_mailing_label',args=(self.pk,))
 		return "Hello"
 	mailing_label.allow_tags = True
+	class Meta:
+		verbose_name_plural = "People"

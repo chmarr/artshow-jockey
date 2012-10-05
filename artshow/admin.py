@@ -93,12 +93,11 @@ class PaymentInline ( admin.TabularInline ):
 	extra = 1
 
 class ArtistAdmin ( AjaxSelectAdmin ):
-	form = make_ajax_form(Artist,{'person':'person','agents':'person'})
+	form = make_ajax_form(Artist,{'person':'person','agents':'person','payment_to':'person'})
 	list_display = ( 'person_name', 'publicname', 'artistid', 'person_clickable_email', 'requested_spaces', 'allocated_spaces', 'person_mailing_label' )
 	list_filter = ( 'mailin', 'person__country', 'checkoffs' )
 	search_fields = ( 'person__name', 'publicname', 'person__email', 'notes', 'artistid' )
 	fields = [ 'artistid', 'person', 'publicname', ( 'reservationdate', 'mailin' ), 'agents', 'notes', 'checkoffs', 'payment_to' ]
-	raw_id_fields = [ 'person' ]
 	inlines = [ArtistAccessInline,AllocationInline,PieceInline,PaymentInline]
 	def requested_spaces ( self, artist ):
 		return ", ".join ( "%s:%s" % (al.space.shortname,al.requested) for al in artist.allocation_set.all() )
@@ -321,6 +320,7 @@ class BidInline ( admin.TabularInline ):
 	raw_id_fields = ( 'piece', )
 	
 class BidderAdmin ( admin.ModelAdmin ):
+	form = make_ajax_form(Bidder,{'person':'person'})
 	def bidder_ids ( self, obj ):
 		return u", ".join ( [ bidderid.id for bidderid in obj.bidderid_set.all() ] )
 	def person_name ( self, bidder ):
@@ -333,7 +333,6 @@ class BidderAdmin ( admin.ModelAdmin ):
 	list_display = ( 'person_name', 'bidder_ids', 'person_clickable_email' )
 	search_fields = ( 'person__name', 'bidderid__id' )
 	fields = [ "person", "notes" ]
-	raw_id_fields = [ 'person' ]
 	inlines = [BidderIdInline,BidInline]
 
 admin.site.register(Bidder,BidderAdmin)

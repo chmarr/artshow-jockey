@@ -12,10 +12,10 @@ class Person ( models.Model ):
 	phone = models.CharField ( max_length = 40, blank=True )
 	email = models.CharField ( max_length = 100, blank=True )
 	reg_id = models.CharField ( max_length = 40, blank=True )
-	differentiator = models.CharField ( max_length = 40, blank=True )
+	comment = models.CharField ( max_length = 100, blank=True )
 	def __unicode__ ( self ):
-		if self.reg_id or self.differentiator:
-			return "%s (%s)" % ( self.name, ",".join([x for x in (self.reg_id,self.differentiator) if x ]) )
+		if self.reg_id or self.comment:
+			return "%s (%s)" % ( self.name, ",".join([x for x in (self.reg_id,self.comment) if x ]) )
 		else:
 			return self.name
 	def clickable_email ( self ):

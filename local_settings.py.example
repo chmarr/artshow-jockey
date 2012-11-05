@@ -1,0 +1,52 @@
+from artshowjockey.settings import *
+
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = '/PROJDIR/static/'
+
+# A sample logging configuration. The only tangible logging
+# performed by this configuration is to send an email to
+# the site admins on every HTTP 500 error when DEBUG=False.
+# See http://docs.djangoproject.com/en/dev/topics/logging for
+# more details on how to customize your logging configuration.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}
+
+ARTSHOW_SHOW_NAME = "Generic Art Show"
+ARTSHOW_TAX_RATE = "0.0825"
+ARTSHOW_TAX_DESCRIPTION = "Santa Clara CA Tax 8.25%"
+ARTSHOW_EMAIL_SENDER = "Generic Art Show <artshow@example.com"
+ARTSHOW_COMMISSION = "0.1"
+ARTSHOW_INVOICE_PREFIX = "2012-"
+ARTSHOW_EMAIL_FOOTER = """\
+--
+Random J Hacker
+Generic Art Show Lead.
+artshow@example.com - http://www.example.com/artshow
+"""
+ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
+
+ARTSHOW_PERSON_CLASS = "peeps.Person"

@@ -118,8 +118,11 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
+    'django.contrib.admin',
+    'peeps',
+    'artshow',
+    'south',
+    'ajax_select',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
@@ -152,3 +155,28 @@ LOGGING = {
         },
     }
 }
+
+ARTSHOW_SHOW_NAME = "Generic Art Show"
+ARTSHOW_TAX_RATE = "0.0825"
+ARTSHOW_TAX_DESCRIPTION = "Santa Clara CA Tax 8.25%"
+ARTSHOW_EMAIL_SENDER = "Generic Art Show <artshow@example.com"
+ARTSHOW_COMMISSION = "0.1"
+ARTSHOW_INVOICE_PREFIX = "2012-"
+ARTSHOW_EMAIL_FOOTER = """\
+--
+Random J Hacker
+Generic Art Show Lead.
+artshow@example.com - http://www.example.com/artshow
+"""
+ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
+
+ARTSHOW_PERSON_CLASS = "peeps.Person"
+
+AJAX_LOOKUP_CHANNELS = {
+    #   pass a dict with the model and the field to search against
+    'person'  : {'model':'peeps.person', 'search_field':'name'}
+}
+# magically include jqueryUI/js/css
+AJAX_SELECT_BOOTSTRAP = True
+AJAX_SELECT_INLINES = 'inline'
+

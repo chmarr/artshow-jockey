@@ -319,7 +319,7 @@ class BidInline ( admin.TabularInline ):
 	fields = ( 'piece', 'amount', 'buy_now_bid', 'invalid' )
 	raw_id_fields = ( 'piece', )
 	
-class BidderAdmin ( admin.ModelAdmin ):
+class BidderAdmin ( AjaxSelectAdmin ):
 	form = make_ajax_form(Bidder,{'person':'person'})
 	def bidder_ids ( self, obj ):
 		return u", ".join ( [ bidderid.id for bidderid in obj.bidderid_set.all() ] )

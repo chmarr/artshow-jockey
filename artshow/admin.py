@@ -244,7 +244,7 @@ class PieceAdmin ( admin.ModelAdmin ):
 		for p in pieces.filter(status=Piece.StatusInShow,voice_auction=False):
 			try:
 				top_bid = p.top_bid()
-			except ObjectDoesNotExist:
+			except Bid.DoesNotExist:
 				pass
 			else:
 				p.status = Piece.StatusWon

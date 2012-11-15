@@ -9,9 +9,11 @@ from django import forms
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import Q
+from django.forms import ModelForm, HiddenInput
 from django.forms.formsets import formset_factory, BaseFormSet
 from django.forms.models import modelformset_factory
 from django.template import RequestContext
+from django.conf import settings
 import logging, datetime
 logger = logging.getLogger ( __name__ )
 import subprocess
@@ -39,10 +41,16 @@ def cashier ( request ):
 class TaxPaidForm ( forms.Form ):
 	tax_paid = forms.DecimalField ()
 	
-PaymentFormSet = modelformset_factory ( InvoicePayment, fields=("amount","payment_method"), extra=2 )
+class PaymentForm ( ModelForm ):
+	class Meta:
+		model = InvoicePayment
+		fields=("amount","payment_method","notes")
+		widgets={'amount':forms.HiddenInput,'payment_method':forms.HiddenInput,'notes':forms.HiddenInput}
+
+PaymentFormSet = modelformset_factory ( InvoicePayment, form=PaymentForm, extra=0 )
 	
 class SelectPieceForm ( forms.Form ):
-	select = forms.BooleanField ()
+	select = forms.BooleanField ( required=False )
 	
 #TODO probably need a @transaction.commit_on_success here
 	
@@ -70,9 +78,8 @@ def cashier_bidder ( request, bidder_id ):
 		if all( bid.form.is_valid() for bid in available_bids ) and tax_form.is_valid() and payment_formset.is_valid():
 			logger.debug ( "Holy crap, everything passed" )
 			tax_paid = tax_form.cleaned_data['tax_paid']
-			total_paid = tax_paid + sum ( bid.amount for bid in available_bids )
-			invoice = Invoice ( payer=bidder, tax_paid=tax_form.cleaned_data['tax_paid'], total_paid=total_paid,
-					paid_date=datetime.datetime.now() )
+			### TODO verify that total items matches total paid
+			invoice = Invoice ( payer=bidder, tax_paid=tax_form.cleaned_data['tax_paid'], paid_date=datetime.datetime.now() )
 			invoice.save ()
 			payments = payment_formset.save(commit=False)
 			for payment in payments:
@@ -96,7 +103,13 @@ def cashier_bidder ( request, bidder_id ):
 			bid.form = form
 		tax_form = TaxPaidForm ( prefix="tax" )
 		payment_formset = PaymentFormSet ( prefix="payment", queryset=InvoicePayment.objects.none() )
-	c = dict ( bidder=bidder, available_bids=available_bids, pending_bids=pending_bids, tax_form=tax_form, payment_formset=payment_formset )
+		
+	payment_types = [ {'id':x[0],'name':x[1]} for x in InvoicePayment.PAYMENT_METHOD_CHOICES[1:] ]
+	tax_rate = settings.ARTSHOW_TAX_RATE
+	money_precision = settings.ARTSHOW_MONEY_PRECISION
+		
+	c = dict ( bidder=bidder, available_bids=available_bids, pending_bids=pending_bids, tax_form=tax_form, payment_formset=payment_formset, payment_types=payment_types,
+			tax_rate=tax_rate, money_precision=money_precision )
 	# c.update ( csrf(request) )
 	return render_to_response ( 'artshow/cashier_bidder.html', c, context_instance=RequestContext(request) )
 	

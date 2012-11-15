@@ -1,10 +1,174 @@
 {% extends "base_generic.html" %}
 {% block title %}Bidder Information{% endblock %}
 {% block extra_head %}
-  <link rel="stylesheet" href="{{ STATIC_URL }}cashierstyle.css" />
+  <link rel="stylesheet" href="{{ STATIC_URL }}artshow/cashierstyle.css" />
   <title>Bidder Information</title>
   <script src="{{ STATIC_URL }}jquery.min.js"></script>
-  <script src="{{ STATIC_URL }}cashierscript.js"></script>
+  <script src="{{ STATIC_URL }}artshow/bignumber.js"></script>
+  <script>
+    function reset_to_remaining ( o ) {
+	    $(o).trigger("update");
+    }
+    function removepayment ( o ) {
+       var table = $($(o).parents('table')[0]);
+       $($(o).parents('tr')[0]).remove ();
+       table.trigger('update');
+    }
+    $( function () {
+    	$('.selecttable').each ( function() {
+    		var selecttable = $(this);
+    		var selectall = selecttable.find('.selectallcontrol');
+    		var checkboxes = selecttable.find('.selectrow [type=checkbox]'); // Not specific enough
+    		function autocheck_selectall () {
+    			selectall.prop ( 'checked', ! checkboxes.is ( ':not(:checked)' ) );
+    		}
+    		selectall.change ( function (event) {
+    			checkboxes.prop ( 'checked', selectall.is(':checked') );
+    			selecttable.trigger('update');
+    			return true;
+    		} );
+    		checkboxes.change ( function(event) {
+    			autocheck_selectall();
+    			selecttable.trigger('update');
+    			return true;
+    		} );
+    		autocheck_selectall ();
+    	});
+    } );
+    $ ( function () {
+    	$('.purchasetable').each ( function () {
+    		var purchasetable = $(this);
+    		var precision = Math.floor ( purchasetable.attr('precision') );
+    		var taxrate = purchasetable.attr('taxrate');
+    		var amountclass = "." + purchasetable.attr('amountclass');
+    		var subtotalfield = purchasetable.find('.subtotalfield');
+    		var taxfield = purchasetable.find('.taxfield');
+    		var totalfield = purchasetable.find('.totalfield');
+    		function update () {
+    			var subtotal = new BigNumber ( 0, precision, BigNumber.ROUND_FLOOR );
+    			purchasetable.find('.purchaseitem').each ( function() {
+    				var item = $(this);
+    				if ( item.find('[type=checkbox]').is(':checked') ) { // not specific enough
+	    				subtotal = subtotal.add ( item.find ( amountclass ).text() );
+    				}
+    			});
+    			subtotalfield.text ( subtotal.toString(true) );
+    			var tax = subtotal.multiply ( taxrate );
+    			taxfield.text ( tax.toString(true) ).val ( tax.toString(true) ); // sets both innertext and values
+    			var total = subtotal.add ( tax );
+    			totalfield.text ( total.toString(true) );
+    			totalfield.trigger ( 'totalupdated' );
+    		}
+    		purchasetable.bind ( 'update', update );
+    		update ();
+
+    	});
+    } );
+    $ ( function () {
+    	$('.paymenttable').each(function() {
+    		var paymenttable = $(this);
+    		var totalfrom = $(document.getElementById(paymenttable.attr('totalfrom')));
+    		var precision = Math.floor ( paymenttable.attr('precision') );
+    		var formprefix = paymenttable.attr('formprefix');
+    		var paymenttendered = paymenttable.find('.paymenttendered');
+    		var paymenttypes = { {% for pt in payment_types %}{{pt.id}}:'{{pt.name|escapejs}}'{% if not forloop.last %},{% endif %}{% endfor %} };
+    		var paymentrowtemplate = paymenttable.find('.paymentrowtemplate')
+    		var paymenttenderedrow = paymenttable.find('.paymenttenderedrow');
+    		function get_payment_remaining () {
+    			var acc = new BigNumber ( totalfrom.text(), precision, BigNumber.ROUND_FLOOR );
+    			paymenttable.find("[name$=-amount]").each ( function() {
+    				acc = acc.subtract ( $(this).val() );
+    			});
+    			return acc;
+    		}
+    		function update () {
+    			var acc = new BigNumber ( totalfrom.text(), precision, BigNumber.ROUND_FLOOR );
+    			paymenttable.find(".paymentrow").each ( function () {
+    				var row=$(this);
+    				var amount=new BigNumber ( row.find("[name$=-amount]").val(), precision, BigNumber.ROUND_FLOOR );
+    				var notes=row.find("[name$=-notes]").val();
+    				var type=row.find("[name$=-payment_method]").val();
+    				row.find(".paymenttext").text ( paymenttypes[type] + ( notes ? ": " + notes : "" ) );
+    				row.find(".paymentamount").text ( amount.toString( true ) );
+    			});
+    			var acc = get_payment_remaining ();
+       			paymenttable.find(".paymentremaining").text ( acc.toString( true ) );
+       			paymenttendered.val ( acc.toString ( true ) );
+    		}
+    		paymenttable.bind ( 'update', update );
+    		totalfrom.bind ( 'totalupdated', function() { paymenttable.trigger ( 'update' ); } );
+    		paymenttable.find('.paymentbutton').click(function(event) {
+    			event.preventDefault();
+    			paymenttendered.focus();
+    			var paymenttype = Math.floor($(this).attr("paymenttype"));
+    			var amount = new BigNumber ( paymenttendered.val(), precision, BigNumber.ROUND_FLOOR );
+    			if ( amount <= 0 ) {
+    				return;
+    			}
+    			var paymentremaining = get_payment_remaining ();
+    			var change = amount.subtract(paymentremaining);
+    			if ( change < 0 ) {
+    				change = new BigNumber ( 0, precision, BigNumber.ROUND_FLOOR );
+    			}
+    			var notes = "";
+    			if ( paymenttype == 1 /* cash */ ) {
+    				var tendered = amount;
+    				if ( change > 0 ) {
+    					amount = paymentremaining;
+    					if ( ! window.confirm ( "Give " + change.toString(true) + " change " ) ) {
+	    					return;
+    					}
+    				}
+    				notes = "tendered: " + tendered.toString(true) + "  change: " + change.toString(true);
+    			} else {
+	    			if ( change > 0 ) {
+		    			window.alert ( "Amount cannot be larger than payment remaining." );
+		    			return;
+	    			}
+	    			if ( paymenttype == 2 /* check */ ) {
+	    				if ( ! window.confirm ( "Ask for Identification. Does it match?" ) ) {
+		    				return;
+	    				}
+	    			} else if ( paymenttype == 3 /* card */ ) {
+	    				if ( ! window.confirm ( "Charge card amount " + amount.toString(true) + "\nWas this sucesssful?" ) ) {
+		    				return;
+	    				}
+	    			} else if ( paymenttype == 4 /* other */ ) {
+	    				notes = window.prompt ( "Enter details of payment." );
+	    				if ( ! notes ) {
+		    				return;
+	    				}
+	    			} else {
+		    			return;
+	    			}
+	    		}
+    			paymenttendered.val('');
+    			
+    			var newrow = paymentrowtemplate.clone();
+    			newrow.removeClass('paymentrowtemplate').addClass('paymentrow').show()
+    			newrow.find("[name$=-payment_method]").val(paymenttype);
+    			newrow.find("[name$=-notes]").val(notes);
+    			newrow.find("[name$=-amount]").val(amount);
+    			paymenttenderedrow.before(newrow);
+    			update ();    			
+    		});
+    		paymenttable.find("[type=submit]").click(function(event) {
+    			console.log ( 'clicked submit button' );
+    			var paymentrows = paymenttable.find(".paymentrow")
+    			paymentrows.each(function(index) {
+    				var row=$(this);
+    				row.find("[name$=-payment_method]").attr ( 'name', formprefix + "-" + index + "-payment_method" );
+    				row.find("[name$=-notes]").attr ( 'name', formprefix + "-" + index + "-notes" );
+    				row.find("[name$=-amount]").attr ( 'name', formprefix + "-" + index + "-amount" );
+    			});
+    			console.log ( 'paymentrows', paymentrows, paymentrows.length );
+    			paymenttable.find('[name$=-TOTAL_FORMS]').val ( paymentrows.length );
+    			return true;
+    		});
+    		update ();
+    	});
+    } );
+  </script>
 {% endblock %}
 {% block content %}
 <h1>Bidder Information</h1>
@@ -21,27 +185,49 @@
 {% endif %}
 <hr>
 <form action="{% url artshow.cashier.cashier_bidder bidder_id=bidder.id %}" method="POST">{% csrf_token %}
-<table border="1" class="selectables">
-<tr><td>Select All<input type="checkbox" class="select_all"/></td><th>Piece</th><th>Artist</th><th>Amount</th></tr>
+
+<table border="1" class="selecttable purchasetable" precision="{{ money_precision }}" taxrate="{{ tax_rate }}" amountclass="amount">
+<tr><td>Select All<input type="checkbox" class="selectallcontrol"/></td><th>Piece</th><th>Artist</th><th>Amount</th></tr>
 {% for bid in available_bids %}
-<tr class="item"><td>{{ bid.form.select }}{{ bid.form.bid }}</td><td>{{ bid.piece.name }}</td><td>{{ bid.piece.artist.artistname }}</td><td class="amount">{{ bid.amount }}</td></tr>
+{% if bid.form.non_field_errors or bid.form.select.errors %}
+<tr><td colspan="4">{{ bid.form.non_field_errors }}{{ bid.form.select.errors }}</td></tr>
+{% endif %}
+<tr class="selectrow purchaseitem"><td>{{ bid.form.select }}{{ bid.form.bid }}</td><td>{{ bid.piece.name }}</td><td>{{ bid.piece.artist.artistname }}</td><td class="amount" align="right">{{ bid.amount|floatformat:money_precision }}</td></tr>
 {% endfor %}
-<tr><td></td><td colspan="2">Subtotal:</td><td id="total"></td></tr>
-<tr><td></td><td colspan="2">Tax:</td><td>{{ tax_form.tax_paid }}</td></tr>
-<tr><td></td><td colspan="2">Total with Tax:</td><td id="totalwithtax"></td></tr>
+{% if tax_form.non_field_errors or tax_form.tax_paid.errors %}
+<tr><td colspan="4">{{ tax_form.non_field_errors }}{{ tax_form.tax_paid.errors }}</td></tr>
+{% endif %}
+<tr><td></td><td colspan="2" align="right"><input type="hidden" id="id_{{tax_form.tax_paid.html_name}}" name="{{tax_form.tax_paid.html_name}}" class="taxfield" /> Subtotal: <span class="subtotalfield"></span> &mdash; Tax:</td><td class="taxfield" align="right"></td></tr>
+<tr><td></td><td colspan="2" align="right">Total:</td><td class="totalfield" align="right" id="totalwithtax" ></td></tr>
 </table>
 
 <h3>Payments</h3>
-
-<div class="repeatable">
+<div class="paymenttable" totalfrom="totalwithtax" precision="{{ money_precision }}" formprefix="{{ payment_formset.prefix }}">
 {{ payment_formset.management_form }}
-<ul class="repeatables">{% for f in payment_formset %}
-<li>{{ f.payment_method }} {{ f.amount }}</li>
-{% endfor %}</ul>
-<p><a class="more">More</a></p>
-</div>
+
+<table border="1" >
+  <tr class="paymentrowtemplate" style="display:none"><td>{{ payment_formset.empty_form }}<span class="paymenttext"></span></td><td class="paymentamount" align="right"></td><td><span onclick="removepayment(this);">X</span></td></tr>
+{% if payment_formset.non_field_errors %}
+  <tr><td colspan="4">{{ payment_formset.non_field_errors }}</td></tr>
+{% endif %}
+{% for f in payment_formset %}
+{% if f.errors %}
+  <tr><td colspan="4"><ul>{% for formerrors in f.errors %}{% for field in formerrors %}{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}{% endfor %}{% endfor %}</ul></td></tr>
+{% endif %}
+  <tr class="paymentrow"><td>{{ f }}<span class="paymenttext"></span></td><td class="paymentamount" align="right"></td><td><span onclick="removepayment(this);">X</span></td></tr>
+{% endfor %}
+  <tr class="paymenttenderedrow"><td colspan="3">
+    Pay: 
+    <input class="paymenttendered" type="text" value="" />
+    <input type="button" value="Remaining" onclick="reset_to_remaining(this);" /> by
+{% for pt in payment_types %}    <input class="paymentbutton" type="button" paymenttype="{{ pt.id }}" value="{{ pt.name }}" />
+{% endfor %}
+  </td></tr>
+</table>
 
 <input type="submit" value="Create Invoice"/>
+</div>
+
 </form>
 
 {% endblock %}

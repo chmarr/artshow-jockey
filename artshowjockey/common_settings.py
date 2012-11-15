@@ -155,6 +155,7 @@ LOGGING = {
 }
 
 ARTSHOW_SHOW_NAME = "Generic Art Show"
+ARTSHOW_MONEY_PRECISION = 2
 ARTSHOW_TAX_RATE = "0.0825"
 ARTSHOW_TAX_DESCRIPTION = "Santa Clara CA Tax 8.25%"
 ARTSHOW_EMAIL_SENDER = "Generic Art Show <artshow@example.com"

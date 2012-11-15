@@ -275,6 +275,9 @@ class Invoice ( models.Model ):
 
 class InvoicePayment ( models.Model ):
 	amount = models.DecimalField ( max_digits=7, decimal_places=2 )
+	# The cashier code expects this ordering and numbering to special-case each of the payment
+	# types.
+	# TODO: Create a flexible table with flags indicating how each should be handled.
 	PAYMENT_METHOD_CHOICES = [
 		( 0, u"Not Paid" ),
 		( 1, u"Cash" ),
@@ -284,6 +287,7 @@ class InvoicePayment ( models.Model ):
 		]
 	payment_method = models.IntegerField ( choices=PAYMENT_METHOD_CHOICES, default=0 )
 	invoice = models.ForeignKey ( Invoice )
+	notes = models.CharField ( max_length=100, blank=True )
 
 class InvoiceItem ( models.Model ):
 	piece = models.OneToOneField ( Piece )

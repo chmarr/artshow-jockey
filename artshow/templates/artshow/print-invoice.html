@@ -1,0 +1,5 @@
+<input type="hidden" name="return_to" value="{{ request.get_full_path }}"/>{% csrf_token %}
+<label for="id_{{ print_invoice_form.customer.html_name}}">{{ print_invoice_form.customer.label }}</label> {{ print_invoice_form.customer }}&nbsp;
+<label for="id_{{ print_invoice_form.merchant.html_name}}">{{ print_invoice_form.merchant.label }}</label> {{ print_invoice_form.merchant }}&nbsp;
+<label for="id_{{ print_invoice_form.picklist.html_name}}">{{ print_invoice_form.picklist.label }}</label> {{ print_invoice_form.picklist }}&nbsp;
+<input type="submit" value="Print Selected" />

@@ -241,6 +241,7 @@ class PieceAdmin ( admin.ModelAdmin ):
 		self.message_user ( request, "Pieces marked as 'Won' have been returned to 'In Show'." )
 	
 	def apply_won_status ( self, request, pieces ):
+	    # This code is duplicated in the management code
 		for p in pieces.filter(status=Piece.StatusInShow,voice_auction=False):
 			try:
 				top_bid = p.top_bid()

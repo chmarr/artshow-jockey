@@ -1,6 +1,42 @@
-{% extends "base_generic.html" %}
+{% extends "artshow/base_generic.html" %}
 {% block title %}Invoice{% endblock %}
 {% block content %}
-<h1>Invoice</h1>
-{{ invoice }}
+<h3>Invoice</h3>
+<table>
+  <tr><td>Invoice ID</td><td>{{ invoice_prefix }}{{ invoice.id }}</td></tr>
+  <tr><td>Date</td><td>{{ invoice.paid_date }}</td></tr>
+  <tr><td>Invoicee</td><td>{{ invoice.payer.name }}</td></tr>
+  <tr><td>Bidder ID{{ invoice.payer.bidder_ids|pluralize }}</td><td>{{ invoice.payer.bidder_ids|join:"," }}</td></tr>
+</table>
+<h4>Items</h4>
+<table>
+<tr><th>Item</th><th>Amount</th></tr>
+{% for item in invoice.invoiceitem_set.all %}
+<tr><td>{{ item.piece }}</td><td class="money">{{ item.price|floatformat:money_precision }}</td></tr>
+{% endfor %}
+<tr class="lastrow"><td>Subtotal</td><td class="money">{{ invoice.item_total|floatformat:money_precision }}</td></tr>
+<tr><td>{{ tax_description }}</td><td class="money">{{ invoice.tax_paid|floatformat:money_precision }}</td></tr>
+<tr class="lastrow"><td>Total with Tax</td><td class="money">{{ invoice.item_and_tax_total|floatformat:money_precision }}</td></tr>
+</table>
+<h4>Payments</h4>
+<table>
+<tr><th>Type</th><th>Notes</th><th>Amount</th></tr>
+{% for payment in invoice.invoicepayment_set.all %}
+<tr><td>{{ payment.get_payment_method_display }}</td><td>{{ payment.notes }}</td><td class="money">{{ payment.amount|floatformat:money_precision }}</td></tr>
+{% endfor %}
+<tr class="lastrow"><td colspan="2" align="right">Payment Total</td><td class="money">{{ invoice.total_paid|floatformat:money_precision }}</td></tr>
+</table>
+{% if invoice.item_and_tax_total != invoice.total_paid %}<p><strong>Oh crap; item total and payment total do not match!</strong></p>
+{% endif %}
+<p>Request: {{ request }}</p>
+<p>Request Path: {{ request.path }}</p>
+<p>Request Full Path: {{ request.get_full_path }}</p>
+
+<form method="post" action="{% url artshow.cashier.print_invoice invoice.id %}">
+{% include "artshow/print-invoice.html" %}
+</form>
+{% if invoice.notes %}
+<h4>Notes</h4>
+<p>{{ invoice.notes }}</p>
+{% endif %}
 {% endblock %}

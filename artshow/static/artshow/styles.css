@@ -1,0 +1,53 @@
+body {
+	font-family: "Verdana", "Helvetical", sans-serif;
+	font-size: 14px;
+	color: black;
+	background-color: white;
+}
+a:link a:visited a:hover a:active { color: black; }
+div#sidebar {
+	background-color: #0000dd;
+	color: white;
+	float: left;
+	min-width: 150px;
+	min-height: 100%;
+	margin-right: 20px;
+	padding: 10px;
+}
+
+div#sidebar a { color: white; }
+div#sidebar a:hover { color: yellow; }
+
+table {
+	border-collapse: collapse;
+	border: 1px solid white;
+}
+tr:nth-child(odd) {
+	background-color: #eeeeff;
+}
+tr:nth-child(even) {
+	background-color: #ddddff;
+}
+tr.lastrow {
+	border-top: 4px white solid;
+}
+th {
+	font-size: 12px;
+	background-color: #0000dd;
+	border: 2px white solid;
+	color: white;
+	padding: 5px;
+}
+td {
+	padding: 5px;
+	border: 2px white solid;
+}
+.money {
+	text-align: right;
+}
+.money.excluded {
+	color: #bbbbbb;
+}
+input.delbutton {
+	margin: 0px 4px 0px 4px;
+}

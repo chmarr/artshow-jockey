@@ -4,8 +4,11 @@
 # See file COPYING for licence details
 
 from models import Invoice
-import optparse, sys
-import artshow_settings
+import sys, subprocess
+from django.conf import settings
+from logging import getLogger
+from StringIO import StringIO
+logger = getLogger(__name__)
 
 invoice_header = """\
 +------------------------------------------------------------------------------+
@@ -70,7 +73,7 @@ def print_invoice ( invoice, copy_name="SINGLE COPY", dest=sys.stdout ):
 	numpages = 2
 	bidderidstr = ", ".join([x.id for x in invoice.payer.bidderid_set.all()])
 	bidderidpad = " " * ( 38 - len(bidderidstr) )
-	taxdescstr = artshow_settings.ARTSHOW_TAX_DESCRIPTION
+	taxdescstr = settings.ARTSHOW_TAX_DESCRIPTION
 	
 	invoiceitems = invoice.invoiceitem_set.all().order_by ( 'piece__location', 'piece' )
 	
@@ -98,9 +101,9 @@ def print_invoice ( invoice, copy_name="SINGLE COPY", dest=sys.stdout ):
 
 		lines_this_page = 0
 		dest.write ( invoice_header % { 
-				'showstr': artshow_settings.ARTSHOW_SHOW_NAME.upper(),
+				'showstr': settings.ARTSHOW_SHOW_NAME.upper(),
 				'datestr': str(invoice.paid_date),
-				'invoice': artshow_settings.ARTSHOW_INVOICE_PREFIX + str(invoice.id),
+				'invoice': settings.ARTSHOW_INVOICE_PREFIX + str(invoice.id),
 				'name': str(invoice.payer.name),
 				'pageno': pageno,
 				'numpages': numpages,
@@ -133,23 +136,34 @@ def print_invoice ( invoice, copy_name="SINGLE COPY", dest=sys.stdout ):
 			
 		invoice_page += 1
 
+class PrintingError ( StandardError ):
+	pass
 	
-def print_invoices ( invoices, copy_name ):
+def print_invoices ( invoices, copy_names, to_printer=False ):
+
+	sbuf = StringIO()
+	
 	for invoice_id in invoices:
-		invoice = Invoice.objects.get(id=invoice_id)
-		print_invoice ( invoice, copy_name )
-	
-def get_options ():
-	parser = optparse.OptionParser ()
-	opts, args = parser.parse_args ()
-	opts.invoices = [ int(x) for x in args ]
-	return opts
-	
-def main ():
-	opts = get_options ()
-	print_invoices ( opts.invoices )
-	
-if __name__ == "__main__":
-	main ()
-	
-	
+		try:
+			invoice = Invoice.objects.get(id=invoice_id)
+		except Invoice.DoesNotExist:
+			logger.error ( "Invoice %s does not exist", invoice_id )
+		else:
+			if copy_names:
+				for copy_name in copy_names:
+					print_invoice ( invoice, copy_name, dest=sbuf )
+			else:
+				print_invoice ( invoice, "", dest=sbuf )
+			
+	if not sbuf.getvalue():
+		logger.error ( "nothing to generate" )
+	elif to_printer:
+		p = subprocess.Popen ( settings.ARTSHOW_PRINT_COMMAND, stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True )
+		output, error = p.communicate ( sbuf.getvalue() )
+		if output:
+			logger.debug ( "printing command returned: %s", output )
+		if error:
+			logger.error ( "printing command returned error: %s", error )
+			raise PrintingError ( error )
+	else:
+		sys.stdout.write ( sbuf.getvalue() )

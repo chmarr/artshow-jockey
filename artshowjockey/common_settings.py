@@ -90,6 +90,17 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
+TEMPLATE_CONTEXT_PROCESORS = (
+	'django.core.context_processors.request',
+	"django.contrib.auth.context_processors.auth",
+	"django.core.context_processors.debug",
+	"django.core.context_processors.i18n",
+	"django.core.context_processors.media",
+	"django.core.context_processors.static",
+	"django.core.context_processors.tz",
+	"django.contrib.messages.context_processors.messages",
+	)
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -168,3 +179,5 @@ Generic Art Show Lead.
 artshow@example.com - http://www.example.com/artshow
 """
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
+ARTSHOW_PRINT_COMMAND = "enscript -P Samsung -B -L 66 -f Courier-Bold10"
+ARTSHOW_AUTOPRINT_INVOICE = [ "CUSTOMER COPY", "MERCHANT COPY", "PICK LIST" ]

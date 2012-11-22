@@ -1,0 +1,30 @@
+<html>
+<head>
+   <link rel="stylesheet" href="{{ STATIC_URL }}artshow/styles.css" />
+   <title>{% block title %}Artshow{% endblock %}</title>
+   {% block extra_head %}{% endblock %}
+</head>
+<body>
+   <div id="sidebar">
+      {% block sidebar %}
+      <ul>
+          <li><a href="{% url artshow.views.index %}">Artshow Home</a></li>
+          <li><a href="{% url artshow.reports.index %}">Reports</a></li>
+          <li><a href="/admin/">Admin</a></li>
+          <li><a href="{% url artshow.views.dataentry %}">Data Entry</a></li>
+          <li><a href="{% url artshow.cashier.cashier %}">Cashier</a></li>
+      </ul>
+      {% endblock %}
+   </div>
+   {% if messages %}
+   <div id="messages">
+     {% for m in messages %}
+     <p>{{ m }}</p>
+     {% endfor %}
+   </div>
+   {% endif %}
+   <div id="content">
+      {% block content %}{% endblock %}
+   </div>
+</body>
+</html>

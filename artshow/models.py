@@ -268,6 +268,11 @@ class Invoice ( models.Model ):
 	tax_paid = models.DecimalField ( max_digits=7, decimal_places=2, blank=True, null=True )
 	def total_paid ( self ):
 		return self.invoicepayment_set.aggregate ( sum=Sum('amount') )['sum'] or Decimal('0.0')
+	def item_total ( self ):
+		return self.invoiceitem_set.aggregate ( sum=Sum('price') )['sum'] or Decimal('0.0')
+	def item_and_tax_total ( self ):
+		return self.item_total () + self.tax_paid	
+		
 	paid_date = models.DateField ( blank=True, null=True )
 	notes = models.TextField ( blank=True )
 	def __unicode__ ( self ):

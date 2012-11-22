@@ -1,4 +1,4 @@
-{% extends "base_generic.html" %}
+{% extends "artshow/base_generic.html" %}
 {% block title %}Bidder Information{% endblock %}
 {% block extra_head %}
   <link rel="stylesheet" href="{{ STATIC_URL }}artshow/cashierstyle.css" />
@@ -50,6 +50,9 @@
     				var item = $(this);
     				if ( item.find('[type=checkbox]').is(':checked') ) { // not specific enough
 	    				subtotal = subtotal.add ( item.find ( amountclass ).text() );
+	    				item.find('.money').removeClass ( 'excluded' );
+    				} else {
+	    				item.find('.money').addClass ( 'excluded' );
     				}
     			});
     			subtotalfield.text ( subtotal.toString(true) );
@@ -73,11 +76,19 @@
     		var paymenttendered = paymenttable.find('.paymenttendered');
     		var paymenttypes = { {% for pt in payment_types %}{{pt.id}}:'{{pt.name|escapejs}}'{% if not forloop.last %},{% endif %}{% endfor %} };
     		var paymentrowtemplate = paymenttable.find('.paymentrowtemplate')
-    		var paymenttenderedrow = paymenttable.find('.paymenttenderedrow');
+    		var paymentsgohere = paymenttable.find('.paymentsgohere');
+    		var createinvoicebutton = paymenttable.find('.createinvoicebutton');
     		function get_payment_remaining () {
     			var acc = new BigNumber ( totalfrom.text(), precision, BigNumber.ROUND_FLOOR );
     			paymenttable.find("[name$=-amount]").each ( function() {
     				acc = acc.subtract ( $(this).val() );
+    			});
+    			return acc;
+    		}
+    		function get_total_tendered () {
+    			var acc = new BigNumber ( 0, precision, BigNumber.ROUND_FLOOR );
+    			paymenttable.find("[name$=-amount]").each ( function() {
+    				acc = acc.add ( $(this).val() );
     			});
     			return acc;
     		}
@@ -88,12 +99,17 @@
     				var amount=new BigNumber ( row.find("[name$=-amount]").val(), precision, BigNumber.ROUND_FLOOR );
     				var notes=row.find("[name$=-notes]").val();
     				var type=row.find("[name$=-payment_method]").val();
-    				row.find(".paymenttext").text ( paymenttypes[type] + ( notes ? ": " + notes : "" ) );
+    				row.find(".paymenttypetext").text ( paymenttypes[type] )
+    				row.find(".paymentnotestext").text ( notes )
     				row.find(".paymentamount").text ( amount.toString( true ) );
     			});
+    			var acc = get_total_tendered ();
+       			paymenttable.find(".totaltendered").text ( acc.toString( true ) );
     			var acc = get_payment_remaining ();
        			paymenttable.find(".paymentremaining").text ( acc.toString( true ) );
        			paymenttendered.val ( acc.toString ( true ) );
+       			createinvoicebutton.prop ( 'disabled', acc != 0 );
+       			
     		}
     		paymenttable.bind ( 'update', update );
     		totalfrom.bind ( 'totalupdated', function() { paymenttable.trigger ( 'update' ); } );
@@ -149,11 +165,16 @@
     			newrow.find("[name$=-payment_method]").val(paymenttype);
     			newrow.find("[name$=-notes]").val(notes);
     			newrow.find("[name$=-amount]").val(amount);
-    			paymenttenderedrow.before(newrow);
+    			paymentsgohere.before(newrow);
     			update ();    			
     		});
     		paymenttable.find("[type=submit]").click(function(event) {
     			console.log ( 'clicked submit button' );
+    			var acc = get_payment_remaining ();
+    			if ( acc != 0 ) {
+    				window.alert ( "Payment remaining must be zero before invoice can be created." );
+    				return false;
+    			}
     			var paymentrows = paymenttable.find(".paymentrow")
     			paymentrows.each(function(index) {
     				var row=$(this);
@@ -172,60 +193,71 @@
 {% endblock %}
 {% block content %}
 <h1>Bidder Information</h1>
-<p>Name: {{ bidder.name }}</p>
-<p>Bidder ID{{ bidder.bidder_ids|pluralize }}: {{ bidder.bidder_ids|join:", " }}</p>
+<table>
+<tr><td>Name</td><td>{{ bidder.name }}</td></tr>
+<tr><td>Bidder ID{{ bidder.bidder_ids|pluralize }}</td><td>{{ bidder.bidder_ids|join:", " }}</td></tr>
+</table>
 {% if pending_bids %}
 <hr>
 <p>{{ bidder.name }} has <strong>{{ pending_bids|length }}</strong> piece{{ pending_bids|pluralize }} with a top bid but pending resolution</p>
-<ul>
+<table>
+<tr><th>Piece</th><th>Reason</th></tr>
 {% for b in pending_bids %}
-<li>{{ b.piece }} - {{ b.pending_reason }}</li>
+<tr><td>{{ b.piece }}</td><td>{{ b.pending_reason }}</td></tr>
 {% endfor %}
-</ul>
+</table>
 {% endif %}
 <hr>
 <form action="{% url artshow.cashier.cashier_bidder bidder_id=bidder.id %}" method="POST">{% csrf_token %}
 
-<table border="1" class="selecttable purchasetable" precision="{{ money_precision }}" taxrate="{{ tax_rate }}" amountclass="amount">
-<tr><td>Select All<input type="checkbox" class="selectallcontrol"/></td><th>Piece</th><th>Artist</th><th>Amount</th></tr>
+<table class="selecttable purchasetable" precision="{{ money_precision }}" taxrate="{{ tax_rate }}" amountclass="amount">
+<tr><th>Select All<input type="checkbox" class="selectallcontrol"/></th><th>Piece</th><th>Artist</th><th>Amount</th></tr>
 {% for bid in available_bids %}
 {% if bid.form.non_field_errors or bid.form.select.errors %}
 <tr><td colspan="4">{{ bid.form.non_field_errors }}{{ bid.form.select.errors }}</td></tr>
 {% endif %}
-<tr class="selectrow purchaseitem"><td>{{ bid.form.select }}{{ bid.form.bid }}</td><td>{{ bid.piece.name }}</td><td>{{ bid.piece.artist.artistname }}</td><td class="amount" align="right">{{ bid.amount|floatformat:money_precision }}</td></tr>
+<tr class="selectrow purchaseitem"><td>{{ bid.form.select }}{{ bid.form.bid }}</td><td>{{ bid.piece.name }}</td><td>{{ bid.piece.artist.artistname }}</td><td class="amount money">{{ bid.amount|floatformat:money_precision }}</td></tr>
+{% empty %}
+<tr><td colspan="4">No pieces to select from.</td></tr>
 {% endfor %}
-{% if tax_form.non_field_errors or tax_form.tax_paid.errors %}
-<tr><td colspan="4">{{ tax_form.non_field_errors }}{{ tax_form.tax_paid.errors }}</td></tr>
+{% if items_form.non_field_errors or items_form.tax_paid.errors %}
+<tr><td colspan="4">{{ items_form.non_field_errors }}{{ items_form.tax_paid.errors }}</td></tr>
 {% endif %}
-<tr><td></td><td colspan="2" align="right"><input type="hidden" id="id_{{tax_form.tax_paid.html_name}}" name="{{tax_form.tax_paid.html_name}}" class="taxfield" /> Subtotal: <span class="subtotalfield"></span> &mdash; Tax:</td><td class="taxfield" align="right"></td></tr>
-<tr><td></td><td colspan="2" align="right">Total:</td><td class="totalfield" align="right" id="totalwithtax" ></td></tr>
+<tr><td colspan="3" align="right"><input type="hidden" id="id_{{items_form.tax_paid.html_name}}" name="{{items_form.tax_paid.html_name}}" class="taxfield" /> Subtotal: <span class="subtotalfield"></span> &mdash; Tax:</td><td class="taxfield money"></td></tr>
+<tr class="lastrow"><td colspan="3" align="right">Total:</td><td class="totalfield money" id="totalwithtax" ></td></tr>
 </table>
 
 <h3>Payments</h3>
 <div class="paymenttable" totalfrom="totalwithtax" precision="{{ money_precision }}" formprefix="{{ payment_formset.prefix }}">
 {{ payment_formset.management_form }}
 
-<table border="1" >
-  <tr class="paymentrowtemplate" style="display:none"><td>{{ payment_formset.empty_form }}<span class="paymenttext"></span></td><td class="paymentamount" align="right"></td><td><span onclick="removepayment(this);">X</span></td></tr>
-{% if payment_formset.non_field_errors %}
-  <tr><td colspan="4">{{ payment_formset.non_field_errors }}</td></tr>
+<table>
+  <tr class="paymentrowtemplate" style="display:none"><td>{{ payment_formset.empty_form }}<span class="paymenttypetext"></span></td><td><span class="paymentnotestext"></span></td><td class="paymentamount" align="right"></td><td><input class="delbutton" type="button" onclick="removepayment(this);return false;" value="Del"></a></td></tr>
+  <tr><th>Type</th><th>Notes</th><th>Amount</th><th></th></tr>
+{% if payment_formset.non_form_errors %}
+  <tr><td colspan="4">{{ payment_formset.non_form_errors }}</td></tr>
 {% endif %}
 {% for f in payment_formset %}
 {% if f.errors %}
   <tr><td colspan="4"><ul>{% for formerrors in f.errors %}{% for field in formerrors %}{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}{% endfor %}{% endfor %}</ul></td></tr>
 {% endif %}
-  <tr class="paymentrow"><td>{{ f }}<span class="paymenttext"></span></td><td class="paymentamount" align="right"></td><td><span onclick="removepayment(this);">X</span></td></tr>
+  <tr class="paymentrow"><td>{{ f }}<span class="paymenttypetext"></span></td><td><span class="paymentnotestext"></span></td><td class="paymentamount" align="right"></td><td><input type="button" class="delbutton" onclick="removepayment(this);return false;" value="Del" /></td></tr>
 {% endfor %}
-  <tr class="paymenttenderedrow"><td colspan="3">
+  <tr class="paymentsgohere" style="display:none"></tr>
+  <tr class="lastrow"><td colspan="2" align="right">Total Tendered</td><td class="money"><span class="totaltendered"></span></td><td></td></tr>
+  <tr><td colspan="2" align="right">Remaining to Pay</td><td class="money"><span class="paymentremaining"></span></td><td></td></tr>
+  
+  <tr class="paymenttenderedrow lastrow"><td colspan="4">
     Pay: 
     <input class="paymenttendered" type="text" value="" />
     <input type="button" value="Remaining" onclick="reset_to_remaining(this);" /> by
 {% for pt in payment_types %}    <input class="paymentbutton" type="button" paymenttype="{{ pt.id }}" value="{{ pt.name }}" />
 {% endfor %}
   </td></tr>
+  <tr><td colspan="4" align="right"><input class="createinvoicebutton" type="submit" value="Create Invoice"/></td></tr>
+
 </table>
 
-<input type="submit" value="Create Invoice"/>
 </div>
 
 </form>

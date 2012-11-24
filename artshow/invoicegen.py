@@ -104,7 +104,7 @@ def print_invoice ( invoice, copy_name="SINGLE COPY", dest=sys.stdout ):
 				'showstr': settings.ARTSHOW_SHOW_NAME.upper(),
 				'datestr': str(invoice.paid_date),
 				'invoice': settings.ARTSHOW_INVOICE_PREFIX + str(invoice.id),
-				'name': str(invoice.payer.name),
+				'name': str(invoice.payer.name()),
 				'pageno': pageno,
 				'numpages': numpages,
 				'bidderidstr': bidderidstr,

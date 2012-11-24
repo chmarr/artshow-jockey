@@ -1,0 +1,26 @@
+{% extends "artshow/base_generic.html" %}
+{% block content %}
+<h1>Bid Entry</h1>
+<p>Enter bid details for up to 10 bids.</p>
+<p>Tip: Use the <strong>Tab</strong> key to move from field to field.</p>
+<p>Tip: Piece Codes may use <strong><i>nn</i>-<i>nn</i></strong> or <strong>A<i>nn</i>P<i>nn</i></strong> formats.</p>
+<form method="post">
+{% csrf_token %}
+<table>
+{{ optionsform.as_table }}
+</table>
+{{ formset.management_form }}
+<table>
+<tr><th>Piece Code</th><th>Bidder Code</th><th>Type</th><th>Amount</th></tr>
+{% for form in formset %}
+<tr>
+  <td>{{ form.piece.errors }}{{ form.piece }}</td>
+  <td>{{ form.bidder.errors }}{{ form.bidder }}</td>
+  <td>{{ form.type.errors }}{% for radio in form.type %}{{ radio }}{% if not forloop.last %}&nbsp; {% endif %}{% endfor %}</td>
+  <td>{{ form.amount.errors }}{{ form.amount }}</td>
+</tr>
+{% endfor %}
+</table>
+<input type="submit" value="Submit" />
+</form>
+{% endblock %}

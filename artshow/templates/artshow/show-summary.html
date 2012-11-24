@@ -1,4 +1,5 @@
-<html><body>
+{% extends "artshow/base_generic.html" %}
+{% block content %}
 <h1>Show Summary</h1>
 
 <table border=1>
@@ -46,6 +47,4 @@
 {% endfor %}
 <tr><td>Total</td><td align="right">{{ total_invoice_payments }}</td></tr>
 </table>
-
-</body></html>
-
+{% endblock %}

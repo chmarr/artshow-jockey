@@ -1,12 +1,11 @@
-{% extends "base_generic.html" %}
+{% extends "artshow/base_generic.html" %}
 
-{% block title %}{{ section.title }}{% endblock %}
+{% block title %}Artshow Reports{% endblock %}
 
 {% block content %}
-<h1>{{ section.title }}</h1>
+<h1>Artshow Reports</h1>
 <ul>
   <li><a href="{% url artshow.reports.artists %}">Showing Artists</a></li>
-  <li><a href="{% url artshow.reports.balances %}">Balances</a></li>
   <li><a href="{% url artshow.reports.winning_bidders %}">Winning Bidders</a></li>
   <li><a href="{% url artshow.reports.piece_stickers %}">Piece Stickers</a></li>
   <li><a href="{% url artshow.reports.artist_panel_report %}">Artist to Panel Report</a></li>

@@ -9,6 +9,8 @@ import csv
 
 def artists ( request ):
 
+	## TODO - This depends on the Person structure, which we want to move out into the model itself.
+
 	artists = Artist.objects.all ().order_by('artistid')
 	spaces = Space.objects.all ()
 	checkoffs = Checkoff.objects.all()
@@ -33,9 +35,9 @@ def artists ( request ):
 	c.writerow ( field_names_d )
 	
 	for a in artists:
-		d = dict ( artistid=a.artistid, name=a.name, address1=a.address1, address2=a.address2, city=a.city, state=a.state,
-				postcode=a.postcode, country=a.country, phone=a.phone, email=a.email, regid=a.regid, artistname=a.artistname(),
-				website=a.website, mailin= a.mailin and "Yes" or "No", agent=a.agent,
+		d = dict ( artistid=a.artistid, name=a.person.name, address1=a.person.address1, address2=a.person.address2, city=a.person.city, state=a.person.state,
+				postcode=a.person.postcode, country=a.person.country, phone=a.person.phone, email=a.person.email, regid=a.person.reg_id, artistname=a.artistname(),
+				website=a.website, mailin= a.mailin and "Yes" or "No", agent=", ".join ( [ p.name for p in a.agents.all() ] ),
 				reservationdate=str(a.reservationdate) )
 		for alloc in a.allocation_set.all():
 			d['req-'+alloc.space.shortname] = str(alloc.requested)
@@ -80,6 +82,8 @@ def pieces ( request ):
 
 def bidders ( request ):
 
+	## TODO - This depends on the Person structure, which we want to move out into the model itself.
+
 	bidders = Bidder.objects.all ()
 	
 	field_names = [ 'primary_bidder_id', 'bidder_ids', 'name', 'address1', 'address2', 'city', 'state', 'postcode', 
@@ -102,8 +106,8 @@ def bidders ( request ):
 			primary_bidder_id = ""
 		d = dict ( primary_bidder_id=primary_bidder_id, 
 				bidder_ids = ", ".join ( bidder_ids ),
-				name=b.name, address1=b.address1, address2=b.address2, city=b.city, state=b.state,
-				postcode=b.postcode, country=b.country, phone=b.phone, email=b.email, regid=b.regid )
+				name=b.person.name, address1=b.person.address1, address2=b.person.address2, city=b.person.city, state=b.person.state,
+				postcode=b.person.postcode, country=b.person.country, phone=b.person.phone, email=b.person.email, regid=b.person.reg_id )
 		c.writerow ( d )
 		
 	return response

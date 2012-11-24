@@ -12,6 +12,10 @@ from decimal import Decimal
 from django.conf import settings
 import artshow_settings
 
+from django.db.models.loading import get_model
+Person = get_model ( *settings.ARTSHOW_PERSON_CLASS.split('.',1) )
+del get_model
+
 class Space ( models.Model ):
 	name = models.CharField ( max_length = 20 )
 	shortname = models.CharField ( max_length = 8 )
@@ -75,6 +79,11 @@ class Artist ( models.Model ):
 		return self.payment_set.aggregate ( balance=Sum ( 'amount' ))['balance']
 	def __unicode__ ( self ):
 		return "%s (%s)" % ( self.artistname(), self.artistid )
+	def chequename ( self ):
+		if self.payment_to:
+			return self.payment_to.name
+		else:
+			return self.person.name
 
 
 class Allocation ( models.Model ):
@@ -165,7 +174,7 @@ class Product ( models.Model ):
 	adult = models.BooleanField ()
 	price = models.DecimalField ( max_digits=5, decimal_places=2, blank=True, null=True )
 	def artistname ( self ):
-		return self.artist.publicname or self.artist.name
+		return self.artist.artistname()
 	def __unicode__ ( self ):
 		return "A%sR%s - %s by %s (%s)" % ( self.artist.artistid, self.productid, self.name, self.artistname(), self.artist.artistid )
 
@@ -180,7 +189,7 @@ class Bid ( models.Model ):
 	is_top_bid = property(_is_top_bid)
 	def __unicode__ ( self ):
 		bidderids = [ bidderid.id for bidderid in self.bidder.bidderid_set.all() ]
-		return "%s (%s) %s $%s on %s" % ( self.bidder.name, ",".join(bidderids), "INVALID BID" if self.invalid else "bid", self.amount, self.piece )
+		return "%s (%s) %s $%s on %s" % ( self.bidder.name(), ",".join(bidderids), "INVALID BID" if self.invalid else "bid", self.amount, self.piece )
 	class Meta:
 		unique_together = ( ('piece','amount','invalid'), )
 	def validate ( self ):

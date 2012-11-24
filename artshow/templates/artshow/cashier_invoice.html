@@ -28,10 +28,6 @@
 </table>
 {% if invoice.item_and_tax_total != invoice.total_paid %}<p><strong>Oh crap; item total and payment total do not match!</strong></p>
 {% endif %}
-<p>Request: {{ request }}</p>
-<p>Request Path: {{ request.path }}</p>
-<p>Request Full Path: {{ request.get_full_path }}</p>
-
 <form method="post" action="{% url artshow.cashier.print_invoice invoice.id %}">
 {% include "artshow/print-invoice.html" %}
 </form>

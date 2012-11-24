@@ -2,7 +2,7 @@
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.db.models import Sum, Count, Min
 from artshow.models import *
 from django.http import HttpResponse
@@ -11,19 +11,15 @@ from django.core.context_processors import csrf
 import csv
 
 def index ( request ):
-	return render_to_response ( 'artshow/reports.html' )
+	return render ( request, 'artshow/reports.html' )
 
 def artists ( request ):
 	artists = Artist.objects.all().distinct().filter(allocation__allocated__gt=0).order_by('artistid')
-	return render_to_response ( 'artshow/reports-artists.html', { 'artists':artists } )
-
-def balances ( request ):
-	artists = Artist.objects.annotate ( balance=Sum('payment__amount'), panel_charge=Count('payment') ).all().order_by('artistid')
-	return render_to_response ( 'artshow/reports-balances.html', { 'artists':artists } )
+	return render ( request, 'artshow/reports-artists.html', { 'artists':artists } )
 
 def winning_bidders ( request ):
 	bidders = Bidder.objects.all().annotate(first_bidderid=Min('bidderid')).order_by('first_bidderid')
-	return render_to_response ( 'artshow/reports-winning-bidders.html', { 'bidders':bidders } )
+	return render ( request, 'artshow/reports-winning-bidders.html', { 'bidders':bidders } )
 
 class PieceStickersForm ( forms.Form ):
 	perpanel = forms.IntegerField ()
@@ -47,30 +43,30 @@ def piece_stickers ( request ):
 		form = PieceStickersForm ()
 	c = { 'form': form }
 	c.update(csrf(request))
-	return render_to_response ( 'artshow/generate-piece-stickers.html', c )
+	return render ( request, 'artshow/generate-piece-stickers.html', c )
 
 def artist_piece_report ( request, artist_id ):
 	artist = Artist.objects.get(id=artist_id)
 	pieces = artist.piece_set.all()
-	return render_to_response ( 'artshow/artist-piece-report.html', { 'artist':artist, 'pieces':pieces } )
+	return render ( request, 'artshow/artist-piece-report.html', { 'artist':artist, 'pieces':pieces } )
 	
 def artist_panel_report ( request ):
 	artists = Artist.objects.all()
-	return render_to_response ( 'artshow/artist-panel-report.html', { 'artists':artists } )
+	return render ( request, 'artshow/artist-panel-report.html', { 'artists':artists } )
 	
 def panel_artist_report ( request ):
 	locations = Piece.objects.exclude(location="").values("location").distinct()
 	for l in locations:
 		l['artists'] = Artist.objects.filter ( piece__location=l['location'] ).distinct ()
-	return render_to_response ( "artshow/panel-artist-report.html", { 'locations': locations } )
+	return render ( request, "artshow/panel-artist-report.html", { 'locations': locations } )
 
 def nonzero_artist_payment_report ( request ):
 	artists = Artist.objects.annotate(total=Sum('payment__amount')).exclude ( total=0 ).order_by("artistid")
-	return render_to_response ( 'artshow/artist-payment-report.html', { 'artists':artists } )
+	return render ( request, 'artshow/artist-payment-report.html', { 'artists':artists } )
 	
 def artist_payment_report ( request ):
 	artists = Artist.objects.annotate(total=Sum('payment__amount')).order_by("artistid")
-	return render_to_response ( 'artshow/artist-payment-report.html', { 'artists':artists } )
+	return render ( request, 'artshow/artist-payment-report.html', { 'artists':artists } )
 			
 def show_summary ( request ):
 
@@ -136,20 +132,20 @@ def show_summary ( request ):
 	
 	# all_invoices = Invoice.objects.aggregate ( Sum('tax_paid'), Sum('invoicepayment__amount') )
 
-	return render_to_response ( 'artshow/show-summary.html', { 'all_stats':all_stats, 'general_stats':general_stats, 'adult_stats':adult_stats, 'num_showing_artists':num_showing_artists, 'payment_types':payment_types, 'total_payments':total_payments, 'tax_paid':tax_paid, 'piece_charges':piece_charges, 'total_charges':total_charges, 'total_invoice_payments':total_invoice_payments, 'invoice_payments':invoice_payments } )
+	return render ( request, 'artshow/show-summary.html', { 'all_stats':all_stats, 'general_stats':general_stats, 'adult_stats':adult_stats, 'num_showing_artists':num_showing_artists, 'payment_types':payment_types, 'total_payments':total_payments, 'tax_paid':tax_paid, 'piece_charges':piece_charges, 'total_charges':total_charges, 'total_invoice_payments':total_invoice_payments, 'invoice_payments':invoice_payments } )
 
 control_forms_per_space = 0.3
 bid_sheets_per_space = 8
 sticker_sheets_per_space = 0.3
 
-def kit_contents ( report ):
+def kit_contents ( request ):
 	artists = Artist.objects.annotate ( requested_spaces=Sum('allocation__requested') ).order_by('artistid')
 	for a in artists:
 		spaces = float(a.requested_spaces)
 		a.num_control_forms = int ( 0.8 + control_forms_per_space * spaces )
 		a.num_bid_sheets = int ( 0.8 + bid_sheets_per_space * spaces )
 		a.num_sticker_sheets = int ( 0.8 + sticker_sheets_per_space * spaces )
-	return render_to_response ( 'artshow/kit-contents.html', { 'artists': artists } )
+	return render ( request, 'artshow/kit-contents.html', { 'artists': artists } )
 
 def voice_auction ( request ):
 	adult = request.GET.get('adult','')
@@ -159,7 +155,7 @@ def voice_auction ( request ):
 	elif adult == "n":
 		pieces = pieces.filter ( adult=False )
 
-	return render_to_response ( 'artshow/voice-auction.html', { 'pieces':pieces } )
+	return render ( request, 'artshow/voice-auction.html', { 'pieces':pieces } )
 
 def sales_percentiles ( request ):
 
@@ -186,4 +182,4 @@ def sales_percentiles ( request ):
 		perc_amounts.append ( { 'perc':float(i)/groups, 'amount':amount } )
 	perc_amounts.append ( { 'perc':1.0, 'amount':float(amounts[-1]) } )
 
-	return render_to_response ( 'artshow/sales-percentiles.html', { 'perc_amounts':perc_amounts } )
+	return render ( request, 'artshow/sales-percentiles.html', { 'perc_amounts':perc_amounts } )

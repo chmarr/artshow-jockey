@@ -1,16 +1,21 @@
-{% extends "base_generic.html" %}
+{% extends "artshow/base_generic.html" %}
 {% block content %}
-<html><body>
-<form action="/artshow/bidder/bulkadd/" method="post">
+<h1>Bidder Entry</h1>
+<p>Enter bidder details for up to 10 bidders.</p>
+<p>Tip: Use the <strong>Tab</strong> key to move from field to field.</p>
+<form method="post">
 {% csrf_token %}
+{{ formset.management_form }}
 <table>
 <tr><th>Bidder ID</th><th>Name</th><th>Reg ID</th></tr>
-{% for form in forms %}
-<tr>{% for field in form %}<td><div class="fieldWrapper">{{ field.errors }}{{ field }}</div></td>{% endfor %}
+{% for form in formset %}
+<tr>
+  <td>{{ form.bidderid.errors }}{{ form.bidderid }}</td>
+  <td>{{ form.name.errors }}{{ form.name }}</td>
+  <td>{{ form.regid.errors }}{{ form.regid }}</td>
 </tr>
 {% endfor %}
 </table>
 <input type="submit" value="Submit" />
 </form>
-</body></html>
 {% endblock %}

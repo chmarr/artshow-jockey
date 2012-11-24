@@ -113,7 +113,7 @@ class BidderId ( models.Model ):
 			raise ValidationError ( "Bidder ID is not valid" )
 		
 	def __unicode__ ( self ):
-		return "BidderId %s (%s)" % ( self.id, self.bidder.name )
+		return "BidderId %s (%s)" % ( self.id, self.bidder.person.name )
 
 
 class Piece ( models.Model ):

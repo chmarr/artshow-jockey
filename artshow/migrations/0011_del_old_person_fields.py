@@ -1,0 +1,446 @@
+# -*- coding: utf-8 -*-
+import datetime
+from south.db import db
+from south.v2 import SchemaMigration
+from django.db import models
+
+
+class Migration(SchemaMigration):
+
+    def forwards(self, orm):
+        # Deleting field 'Artist.agent'
+        db.delete_column('artshow_artist', 'agent')
+
+        # Deleting field 'Artist.postcode'
+        db.delete_column('artshow_artist', 'postcode')
+
+        # Deleting field 'Artist.city'
+        db.delete_column('artshow_artist', 'city')
+
+        # Deleting field 'Artist.state'
+        db.delete_column('artshow_artist', 'state')
+
+        # Deleting field 'Artist.email'
+        db.delete_column('artshow_artist', 'email')
+
+        # Deleting field 'Artist.address1'
+        db.delete_column('artshow_artist', 'address1')
+
+        # Deleting field 'Artist.address2'
+        db.delete_column('artshow_artist', 'address2')
+
+        # Deleting field 'Artist.phone'
+        db.delete_column('artshow_artist', 'phone')
+
+        # Deleting field 'Artist.regid'
+        db.delete_column('artshow_artist', 'regid')
+
+        # Deleting field 'Artist.name'
+        db.delete_column('artshow_artist', 'name')
+
+        # Deleting field 'Artist.country'
+        db.delete_column('artshow_artist', 'country')
+
+        # Deleting field 'Artist.name_for_cheque'
+        db.delete_column('artshow_artist', 'name_for_cheque')
+
+        # Adding field 'Artist.payment_to'
+        db.add_column('artshow_artist', 'payment_to',
+                      self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='receiving_payment_for', null=True, to=orm['peeps.Person']),
+                      keep_default=False)
+
+        # Adding M2M table for field agents on 'Artist'
+        db.create_table('artshow_artist_agents', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('artist', models.ForeignKey(orm['artshow.artist'], null=False)),
+            ('person', models.ForeignKey(orm['peeps.person'], null=False))
+        ))
+        db.create_unique('artshow_artist_agents', ['artist_id', 'person_id'])
+
+
+        # Changing field 'Artist.person'
+        db.alter_column('artshow_artist', 'person_id', self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['peeps.Person']))
+        # Deleting field 'Bidder.address1'
+        db.delete_column('artshow_bidder', 'address1')
+
+        # Deleting field 'Bidder.address2'
+        db.delete_column('artshow_bidder', 'address2')
+
+        # Deleting field 'Bidder.phone'
+        db.delete_column('artshow_bidder', 'phone')
+
+        # Deleting field 'Bidder.postcode'
+        db.delete_column('artshow_bidder', 'postcode')
+
+        # Deleting field 'Bidder.regid'
+        db.delete_column('artshow_bidder', 'regid')
+
+        # Deleting field 'Bidder.city'
+        db.delete_column('artshow_bidder', 'city')
+
+        # Deleting field 'Bidder.name'
+        db.delete_column('artshow_bidder', 'name')
+
+        # Deleting field 'Bidder.country'
+        db.delete_column('artshow_bidder', 'country')
+
+        # Deleting field 'Bidder.state'
+        db.delete_column('artshow_bidder', 'state')
+
+        # Deleting field 'Bidder.email'
+        db.delete_column('artshow_bidder', 'email')
+
+
+        # Changing field 'Bidder.person'
+        db.alter_column('artshow_bidder', 'person_id', self.gf('django.db.models.fields.related.OneToOneField')(default=0, to=orm['peeps.Person'], unique=True))
+        # Adding unique constraint on 'Bidder', fields ['person']
+        db.create_unique('artshow_bidder', ['person_id'])
+
+
+    def backwards(self, orm):
+        # Removing unique constraint on 'Bidder', fields ['person']
+        db.delete_unique('artshow_bidder', ['person_id'])
+
+        # Adding field 'Artist.agent'
+        db.add_column('artshow_artist', 'agent',
+                      self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.postcode'
+        db.add_column('artshow_artist', 'postcode',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=20, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.city'
+        db.add_column('artshow_artist', 'city',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.state'
+        db.add_column('artshow_artist', 'state',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=40, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.email'
+        db.add_column('artshow_artist', 'email',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.address1'
+        db.add_column('artshow_artist', 'address1',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.address2'
+        db.add_column('artshow_artist', 'address2',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.phone'
+        db.add_column('artshow_artist', 'phone',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=40, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.regid'
+        db.add_column('artshow_artist', 'regid',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=10, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.name'
+        db.add_column('artshow_artist', 'name',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100),
+                      keep_default=False)
+
+        # Adding field 'Artist.country'
+        db.add_column('artshow_artist', 'country',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=40, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Artist.name_for_cheque'
+        db.add_column('artshow_artist', 'name_for_cheque',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+        # Deleting field 'Artist.payment_to'
+        db.delete_column('artshow_artist', 'payment_to_id')
+
+        # Removing M2M table for field agents on 'Artist'
+        db.delete_table('artshow_artist_agents')
+
+
+        # Changing field 'Artist.person'
+        db.alter_column('artshow_artist', 'person_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['peeps.Person'], null=True))
+        # Adding field 'Bidder.address1'
+        db.add_column('artshow_bidder', 'address1',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Bidder.address2'
+        db.add_column('artshow_bidder', 'address2',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Bidder.phone'
+        db.add_column('artshow_bidder', 'phone',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=40, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Bidder.postcode'
+        db.add_column('artshow_bidder', 'postcode',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=20, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Bidder.regid'
+        db.add_column('artshow_bidder', 'regid',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=10, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Bidder.city'
+        db.add_column('artshow_bidder', 'city',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Bidder.name'
+        db.add_column('artshow_bidder', 'name',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100),
+                      keep_default=False)
+
+        # Adding field 'Bidder.country'
+        db.add_column('artshow_bidder', 'country',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=40, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Bidder.state'
+        db.add_column('artshow_bidder', 'state',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=40, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Bidder.email'
+        db.add_column('artshow_bidder', 'email',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=100, blank=True),
+                      keep_default=False)
+
+
+        # Changing field 'Bidder.person'
+        db.alter_column('artshow_bidder', 'person_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['peeps.Person'], null=True))
+
+    models = {
+        'artshow.allocation': {
+            'Meta': {'object_name': 'Allocation'},
+            'allocated': ('django.db.models.fields.DecimalField', [], {'max_digits': '4', 'decimal_places': '1'}),
+            'artist': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Artist']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'requested': ('django.db.models.fields.DecimalField', [], {'max_digits': '4', 'decimal_places': '1'}),
+            'space': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Space']"})
+        },
+        'artshow.artist': {
+            'Meta': {'object_name': 'Artist'},
+            'agents': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'agent_for'", 'blank': 'True', 'to': "orm['peeps.Person']"}),
+            'artistid': ('django.db.models.fields.IntegerField', [], {'primary_key': 'True'}),
+            'checkoffs': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['artshow.Checkoff']", 'symmetrical': 'False', 'blank': 'True'}),
+            'mailin': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'payment_to': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'receiving_payment_for'", 'null': 'True', 'to': "orm['peeps.Person']"}),
+            'person': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['peeps.Person']"}),
+            'publicname': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'reservationdate': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'spaces': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['artshow.Space']", 'through': "orm['artshow.Allocation']", 'symmetrical': 'False'}),
+            'website': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'})
+        },
+        'artshow.artistaccess': {
+            'Meta': {'object_name': 'ArtistAccess'},
+            'artist': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Artist']"}),
+            'can_edit': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+        },
+        'artshow.batchscan': {
+            'Meta': {'object_name': 'BatchScan'},
+            'batchtype': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'data': ('django.db.models.fields.TextField', [], {}),
+            'date_scanned': ('django.db.models.fields.DateTimeField', [], {}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'processed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'processing_log': ('django.db.models.fields.TextField', [], {'blank': 'True'})
+        },
+        'artshow.bid': {
+            'Meta': {'unique_together': "(('piece', 'amount', 'invalid'),)", 'object_name': 'Bid'},
+            'amount': ('django.db.models.fields.DecimalField', [], {'max_digits': '5', 'decimal_places': '0'}),
+            'bidder': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Bidder']"}),
+            'buy_now_bid': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'invalid': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'piece': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Piece']"})
+        },
+        'artshow.bidder': {
+            'Meta': {'object_name': 'Bidder'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'person': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['peeps.Person']", 'unique': 'True'})
+        },
+        'artshow.bidderid': {
+            'Meta': {'object_name': 'BidderId'},
+            'bidder': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Bidder']"}),
+            'id': ('django.db.models.fields.CharField', [], {'max_length': '8', 'primary_key': 'True'})
+        },
+        'artshow.checkoff': {
+            'Meta': {'object_name': 'Checkoff'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'shortname': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        'artshow.chequepayment': {
+            'Meta': {'object_name': 'ChequePayment', '_ormbases': ['artshow.Payment']},
+            'number': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
+            'payee': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'payment_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['artshow.Payment']", 'unique': 'True', 'primary_key': 'True'})
+        },
+        'artshow.emailtemplate': {
+            'Meta': {'object_name': 'EmailTemplate'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'subject': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'template': ('django.db.models.fields.TextField', [], {})
+        },
+        'artshow.event': {
+            'Meta': {'object_name': 'Event'},
+            'auto_occur': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'occurred': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+        },
+        'artshow.invoice': {
+            'Meta': {'object_name': 'Invoice'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'notes': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'paid_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'payer': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Bidder']"}),
+            'tax_paid': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '7', 'decimal_places': '2', 'blank': 'True'})
+        },
+        'artshow.invoiceitem': {
+            'Meta': {'object_name': 'InvoiceItem'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'invoice': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Invoice']"}),
+            'piece': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['artshow.Piece']", 'unique': 'True'}),
+            'price': ('django.db.models.fields.DecimalField', [], {'max_digits': '7', 'decimal_places': '2'})
+        },
+        'artshow.invoicepayment': {
+            'Meta': {'object_name': 'InvoicePayment'},
+            'amount': ('django.db.models.fields.DecimalField', [], {'max_digits': '7', 'decimal_places': '2'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'invoice': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Invoice']"}),
+            'payment_method': ('django.db.models.fields.IntegerField', [], {'default': '0'})
+        },
+        'artshow.payment': {
+            'Meta': {'object_name': 'Payment'},
+            'amount': ('django.db.models.fields.DecimalField', [], {'max_digits': '7', 'decimal_places': '2'}),
+            'artist': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Artist']"}),
+            'date': ('django.db.models.fields.DateField', [], {}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'payment_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.PaymentType']"})
+        },
+        'artshow.paymenttype': {
+            'Meta': {'object_name': 'PaymentType'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '40'})
+        },
+        'artshow.piece': {
+            'Meta': {'object_name': 'Piece'},
+            'adult': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'artist': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Artist']"}),
+            'bidsheet_scanned': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'buy_now': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '5', 'decimal_places': '0', 'blank': 'True'}),
+            'code': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'location': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
+            'media': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'min_bid': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '5', 'decimal_places': '0', 'blank': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'not_for_sale': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'pieceid': ('django.db.models.fields.IntegerField', [], {}),
+            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'voice_auction': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+        },
+        'artshow.product': {
+            'Meta': {'object_name': 'Product'},
+            'adult': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'artist': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Artist']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'location': ('django.db.models.fields.CharField', [], {'max_length': '8', 'blank': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'price': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '5', 'decimal_places': '2', 'blank': 'True'}),
+            'productid': ('django.db.models.fields.IntegerField', [], {})
+        },
+        'artshow.space': {
+            'Meta': {'object_name': 'Space'},
+            'available': ('django.db.models.fields.DecimalField', [], {'max_digits': '4', 'decimal_places': '1'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
+            'price': ('django.db.models.fields.DecimalField', [], {'max_digits': '4', 'decimal_places': '2'}),
+            'shortname': ('django.db.models.fields.CharField', [], {'max_length': '8'})
+        },
+        'artshow.task': {
+            'Meta': {'object_name': 'Task'},
+            'actor': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
+            'detail': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'due_at': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Event']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'summary': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'time_entered': ('django.db.models.fields.DateTimeField', [], {})
+        },
+        'auth.group': {
+            'Meta': {'object_name': 'Group'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
+            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
+        },
+        'auth.permission': {
+            'Meta': {'ordering': "('content_type__app_label', 'content_type__model', 'codename')", 'unique_together': "(('content_type', 'codename'),)", 'object_name': 'Permission'},
+            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+        },
+        'auth.user': {
+            'Meta': {'object_name': 'User'},
+            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
+            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
+            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
+            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
+        },
+        'contenttypes.contenttype': {
+            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
+            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        'peeps.person': {
+            'Meta': {'object_name': 'Person'},
+            'address1': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'address2': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'city': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'comment': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'country': ('django.db.models.fields.CharField', [], {'max_length': '40', 'blank': 'True'}),
+            'email': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'phone': ('django.db.models.fields.CharField', [], {'max_length': '40', 'blank': 'True'}),
+            'postcode': ('django.db.models.fields.CharField', [], {'max_length': '20', 'blank': 'True'}),
+            'reg_id': ('django.db.models.fields.CharField', [], {'max_length': '40', 'blank': 'True'}),
+            'state': ('django.db.models.fields.CharField', [], {'max_length': '40', 'blank': 'True'})
+        }
+    }
+
+    complete_apps = ['artshow']

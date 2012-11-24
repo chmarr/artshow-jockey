@@ -1,5 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
 from artshow.models import *
+from django.db.models.loading import get_model
+from django.conf import settings
+
+Person = get_model ( *settings.ARTSHOW_PERSON_CLASS.split('.',1) )
 
 class Command ( BaseCommand ):
 
@@ -17,7 +21,9 @@ class Command ( BaseCommand ):
 			attr ()
 			
 	def stage_start ( self ):
-		a = Artist ( artistid=1, name="Bill Baggins" )
+		ps = Person ( name="Bill Baggins" )
+		ps.save ()
+		a = Artist ( artistid=1, person=ps )
 		a.save()
 		p = Piece ( artist=a, pieceid=1, name="Bill's First Piece", not_for_sale=False, adult=False, min_bid=10, buy_now=20, status=Piece.StatusInShow )
 		p.clean ()
@@ -29,7 +35,9 @@ class Command ( BaseCommand ):
 		p.clean ()
 		p.save ()
 
-		a = Artist ( artistid=2, name="Freddy Frodo" )
+		ps = Person ( name="Freddy Frodo" )
+		ps.save ()
+		a = Artist ( artistid=2, person=ps )
 		a.save()
 		p = Piece ( artist=a, pieceid=1, name="Freddy's First Piece", not_for_sale=False, adult=False, min_bid=10, buy_now=20, status=Piece.StatusInShow )
 		p.clean ()
@@ -41,7 +49,9 @@ class Command ( BaseCommand ):
 		p.clean ()
 		p.save ()
 
-		a = Artist ( artistid=3, name="Jenny Johnson" )
+		ps = Person ( name="Jenny Johnson" )
+		ps.save ()
+		a = Artist ( artistid=3, person=ps )
 		a.save()
 		p = Piece ( artist=a, pieceid=2, name="Jenny's First Piece", not_for_sale=False, adult=False, min_bid=10, buy_now=20, status=Piece.StatusInShow )
 		p.clean ()
@@ -53,19 +63,23 @@ class Command ( BaseCommand ):
 		p.clean ()
 		p.save ()
 		
-		b = Bidder ( name="Chris Wilkie" )
+		ps = Person ( name="Chris Wilkie" )
+		ps.save ()
+		b = Bidder ( person=ps )
 		b.save ()
 		bi = BidderId ( "1001", bidder=b )
 		bi.save ()
 		
-		b = Bidder ( name="Eric Gordon" )
+		ps = Person ( name="Eric Gordon" )
+		ps.save ()
+		b = Bidder ( person=ps )
 		b.save ()
 		bi = BidderId ( "1021", bidder=b )
 		bi.save ()
 
 		
 	def stage_bids ( self ):
-		bidder = Bidder.objects.get ( name="Chris Wilkie" )
+		bidder = Bidder.objects.get ( person__name="Chris Wilkie" )
 		b = Bid ( bidder=bidder, amount=15, piece=Piece.objects.get(code="1-1") )
 		b.save ()
 		b = Bid ( bidder=bidder, amount=20, buy_now_bid=True, piece=Piece.objects.get(code="2-2") )
@@ -73,7 +87,3 @@ class Command ( BaseCommand ):
 		
 	def stage_auctions ( self ):
 		pass
-			
-		
-			
-		

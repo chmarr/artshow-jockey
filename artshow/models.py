@@ -52,6 +52,8 @@ class ManageableArtistManager ( models.Manager ):
 class Artist ( models.Model ):
 	artistid = models.IntegerField ( primary_key=True )
 	person = models.ForeignKey ( settings.ARTSHOW_PERSON_CLASS )
+	def name ( self ):
+		return self.person.name
 	publicname = models.CharField ( max_length = 100, blank=True )
 	website = models.CharField ( max_length = 200, blank=True )
 	mailin = models.BooleanField ()
@@ -88,6 +90,8 @@ class Allocation ( models.Model ):
 
 class Bidder ( models.Model ):
 	person = models.OneToOneField ( settings.ARTSHOW_PERSON_CLASS )
+	def name ( self ):
+		return self.person.name
 	notes = models.TextField ( blank=True )
 	def bidder_ids ( self ):
 		return [ b_id.id for b_id in self.bidderid_set.all().order_by('id') ]
@@ -145,7 +149,7 @@ class Piece ( models.Model ):
 		]
 	status = models.IntegerField ( choices=STATUS_CHOICES, default=StatusNotInShow )
 	def artistname ( self ):
-		return self.artist.publicname or self.artist.name
+	    return self.artist.artistname()
 	def top_bid ( self ):
 		return self.bid_set.exclude ( invalid=True ).order_by ( '-amount' )[0:1].get()
 	def clean ( self ):

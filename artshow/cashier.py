@@ -30,7 +30,7 @@ def cashier ( request ):
 		if form.is_valid ():
 			text = form.cleaned_data['text']
 			# TODO - the following will return multiple entries for name base if bidder has two IDs
-			bidders = Bidder.objects.filter ( Q(name__icontains=text) | Q(bidderid__id=text) )
+			bidders = Bidder.objects.filter ( Q(person__name__icontains=text) | Q(bidderid__id=text) )
 		else:
 			bidders = []
 	else:

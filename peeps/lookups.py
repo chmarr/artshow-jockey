@@ -9,7 +9,7 @@ class PersonLookup(LookupChannel):
 	model = get_model ( *settings.ARTSHOW_PERSON_CLASS.split('.',1) )
 
 	def get_query(self,q,request):
-		return self.model.objects.filter(Q(name__icontains=q) | Q(email__istartswith=q)).order_by('name')
+		return self.model.objects.filter(Q(name__icontains=q) | Q(email__istartswith=q) | Q(reg_id__istartswith=q)).order_by('name')
 
 	def get_result(self,obj):
 		u""" result is the simple text that is the completion of what the person typed """

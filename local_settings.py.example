@@ -34,3 +34,8 @@ Generic Art Show Lead.
 artshow@example.com - http://www.example.com/artshow
 """
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
+
+# Make this unique, and don't share it with anybody.
+# For internal testing, it's okay to use the one from common settings,
+# but make sure you create a unique secret key for production systems.
+#SECRET_KEY = 'q#yt*jcrzdiu&amp;l^x%qunb3-lb(_^&amp;1*wzxy+98r*vx1)cx#m@%'

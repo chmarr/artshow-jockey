@@ -33,7 +33,9 @@ Random J Hacker
 Generic Art Show Lead.
 artshow@example.com - http://www.example.com/artshow
 """
+ARTSHOW_CHEQUE_THANK_YOU = "Thank you for exhibiting at Generic Art Show"
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
+ARTSHOW_SCANNER_DEVICE = "/dev/ttyUSB0"
 
 # Make this unique, and don't share it with anybody.
 # For internal testing, it's okay to use the one from common settings,

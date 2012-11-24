@@ -7,7 +7,7 @@ import sys, os, re, num2word, time, optparse
 from decimal import Decimal
 from artshow.models import Artist
 from email1 import wrap
-import artshow_settings
+from django.conf import settings
 
 class PRINT_GRID:
 	x_size = 87
@@ -48,6 +48,8 @@ def cheque_to_text ( cheque, f ):
 
 	cheque_words = "** " + num2word.n2w.to_cardinal ( cheque_dollars ) + " dollars and %d cents" % cheque_cents + " **"
 	cheque_words = cheque_words.upper ()
+	
+	person = cheque.artist.person
 
 	grid = PRINT_GRID ()
 
@@ -58,12 +60,12 @@ def cheque_to_text ( cheque, f ):
 
 	grid.print_at ( 1, 9, cheque_words )
 
-	mailing_label_lines = [ cheque.payee, cheque.artist.address1 ]
-	if cheque.artist.address2:
-		mailing_label_lines.append ( cheque.artist.address2 )
-	mailing_label_lines.append ( "%s %s  %s" % ( cheque.artist.city, cheque.artist.state, cheque.artist.postcode ) )
-	if cheque.artist.country and cheque.artist.country != "USA":
-		mailing_label_lines.append ( cheque.artist.country )
+	mailing_label_lines = [ cheque.payee, person.address1 ]
+	if person.address2:
+		mailing_label_lines.append ( person.address2 )
+	mailing_label_lines.append ( "%s %s  %s" % ( person.city, person.state, person.postcode ) )
+	if person.country and person.country != "USA":
+		mailing_label_lines.append ( person.country )
 	mailing_label_lines = [ x.upper() for x in mailing_label_lines ]
 	
 	for i in range(len(mailing_label_lines)):
@@ -79,7 +81,7 @@ def print_items ( cheque, grid, offset, payee_side ):
 
 	date_str = cheque.date.strftime ( "%d %b %Y" ).upper()
 	
-	s = "(%d) %s" % ( cheque.artist.artistid, cheque.artist.name )
+	s = "(%d) %s" % ( cheque.artist.artistid, cheque.artist.person.name )
 	if cheque.artist.publicname:
 		s += " (%s)" % cheque.artist.publicname
 
@@ -101,7 +103,7 @@ def print_items ( cheque, grid, offset, payee_side ):
 
 	if payee_side:
 		grid.print_on_next_line ( "" )
-		message = wrap ( artshow_settings.ARTSHOW_CHEQUE_THANK_YOU, cols=78, always_wrap=True )
+		message = wrap ( settings.ARTSHOW_CHEQUE_THANK_YOU, cols=78, always_wrap=True )
 		message_lines = message.split ( "\n" )
 		for l in message_lines:
 			grid.print_on_next_line ( l )

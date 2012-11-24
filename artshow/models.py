@@ -9,6 +9,7 @@ import mod11codes
 from django.core import urlresolvers
 from django.contrib.auth.models import User
 from decimal import Decimal
+from django.conf import settings
 import artshow_settings
 
 class Space ( models.Model ):
@@ -74,6 +75,7 @@ class ManageableArtistManager ( models.Manager ):
 
 class Artist ( Person ):
 	artistid = models.IntegerField ( primary_key=True )
+	person = models.ForeignKey ( settings.ARTSHOW_PERSON_CLASS, null=True )
 	publicname = models.CharField ( max_length = 100, blank=True )
 	website = models.CharField ( max_length = 200, blank=True )
 	mailin = models.BooleanField ()
@@ -111,6 +113,7 @@ class Allocation ( models.Model ):
 
 
 class Bidder ( Person ):
+	person = models.ForeignKey ( settings.ARTSHOW_PERSON_CLASS, null=True )
 	notes = models.TextField ( blank=True )
 	def bidder_ids ( self ):
 		return [ b_id.id for b_id in self.bidderid_set.all().order_by('id') ]

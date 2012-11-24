@@ -130,8 +130,10 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'peeps',
     'artshow',
     'south',
+    'ajax_select',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
@@ -181,3 +183,11 @@ artshow@example.com - http://www.example.com/artshow
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
 ARTSHOW_PRINT_COMMAND = "enscript -P Samsung -B -L 66 -f Courier-Bold10"
 ARTSHOW_AUTOPRINT_INVOICE = [ "CUSTOMER COPY", "MERCHANT COPY", "PICK LIST" ]
+ARTSHOW_PERSON_CLASS = "peeps.Person"
+
+AJAX_LOOKUP_CHANNELS = {
+    'person' : ( 'peeps.lookups', 'PersonLookup' ),
+}
+# magically include jqueryUI/js/css
+AJAX_SELECT_BOOTSTRAP = True
+AJAX_SELECT_INLINES = 'inline'

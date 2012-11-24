@@ -16,6 +16,8 @@ from django.core.mail import send_mail
 import artshow_settings
 import smtplib, datetime, decimal
 from django.http import HttpResponse
+from ajax_select import make_ajax_form
+from ajax_select.admin import AjaxSelectAdmin
 
 class FormfieldOverrider ( object ):
 	def formfield_for_dbfield ( self, db_field, **kwargs ):
@@ -90,19 +92,25 @@ class PaymentInline ( admin.TabularInline ):
 	model = Payment
 	extra = 1
 
-class ArtistAdmin ( admin.ModelAdmin ):
-	list_display = ( 'name', 'publicname', 'artistid', 'clickable_email', 'regid', 'requested_spaces', 'allocated_spaces', 'mailing_label' )
-	list_filter = ( 'mailin', 'country', 'checkoffs' )
-	search_fields = ( 'name', 'publicname', 'email', 'notes', 'artistid', 'regid' )
-	fieldsets = [
-		(None,		{ 'fields' : [ 'name', 'publicname', ( 'artistid', 'regid' ), ( 'reservationdate', 'mailin', 'agent' ), 'notes', 'checkoffs' ] } ),
-		('Contact Information', { 'fields' : [ 'address1', 'address2', 'city', 'state', 'postcode', 'country', 'phone', 'email', 'website', 'name_for_cheque' ], 'classes' : ['collapse'] } ),
-		]
+class ArtistAdmin ( AjaxSelectAdmin ):
+	form = make_ajax_form(Artist,{'person':'person','agents':'person','payment_to':'person'})
+	list_display = ( 'person_name', 'publicname', 'artistid', 'person_clickable_email', 'requested_spaces', 'allocated_spaces', 'person_mailing_label' )
+	list_filter = ( 'mailin', 'person__country', 'checkoffs' )
+	search_fields = ( 'person__name', 'publicname', 'person__email', 'notes', 'artistid' )
+	fields = [ 'artistid', 'person', 'publicname', ( 'reservationdate', 'mailin' ), 'agents', 'notes', 'checkoffs', 'payment_to' ]
 	inlines = [ArtistAccessInline,AllocationInline,PieceInline,PaymentInline]
 	def requested_spaces ( self, artist ):
 		return ", ".join ( "%s:%s" % (al.space.shortname,al.requested) for al in artist.allocation_set.all() )
 	def allocated_spaces ( self, artist ):
 		return ", ".join ( "%s:%s" % (al.space.shortname,al.allocated) for al in artist.allocation_set.all() )
+	def person_name ( self, artist ):
+		return artist.person.name
+	def person_clickable_email ( self, artist ):
+		return artist.person.clickable_email()
+	person_clickable_email.allow_tags = True
+	def person_mailing_label ( self, artist ):
+		return artist.person.mailing_label()
+	person_mailing_label.allow_tags = True	
 		
 	def send_email ( self, request, queryset ):
 		opts = self.model._meta
@@ -312,16 +320,20 @@ class BidInline ( admin.TabularInline ):
 	fields = ( 'piece', 'amount', 'buy_now_bid', 'invalid' )
 	raw_id_fields = ( 'piece', )
 	
-class BidderAdmin ( admin.ModelAdmin ):
+class BidderAdmin ( AjaxSelectAdmin ):
+	form = make_ajax_form(Bidder,{'person':'person'})
 	def bidder_ids ( self, obj ):
 		return u", ".join ( [ bidderid.id for bidderid in obj.bidderid_set.all() ] )
+	def person_name ( self, bidder ):
+		return bidder.person.name
+	def person_clickable_email ( self, bidder ):
+		return bidder.person.clickable_email ()
+	person_clickable_email.allow_tags = True
+	
 	# TODO, add mailing_label back in once we figure out how to do it for bidders and artists uniformly
-	list_display = ( 'name', 'bidder_ids', 'regid', 'clickable_email' )
-	search_fields = ( 'name', 'bidderid__id' )
-	fieldsets = [
-		(None,		{ 'fields' : [ 'name', 'regid', 'notes' ] } ),
-		('Contact Information', { 'fields' : [ 'address1', 'address2', 'city', 'state', 'postcode', 'country', 'phone', 'email' ], 'classes' : ['collapse'] } ),
-		]
+	list_display = ( 'person_name', 'bidder_ids', 'person_clickable_email' )
+	search_fields = ( 'person__name', 'bidderid__id' )
+	fields = [ "person", "notes" ]
 	inlines = [BidderIdInline,BidInline]
 
 admin.site.register(Bidder,BidderAdmin)

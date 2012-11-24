@@ -7,7 +7,7 @@ from django.contrib import admin, messages
 from django.core import urlresolvers
 from django.contrib.admin import helpers
 from django import template
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.utils.html import escape
 from django import forms
 from django.db import models
@@ -126,30 +126,31 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 				selected_template = EmailTemplate.objects.get(pk=template_id)
 				if request.POST.get('send_email'):
 					for a in queryset:
+						email = a.person.email
 						body = email1.make_email ( a, selected_template.template )
 						try:
-							send_mail ( selected_template.subject, body, artshow_settings.ARTSHOW_EMAIL_SENDER, [ a.email ], fail_silently=False )
-							self.message_user ( request, "Mail to %s succeeded" % a.email )
+							send_mail ( selected_template.subject, body, artshow_settings.ARTSHOW_EMAIL_SENDER, [ email ], fail_silently=False )
+							self.message_user ( request, "Mail to %s succeeded" % email )
 						except smtplib.SMTPException, x:
 							# TODO - use a error indicator
-							self.message_user ( request, "Mail to %s failed: %s" % ( a.email, x ) )
+							self.message_user ( request, "Mail to %s failed: %s" % ( email, x ) )
 					return None
 				else:
 					for a in queryset:
-						emails.append ( { 'to': a.email, 'body':email1.make_email ( a, selected_template.template ) } )
+						emails.append ( { 'to': a.person.email, 'body':email1.make_email ( a, selected_template.template ) } )
 		templates = EmailTemplate.objects.all()
 		context = {
 			"title": "Send E-mail to Artists",
 			"queryset": queryset,
 			"opts": opts,
-			"root_path": self.admin_site.root_path,
+			# "root_path": self.admin_site.root_path,
 			"app_label": app_label,
 			"action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
 			"templates": templates,
 			"emails": emails,
 			"template_id": template_id,
 			}
-		return render_to_response ( "admin/email_selected_confirmation.html", context, context_instance=template.RequestContext(request))
+		return render ( request, "admin/email_selected_confirmation.html", context )
 	send_email.short_description = "Send E-mail"
 		
 	def print_bidsheets ( self, request, queryset ):

@@ -25,10 +25,10 @@ Artshow Jockey contains a number of other features to make management of larger 
 
 Artshow Jockey is written in Python using the Django application framework. It can be installed as a standalone application, or integrated into a larger Django project. Most screens use the Django "Admin" application, with a few customised screens. Customised screens are currently "ugly" but functional, just like this page.
 
-Artshow Jockey is currently in development, and has been used and refined at Further Confusion every year since 2009. Other conventions are highly encouraged to use it too. A polished "1.0" release is expected in March 2012. You are invited to download an try the project now; any recommendations and requests will be happily considered. As it is in development, only downloads via "SVN" are supported, but other methods will be available once the project stabilises.
+Artshow Jockey is currently in development, and has been used and refined at Further Confusion every year since 2009. Other conventions are highly encouraged to use it too. A polished "1.0" release is expected in March 2012. You are invited to download an try the project now; any recommendations and requests will be happily considered. Use github to download the "master" development branch, or to download a zip file or tarball. Stable releases will be given distinct branch names.
 
 Visit the [Wiki](https://github.com/chmarr/artshow-jockey/wiki) to get documentation, or go straight to the [Quickstart](https://github.com/chmarr/artshow-jockey/wiki/Quickstart) page.
 
-Artshow Jockey is currently actively developed by <chris@cogdon.org>.
+Artshow Jockey is currently actively developed by Chris Cogdon <chris@cogdon.org>.
 
 Development assistance, especially for HTML/CSS/Javascript, is eagerly welcome.

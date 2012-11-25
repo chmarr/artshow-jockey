@@ -3,6 +3,24 @@
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
 
+"""This piece of crap code is intended for Further Confusion to be able to integrate the separate
+registration database into the Person model by matching up registration IDs and, if the names
+are different, giving the option of selecting one name over the other. As is this is probably
+only useful for Further Confusion, but can be the basis of a local solution.
+
+Remember to set PYTHONPATH and DJANGO_SETTINGS_MODULE variables before running.
+
+It has _NOT_ been updated to support the new peeps.Person model yet."""
+
+cli_defaults = {
+	'rejects-file': None,
+	}
+	
+cli_usage = "%prog [options] input-file"
+cli_description = """\
+Integrate information from another database to help complete missing fields.
+"""
+
 from artshow.models import Bidder
 import optparse, csv
 
@@ -79,10 +97,14 @@ def integrate_reg_db ( regfile, rejects_file=None ):
 
 
 def get_options ():
-	parser = optparse.OptionParser ()
-	parser.add_option ( "--rejects-file", type="str", default=None )
+	parser = optparse.OptionParser ( usage=cli_usage, description=cli_description )
+	parser.set_defaults ( **cli_defaults )
+	parser.add_option ( "--rejects-file", type="str", help="File for rejects [%default]" )
 	opts, args = parser.parse_args ()
-	opts.regfile = args[0]
+	try:
+		opts.regfile = args[0]
+	except IndexError:
+		raise parser.error ( "missing argument" )
 	return opts
 
 def main ():

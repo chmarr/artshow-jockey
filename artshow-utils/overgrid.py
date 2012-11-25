@@ -1,5 +1,12 @@
 #! /usr/bin/env python
 
+cli_defaults = {
+	}
+cli_usage = "%prog infile"
+cli_description = """\
+Read in a PDF file and overlay a 0.1" grid on top of it. Writes to stdout.
+"""
+
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, TA_CENTER, ParagraphStyle
@@ -58,9 +65,13 @@ def grid_overlay ( infile ):
 	
 	
 def get_options ():
-	parser = optparse.OptionParser ()
+	parser = optparse.OptionParser ( usage=cli_usage, description=cli_description )
+	parser.set_defaults ( **cli_defaults )
 	opts, args = parser.parse_args ()
-	opts.file = args[0]
+	try:
+		opts.file = args[0]
+	except IndexError:
+		raise parser.error ( "Missing argument" )
 	return opts
 	
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
 #! /usr/bin/env python
 
+"""Modify a PDF file by overlaying a 0.1" grid upon it.
+
+Useful to construct text overlay boxes for printing to existing PDF forms.
+"""
+
 cli_defaults = {
 	}
 cli_usage = "%prog infile"
@@ -11,31 +16,28 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, TA_CENTER, ParagraphStyle
 from reportlab.platypus import Paragraph, Frame
+from reportlab.lib.pagesizes import letter
 
 from pdfrw import PdfReader
 from pdfrw.buildxobj import pagexobj
 from pdfrw.toreportlab import makerl
 
-import optparse, sys
+import optparse
+import sys
 
-def grid_overlay ( infile ):
+def grid_overlay ( infile, outfile=sys.stdout, pagesize=letter ):
+
+	"""Read PDF file 'infile'. Generates a new PDF file to 'outfile'
+	containing the first page (only) of infile, with a 0.1" grid
+	overlaid.
+	"""
 	
-	c = Canvas ( sys.stdout )
+	c = Canvas ( outfile, pagesize=pagesize )
 
 	pdf = PdfReader ( infile )
 	xobj = pagexobj ( pdf.pages[0] )
 	rlobj = makerl ( c, xobj )
 
-	sheet_offsets = [
-		(0,5.5),
-		(4.25,5.5),
-		(0,0),
-		(4.25,0),
-		]
-
-	sheets_per_page = len(sheet_offsets)
-	sheet_num = 0
-	
 	c.doForm ( rlobj )
 	
 	xmax = 90

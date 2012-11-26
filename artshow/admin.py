@@ -155,7 +155,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 	def print_bidsheets ( self, request, queryset ):
 		import bidsheets
 		response = HttpResponse ( mimetype="application/pdf" )
-		bidsheets.generate_bidsheets_from_queryset ( template_pdf=settings.ARTSHOW_BLANK_BID_SHEET, output=response, artists=queryset )
+		bidsheets.generate_bidsheets_for_artists ( template_pdf=settings.ARTSHOW_BLANK_BID_SHEET, output=response, artists=queryset )
 		self.message_user ( request, "Bid sheets printed." )
 		return response
 	print_bidsheets.short_description = "Print Bid Sheets"
@@ -275,6 +275,14 @@ class PieceAdmin ( admin.ModelAdmin ):
 		pieces.filter (status=Piece.StatusInShow).update ( status=Piece.StatusReturned )
 		self.message_user ( request, "Pieces marked as 'In Show' have been marked 'Returned'." )
 
+	def print_bidsheets ( self, request, queryset ):
+		import bidsheets
+		response = HttpResponse ( mimetype="application/pdf" )
+		bidsheets.generate_bidsheets ( template_pdf=settings.ARTSHOW_BLANK_BID_SHEET, output=response, pieces=queryset )
+		self.message_user ( request, "Bid sheets printed." )
+		return response
+	print_bidsheets.short_description = "Print Bid Sheets"
+
 	def clickable_artist ( self, obj ):
 		return u'<a href="%s">%s</a>' % ( urlresolvers.reverse('admin:artshow_artist_change',args=(obj.artist.pk,)), escape(obj.artist.artistname()) )
 	clickable_artist.allow_tags = True
@@ -306,7 +314,7 @@ class PieceAdmin ( admin.ModelAdmin ):
 	fields = ( 'artist', 'pieceid', 'name', 'media', 'location', 'not_for_sale', 'adult', 'min_bid', 'buy_now', 'voice_auction', 'bidsheet_scanned', 'status', 'top_bid' )
 	raw_id_fields = ( 'artist', )
 	readonly_fields = ( 'top_bid', 'invoiceitem', )
-	actions = ( 'clear_scanned_flag', 'set_scanned_flag', 'clear_won_status', 'apply_won_status', 'apply_won_status_to_voice_auction', 'apply_returned_status' )
+	actions = ( 'clear_scanned_flag', 'set_scanned_flag', 'clear_won_status', 'apply_won_status', 'apply_won_status_to_voice_auction', 'apply_returned_status', 'print_bidsheets' )
 
 admin.site.register(Piece,PieceAdmin)
 

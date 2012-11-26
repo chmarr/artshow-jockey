@@ -18,12 +18,15 @@ default_style = ParagraphStyle ( "default_style", fontName="Helvetica", alignmen
 
 
 def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size ):
+	# From the largest to the smallest font sizes, try to flow the message
+	# into the given frame.
 	for size in range ( font_size, min_font_size-1, -1 ):
 		current_style = ParagraphStyle ( "temp_style", parent=default_style, fontSize=size, leading=size )
 		story = [ Paragraph ( escape(msg), current_style ) ]
 		frame.addFromList ( story, canvas )
-		if len(story) == 0: break
+		if len(story) == 0: break  # Story empty, so all text was sucessfully flowed
 	else:
+	    # We've run out font sizing options, so clearly the story/text is too big to flow in.
 		raise Exception ( "Could not flow text into box." )
 		
 

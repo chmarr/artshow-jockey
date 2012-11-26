@@ -10,7 +10,6 @@ from django.core import urlresolvers
 from django.contrib.auth.models import User
 from decimal import Decimal
 from django.conf import settings
-import artshow_settings
 
 from django.db.models.loading import get_model
 Person = get_model ( *settings.ARTSHOW_PERSON_CLASS.split('.',1) )
@@ -250,7 +249,7 @@ class ChequePayment ( Payment ):
 			self.payee = self.artist.chequename ()
 		if self.amount >= 0:
 			raise ValidationError ( "Cheque amounts are a payment outbound and must be negative" )
-		self.payment_type = PaymentType.objects.get(pk=artshow_settings.PAYMENT_SENT_PK)
+		self.payment_type = PaymentType.objects.get(pk=settings.ARTSHOW_PAYMENT_SENT_PK)
 		self.description = "Cheque %s Payee %s" % ( self.number and "#"+self.number or "pending number", self.payee )
 		
 class Invoice ( models.Model ):

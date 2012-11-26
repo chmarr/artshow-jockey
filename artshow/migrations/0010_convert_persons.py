@@ -17,12 +17,14 @@ class Migration(DataMigration):
                     person = Person.objects.get (
                             name=oldperson.name, address1=oldperson.address1, address2=oldperson.address2,
                             city=oldperson.city, state=oldperson.state, postcode=oldperson.postcode,
+                            country=oldperson.country,
                             phone=oldperson.phone, email=oldperson.email, reg_id=oldperson.regid, comment=""
                             )
                 except Person.DoesNotExist:
                     person = Person ( 
                             name=oldperson.name, address1=oldperson.address1, address2=oldperson.address2,
                             city=oldperson.city, state=oldperson.state, postcode=oldperson.postcode,
+                            country=oldperson.country,
                             phone=oldperson.phone, email=oldperson.email, reg_id=oldperson.regid, comment=""
                             )
                     person.save ()
@@ -42,6 +44,7 @@ class Migration(DataMigration):
                 oldperson.city = oldperson.person.city
                 oldperson.state = oldperson.person.state
                 oldperson.postcode = oldperson.person.postcode
+                oldperson.country = oldperson.person.country
                 oldperson.phone = oldperson.person.phone
                 oldperson.email = oldperson.person.email
                 oldperson.regid = oldperson.person.reg_id

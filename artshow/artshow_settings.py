@@ -1,7 +1,3 @@
-SPACE_FEE_PK = 3
-PAYMENT_SENT_PK = 5
-COMMISSION_PK = 6
-SALES_PK = 7
 
 from django.conf import settings
 

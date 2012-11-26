@@ -4,6 +4,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, TA_CENTER, ParagraphStyle
 from reportlab.platypus import Paragraph, Frame
+from reportlab.lib.pagesizes import letter
 
 from pdfrw import PdfReader
 from pdfrw.buildxobj import pagexobj
@@ -34,7 +35,7 @@ def text_into_box ( canvas, msg, x0, y0, x1, y1, fontName="Helvetica", fontSize=
 
 def generate_bidsheets_from_queryset ( template_pdf, output, artists ):
 	
-	c = Canvas(output)
+	c = Canvas(output,pagesize=letter)
 
 	pdf = PdfReader ( template_pdf )
 	xobj = pagexobj ( pdf.pages[0] )

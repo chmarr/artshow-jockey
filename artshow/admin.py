@@ -13,7 +13,6 @@ from django import forms
 from django.db import models
 import email1, processbatchscan
 from django.core.mail import send_mail
-import artshow_settings
 import smtplib, datetime, decimal
 from django.http import HttpResponse
 from ajax_select import make_ajax_form
@@ -129,7 +128,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 						email = a.person.email
 						body = email1.make_email ( a, selected_template.template )
 						try:
-							send_mail ( selected_template.subject, body, artshow_settings.ARTSHOW_EMAIL_SENDER, [ email ], fail_silently=False )
+							send_mail ( selected_template.subject, body, settings.ARTSHOW_EMAIL_SENDER, [ email ], fail_silently=False )
 							self.message_user ( request, "Mail to %s succeeded" % email )
 						except smtplib.SMTPException, x:
 							# TODO - use a error indicator
@@ -156,13 +155,13 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 	def print_bidsheets ( self, request, queryset ):
 		import bidsheets
 		response = HttpResponse ( mimetype="application/pdf" )
-		bidsheets.generate_bidsheets_from_queryset ( template_pdf=artshow_settings.ARTSHOW_BLANK_BID_SHEET, output=response, artists=queryset )
+		bidsheets.generate_bidsheets_from_queryset ( template_pdf=settings.ARTSHOW_BLANK_BID_SHEET, output=response, artists=queryset )
 		self.message_user ( request, "Bid sheets printed." )
 		return response
 	print_bidsheets.short_description = "Print Bid Sheets"
 	
 	def apply_space_fees ( self, request, artists ):
-		payment_type = PaymentType.objects.get(pk=artshow_settings.SPACE_FEE_PK)
+		payment_type = PaymentType.objects.get(pk=settings.ARTSHOW_SPACE_FEE_PK)
 		for a in artists:
 			total = 0
 			for alloc in a.allocation_set.all():
@@ -173,8 +172,8 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 				payment.save ()
 	
 	def apply_winnings_and_commission ( self, request, artists ):
-		pt_winning = PaymentType.objects.get(pk=artshow_settings.SALES_PK)
-		pt_commission = PaymentType.objects.get(pk=artshow_settings.COMMISSION_PK)
+		pt_winning = PaymentType.objects.get(pk=settings.ARTSHOW_SALES_PK)
+		pt_commission = PaymentType.objects.get(pk=settings.ARTSHOW_COMMISSION_PK)
 		for a in artists:
 			total_winnings = 0
 			total_pieces = 0
@@ -188,18 +187,18 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 					pieces_with_bids += 1
 				except Bid.DoesNotExist:
 					pass
-			commission = total_winnings * decimal.Decimal(artshow_settings.ARTSHOW_COMMISSION)
+			commission = total_winnings * decimal.Decimal(settings.ARTSHOW_COMMISSION)
 			if total_pieces > 0:
 				payment = Payment ( artist=a, amount=total_winnings, payment_type=pt_winning, description="%d piece%s, %d with bid%s" % ( total_pieces, total_pieces!=1 and "s" or "", pieces_with_bids, pieces_with_bids != 1 and "s" or ""), date=datetime.datetime.now() )
 				payment.save ()
 			if commission > 0:
 				payment = Payment ( artist=a, amount=-commission, payment_type=pt_commission, 
-						description="%s%% of sales" % (decimal.Decimal(artshow_settings.ARTSHOW_COMMISSION) * 100),
+						description="%s%% of sales" % (decimal.Decimal(settings.ARTSHOW_COMMISSION) * 100),
 						date=datetime.datetime.now() )
 				payment.save ()
 	
 	def create_cheques ( self, request, artists ):
-		pt_paymentsent = PaymentType.objects.get ( pk=artshow_settings.PAYMENT_SENT_PK )
+		pt_paymentsent = PaymentType.objects.get ( pk=settings.ARTSHOW_PAYMENT_SENT_PK )
 		for a in artists:
 			balance = a.payment_set.aggregate ( balance=Sum ( 'amount' ) )['balance']
 			if balance > 0:

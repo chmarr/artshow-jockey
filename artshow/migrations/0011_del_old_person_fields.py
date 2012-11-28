@@ -329,6 +329,7 @@ class Migration(SchemaMigration):
             'amount': ('django.db.models.fields.DecimalField', [], {'max_digits': '7', 'decimal_places': '2'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'invoice': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['artshow.Invoice']"}),
+            'notes': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
             'payment_method': ('django.db.models.fields.IntegerField', [], {'default': '0'})
         },
         'artshow.payment': {

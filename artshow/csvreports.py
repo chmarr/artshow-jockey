@@ -5,8 +5,9 @@
 from artshow.models import *
 from django.http import HttpResponse
 import csv
+from django.contrib.auth.decorators import permission_required
 
-
+@permission_required ( 'artshow.view_artist' )
 def artists ( request ):
 
 	## TODO - This depends on the Person structure, which we want to move out into the model itself.
@@ -49,6 +50,7 @@ def artists ( request ):
 	return response
 	
 	
+@permission_required ( 'artshow.view_piece' )
 def pieces ( request ):
 
 	pieces = Piece.objects.all ().order_by ( 'artist__artistid', 'pieceid' )
@@ -80,6 +82,8 @@ def pieces ( request ):
 		
 	return response	
 
+
+@permission_required ( 'artshow.view_bidder' )
 def bidders ( request ):
 
 	## TODO - This depends on the Person structure, which we want to move out into the model itself.
@@ -113,6 +117,7 @@ def bidders ( request ):
 	return response
 
 
+@permission_required ( 'artshow.view_payment' )
 def payments ( request ):
 
 	payments = Payment.objects.all ().order_by ( 'artist__artistid', 'date' )
@@ -137,6 +142,7 @@ def payments ( request ):
 	return response
 
 	
+@permission_required ( 'artshow.view_cheque' )
 def cheques ( request ):
 
 	cheques = ChequePayment.objects.all ().order_by ( 'date', 'number', 'id' )

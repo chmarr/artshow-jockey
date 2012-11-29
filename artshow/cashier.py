@@ -20,10 +20,13 @@ import logging, datetime
 import invoicegen
 logger = logging.getLogger ( __name__ )
 from django.contrib import messages
+from django.contrib.auth.decorators import permission_required
 
 class BidderSearchForm ( forms.Form ):
 	text = forms.CharField ( label="Search Text" )
 	
+
+@permission_required ( 'artshow.add_invoice' )
 def cashier ( request ):
 	if request.method == "POST":
 		form = BidderSearchForm ( request.POST )
@@ -70,6 +73,7 @@ class SelectPieceForm ( forms.Form ):
 	
 #TODO probably need a @transaction.commit_on_success here
 	
+@permission_required ( 'artshow.add_invoice' )
 def cashier_bidder ( request, bidder_id ):
 
 	bidder = get_object_or_404 ( Bidder, pk=bidder_id )
@@ -143,6 +147,7 @@ def cashier_bidder ( request, bidder_id ):
 	return render ( request, 'artshow/cashier_bidder.html', c )
 
 	
+@permission_required ( 'artshow.add_invoice' )
 def cashier_invoice ( request, invoice_id ):
 	invoice = get_object_or_404 ( Invoice, pk=invoice_id )
 	print_invoice_form = PrintInvoiceForm ()
@@ -169,6 +174,7 @@ def do_print_invoices ( request, invoice_id, copy_names ):
 		messages.info ( request, "Invoice has been sent to the printer" )
 
 	
+@permission_required ( 'artshow.add_invoice' )
 def print_invoice ( request, invoice_id ):
 	invoice = get_object_or_404 ( Invoice, pk=invoice_id )
 	if request.method == "POST":

@@ -47,12 +47,20 @@ class Checkoff ( models.Model ):
 
 	
 	
-class ManageableArtistManager ( models.Manager ):
-	def get_query_set ( self ):
-		pass
-
+class ArtistManager ( models.Manager ):
+	def editable_by ( self, user ):
+		accessors =  ArtistAccess.objects.filter ( user=user, can_edit=True )
+		return self.get_query_set().filter ( artistaccess__in=accessors )
+		
+	def viewable_by ( self, user ):
+		accessors =  ArtistAccess.objects.filter ( user=user )
+		return self.get_query_set().filter ( artistaccess__in=accessors )
+		
 
 class Artist ( models.Model ):
+
+	objects = ArtistManager ()
+
 	artistid = models.IntegerField ( primary_key=True )
 	person = models.ForeignKey ( settings.ARTSHOW_PERSON_CLASS )
 	def name ( self ):
@@ -83,6 +91,12 @@ class Artist ( models.Model ):
 			return self.payment_to.name
 		else:
 			return self.person.name
+		
+	class Meta:
+		permissions = (
+			( 'view_artist', 'Can view Piece details outside of Admin system.' ),
+			( 'is_artshow_staff', 'Can do generic art-show functions.' ),
+			)
 
 
 class Allocation ( models.Model ):
@@ -113,6 +127,11 @@ class Bidder ( models.Model ):
 	def __unicode__ ( self ):
 		ids = [ bidderid.id for bidderid in self.bidderid_set.all() ]
 		return "%s (%s)" % ( self.person.name, ",".join(ids) )
+		
+	class Meta:
+		permissions = (
+			( 'view_bidder', 'Can view Bidder details outside of Admin system.' ),
+			)
 
 
 class BidderId ( models.Model ):
@@ -160,10 +179,19 @@ class Piece ( models.Model ):
 	    return self.artist.artistname()
 	def top_bid ( self ):
 		return self.bid_set.exclude ( invalid=True ).order_by ( '-amount' )[0:1].get()
-	def clean ( self ):
+	def save ( self, *args, **kwargs ):
 		self.code = "%s-%s" % ( self.artist.artistid, self.pieceid )
+		super(Piece, self).save(*args, **kwargs)
 	def __unicode__ ( self ):
 		return "%s - \"%s\" by %s" % ( self.code, self.name, self.artistname() )
+		
+	class Meta:
+		permissions = (
+			( 'view_piece', 'Can view Piece details outside of Admin system.' ),
+			)
+		unique_together = (
+			( 'artist', 'pieceid' ),
+			)
 		
 class Product ( models.Model ):
 	artist = models.ForeignKey ( Artist )
@@ -241,6 +269,11 @@ class Payment ( models.Model ):
 	def __unicode__ ( self ):
 		return "%s (%s) %s %s" % ( self.artist.artistname(), self.artist.artistid, self.amount, self.date )
 		
+	class Meta:
+		permissions = (
+			( 'view_payment', 'Can view Payment details outside of Admin system.' ),
+			)
+		
 class ChequePayment ( Payment ):
 	number = models.CharField ( max_length=10, blank=True )
 	payee = models.CharField ( max_length=100, blank=True )
@@ -251,6 +284,11 @@ class ChequePayment ( Payment ):
 			raise ValidationError ( "Cheque amounts are a payment outbound and must be negative" )
 		self.payment_type = PaymentType.objects.get(pk=settings.ARTSHOW_PAYMENT_SENT_PK)
 		self.description = "Cheque %s Payee %s" % ( self.number and "#"+self.number or "pending number", self.payee )
+		
+	class Meta:
+		permissions = (
+			( 'view_cheque', 'Can view Cheque details outside of Admin system.' ),
+			)
 		
 class Invoice ( models.Model ):
 	payer = models.ForeignKey ( Bidder )
@@ -266,6 +304,11 @@ class Invoice ( models.Model ):
 	notes = models.TextField ( blank=True )
 	def __unicode__ ( self ):
 		return u"Invoice %d for %s" % ( self.id, self.payer )
+		
+	class Meta:
+		permissions = (
+			( 'view_invoice', 'Can view Invoice details outside of Admin system.' ),
+			)
 
 class InvoicePayment ( models.Model ):
 	amount = models.DecimalField ( max_digits=7, decimal_places=2 )

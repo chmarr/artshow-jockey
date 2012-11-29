@@ -1,0 +1,15 @@
+{% extends "accounts/base.html" %}
+{% load url from future %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<form method="post">{% csrf_token %}
+<input type="hidden" name="next" value="{{ next }}" />
+
+<table class="loginbox">
+  {{ form.as_table }}
+  <tr class="buttonrow"><td colspan="2"><input type="submit" value="Log In"/></td></tr>
+  <tr class="helprow"><td colspan="2">If you have forgotten your password, <a href="{% url 'password_reset' %}">click here</a>.</td></tr>
+</table>
+</form>
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="../../">Home</a> &rsaquo;
+     <a href="../">{{ app_label|capfirst }}</a> &rsaquo;
+     <a href="./">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
+     Email selected artists
+</div>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+    <p>Email Template (optional): <select name="template">
+        <option value=""{% if template_id == None %} selected="selected"{% endif %}>-- Don't Send Email --</option>{% for t in templates %}
+        <option value="{{t.pk}}"{% if template_id == t.pk %} selected="selected"{% endif %}>{{t.name}}</option>{% endfor %}
+        </select></p>
+    <p>Create management users for the following artists:</p>
+    <ul>
+    {% for obj in queryset %}
+        <li>{{ obj }}</li>
+    {% endfor %}
+    </ul>
+    <div>
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}" />
+    {% endfor %}
+    <input type="hidden" name="post" value="yes" />
+    <input type="hidden" name="action" value="create_management_users" />
+    <input type="submit" value="Create Users" />
+    </div>
+    </form>
+
+{% endblock %}

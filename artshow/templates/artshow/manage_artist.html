@@ -1,0 +1,48 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block title %}Manage Artist {{ artist.artistname }}{% endblock %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+  <li class="current">{{ artist.artistname }}</li>
+</ul>
+{% endblock %}
+{% block content %}
+
+<h2>Personal Details</h2>
+
+<table>
+  <tr><th>Artist ID</th><td>{{ artist.artistid }}</td></tr>
+  <tr><th>Artist Name</th><td>{{ artist.artistname }}</td></tr>
+  <tr><th>Mail In</th><td>{{ artist.mailin|yesno }}</td></tr>
+{% with person=artist.person %}
+{% if person.name %}  <tr><th>Name</th><td>{{ person.name }}</td></tr>{% endif %}
+{% if person.address1 %}  <tr><th>Address</th><td>{{ person.address1 }}</td></tr>{% endif %}
+{% if person.address2 %}  <tr><th>Address</th><td>{{ person.address2 }}</td></tr>{% endif %}
+{% if person.city %}  <tr><th>City</th><td>{{ person.city }}</td></tr>{% endif %}
+{% if person.state %}  <tr><th>State</th><td>{{ person.state }}</td></tr>{% endif %}
+{% if person.postcode %}  <tr><th>Postcode</th><td>{{ person.postcode }}</td></tr>{% endif %}
+{% if person.country %}  <tr><th>Country</th><td>{{ person.country }}</td></tr>{% endif %}
+{% if person.phone %}  <tr><th>Phone</th><td>{{ person.phone }}</td></tr>{% endif %}
+{% if person.email %}  <tr><th>E-mail</th><td>{{ person.email }}</td></tr>{% endif %}
+{% endwith %}
+  <tr><th>Agents</th><td>{% for a in artist.agents.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}</td></tr>
+</table>
+
+<p>Please contact <a href="mailto:artshow@furtherconfusion.org">artshow@furtherconfusion.org</a> if you need to change any of these details.</p>
+
+<h2>Piece Details</h2>
+
+<table>
+  <tr><th>Piece ID</th><th>Title</th><th>Media</th><th>Adult?</th><th>Not For Sale?</th><th>Min Bid</th><th>Buy Now</th></tr>
+{% for p in artist.piece_set.all %}
+  <tr><td>{{ p.pieceid }}</td><td>{{ p.name }}</td><td>{{ p.media }}</td><td>{{ p.adult|yesno }}</td><td>{{ p.not_for_sale|yesno }}</td><td>{{ p.min_bid }}</td><td>{{ p.buy_now }}</td></tr>
+{% empty %}
+  <tr><td colspan="7">No pieces entered yet.</td></tr>
+{% endfor %}
+</table>
+
+<p>{{ artist.piece_set.count }} pieces have been entered. <a href="{% url 'artshow.manage.pieces' artist.pk %}">Edit</a>.
+{% if artist.piece_set.count %}<a href="{% url 'artshow.manage.downloadcsv' artist.pk %}">Download as CSV</a>.{% endif %}</p>
+{% endblock %}

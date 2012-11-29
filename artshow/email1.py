@@ -31,10 +31,16 @@ def wrap ( text, cols=default_wrap_cols, always_wrap=False ):
 def make_email ( artist_obj, template_str, cols=default_wrap_cols, autoescape=False ):
 	pieces_in_show = artist_obj.piece_set.exclude(status=Piece.StatusNotInShow)
 	payments = artist_obj.payment_set.all().order_by('date')
+	c = {'artist':artist_obj,'pieces_in_show':pieces_in_show, 'payments':payments, 'artshow_settings':artshow_settings }
+	return make_email2 ( c, template_str, cols, autoescape )
+
+def make_email2 ( context, template_str, cols=default_wrap_cols, autoescape=False ):
 	if not autoescape:
 		template_str = "{% autoescape off %}" + template_str + "{% endautoescape %}"
+	context = dict ( context )
+	context.update ( {'artshow_settings':artshow_settings} )
 	t = Template ( template_str )
-	c = Context ( {'artist':artist_obj,'pieces_in_show':pieces_in_show, 'payments':payments, 'artshow_settings':artshow_settings } )
+	c = Context ( context )
 	new_str = t.render ( c )
 	new_str = wrap ( new_str, cols )
 	return new_str

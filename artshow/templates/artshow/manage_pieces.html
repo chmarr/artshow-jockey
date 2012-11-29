@@ -1,0 +1,38 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block title %}Edit Pieces{% endblock %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+  <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
+  <li class="current">Edit</li>
+</ul>
+{% endblock %}
+{% block content %}
+<p>Managing pieces for artist <strong>{{ artist.artistname }}</strong></p>
+<p>To enter more than 5 pieces, click "Save and Continue Editing" and 5 more slots will appear.</p>
+<form method="post">{% csrf_token %}
+{{ formset.management_form }}
+<table>
+  <tr><th>Piece ID</th><th>Name/Title</th><th>Media</th><th>Adult?</th><th>Not For Sale</th><th>Min Bid</th><th>Buy Now</th><th>Delete?</th></tr>
+{% for form in formset %}
+{% if form.non_field_errors %}
+  <tr><td colspan="8">{{ form.non_field_errors }}</td></tr>
+{% endif %}
+  <tr>{{ form.id.errors }}{{ form.id }}{{ form.artist.errors }}{{ form.artist }}
+    <td>{{ form.pieceid.errors }}{{ form.pieceid }}</td>
+    <td>{{ form.name.errors }}{{ form.name }}</td>
+    <td>{{ form.media.errors }}{{ form.media }}</td>
+    <td>{{ form.adult.errors }}{{ form.adult }}</td>
+    <td>{{ form.not_for_sale.errors }}{{ form.not_for_sale }}</td>
+    <td>{{ form.min_bid.errors }}{{ form.min_bid }}</td>
+    <td>{{ form.buy_now.errors }}{{ form.buy_now }}</td>
+    <td>{{ form.DELETE }}</td>
+  </tr>
+{% endfor %}
+</table>
+<p><input type="submit" value="Save" /> <input type="submit" name="saveandcontinue" value="Save and Continue Editing" /></p>
+</form>
+{% endblock %}
+</body></html>

@@ -55,6 +55,7 @@ class LocationTextWidget ( forms.TextInput ):
 class ArtistAccessInline ( admin.TabularInline ):
 	model = ArtistAccess
 	extra = 0
+	raw_id_fields = ( 'user', )
 
 class AllocationInline ( FormfieldOverrider, admin.TabularInline ):
 	model = Allocation
@@ -90,6 +91,20 @@ class PieceInline ( FormfieldOverrider, admin.TabularInline ):
 class PaymentInline ( admin.TabularInline ):
 	model = Payment
 	extra = 1
+	
+
+def send_password_reset_email ( artist, user, subject, body_template ):
+	from django.utils.http import int_to_base36
+	from django.contrib.auth.tokens import default_token_generator
+	c = {
+		'artist': artist,
+		'user': user,
+		'uid': int_to_base36(user.id),
+		'token': default_token_generator.make_token(user),
+		}
+	body = email1.make_email2 ( c, body_template )
+	send_mail ( subject, body, settings.ARTSHOW_EMAIL_SENDER, [ user.email ], fail_silently=False )
+	
 
 class ArtistAdmin ( AjaxSelectAdmin ):
 	form = make_ajax_form(Artist,{'person':'person','agents':'person','payment_to':'person'})
@@ -219,8 +234,55 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 					alloc.allocated += to_allocate
 					spaces_remaining[alloc.space.id] -= to_allocate
 					alloc.save ()
-	
-	actions = ('send_email','print_bidsheets','apply_space_fees','apply_winnings_and_commission','create_cheques','allocate_spaces')
+					
+	def create_management_users ( self, request, artists ):
+		opts = self.model._meta
+		app_label = opts.app_label
+		template_id = None
+		if request.POST.get('post'):
+			template_id = request.POST.get('template')
+			if template_id:
+				selected_template = EmailTemplate.objects.get ( pk=template_id )
+			else:
+				selected_template = None
+			for artist in artists:
+				email = artist.person.email
+				if not email:
+					messages.warning ( request, "Artist %s does not have an email address." % artist )
+				else:
+					try:
+						existing_user = User.objects.get ( username=email )
+					except User.DoesNotExist:
+						user = User ( username=email, email=email, password='' )
+						user.set_unusable_password ()
+						user.save ()
+						access = ArtistAccess ( artist=artist, user=user, can_edit=True )
+						access.save ()
+						messages.info ( request, "User %s created, with editing permissions for artist %s." % ( email, artist ) )
+						if selected_template:
+							try:
+								send_password_reset_email ( artist, user, selected_template.subject, selected_template.template )
+								self.message_user ( request, "Mail to %s succeeded" % email )
+							except smtplib.SMTPException, x:
+								# TODO - use a error indicator
+								self.message_user ( request, "Mail to %s failed: %s" % ( email, x ) )
+					else:
+						messages.warning ( request, "User with username %s already exists. Will not create additional user for artist %s." % ( email, artist ) )
+			return None
+		templates = EmailTemplate.objects.all()
+		context = {
+			"title": "Create Management Users",
+			"queryset": artists,
+			"opts": opts,
+			"app_label": app_label,
+			"action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+			"templates": templates,
+			"template_id": template_id,
+			}
+		return render ( request, "admin/create_management_users.html", context )
+	create_management_users.short_description = "Create Management Users"
+							
+	actions = ('send_email','print_bidsheets','apply_space_fees','apply_winnings_and_commission','create_cheques','allocate_spaces','create_management_users')
 	filter_horizontal = ('checkoffs',)
 		
 admin.site.register(Artist,ArtistAdmin)

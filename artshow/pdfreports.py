@@ -5,6 +5,7 @@
 from django.db.models import Min
 from artshow.models import *
 from django.http import HttpResponse
+from django.contrib.auth.decorators import permission_required
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -15,6 +16,7 @@ from cgi import escape
 
 MAX_PIECES_PER_PAGE = 30
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def winning_bidders ( request ):
 
 	bidders = Bidder.objects.all().annotate(first_bidderid=Min('bidderid')).order_by('first_bidderid')
@@ -84,6 +86,7 @@ def winning_bidders ( request ):
 	
 	return response
 	
+@permission_required ( 'artshow.is_artshow_staff' )
 def bid_entry_by_artist ( request ):
 
 #	pieces = Piece.objects.filter ( status=Piece.StatusInShow ).order_by ( 'artist__artistid', 'pieceid' )
@@ -91,12 +94,14 @@ def bid_entry_by_artist ( request ):
 	return bid_entry ( request, pieces )
 	
 	
+@permission_required ( 'artshow.is_artshow_staff' )
 def bid_entry_by_location ( request ):
 
 #	pieces = Piece.objects.filter ( status=Piece.StatusInShow ).order_by ( 'location', 'artist__artistid', 'pieceid' )
 	pieces = Piece.objects.all().order_by ( 'location', 'artist__artistid', 'pieceid' )
 	return bid_entry ( request, pieces )
 	
+@permission_required ( 'artshow.is_artshow_staff' )
 def bid_entry ( request, pieces ):
 	
 	response = HttpResponse ( mimetype="application/pdf" )

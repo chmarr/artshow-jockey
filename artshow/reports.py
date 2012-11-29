@@ -8,15 +8,19 @@ from artshow.models import *
 from django.http import HttpResponse
 from django import forms
 from django.core.context_processors import csrf
+from django.contrib.auth.decorators import permission_required
 import csv
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def index ( request ):
 	return render ( request, 'artshow/reports.html' )
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def artists ( request ):
 	artists = Artist.objects.all().distinct().filter(allocation__allocated__gt=0).order_by('artistid')
 	return render ( request, 'artshow/reports-artists.html', { 'artists':artists } )
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def winning_bidders ( request ):
 	bidders = Bidder.objects.all().annotate(first_bidderid=Min('bidderid')).order_by('first_bidderid')
 	return render ( request, 'artshow/reports-winning-bidders.html', { 'bidders':bidders } )
@@ -24,6 +28,7 @@ def winning_bidders ( request ):
 class PieceStickersForm ( forms.Form ):
 	perpanel = forms.IntegerField ()
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def piece_stickers ( request ):
 	if request.method == "POST":
 		form = PieceStickersForm ( request.POST )
@@ -45,29 +50,35 @@ def piece_stickers ( request ):
 	c.update(csrf(request))
 	return render ( request, 'artshow/generate-piece-stickers.html', c )
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def artist_piece_report ( request, artist_id ):
 	artist = Artist.objects.get(id=artist_id)
 	pieces = artist.piece_set.all()
 	return render ( request, 'artshow/artist-piece-report.html', { 'artist':artist, 'pieces':pieces } )
 	
+@permission_required ( 'artshow.is_artshow_staff' )
 def artist_panel_report ( request ):
 	artists = Artist.objects.all()
 	return render ( request, 'artshow/artist-panel-report.html', { 'artists':artists } )
 	
+@permission_required ( 'artshow.is_artshow_staff' )
 def panel_artist_report ( request ):
 	locations = Piece.objects.exclude(location="").values("location").distinct()
 	for l in locations:
 		l['artists'] = Artist.objects.filter ( piece__location=l['location'] ).distinct ()
 	return render ( request, "artshow/panel-artist-report.html", { 'locations': locations } )
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def nonzero_artist_payment_report ( request ):
 	artists = Artist.objects.annotate(total=Sum('payment__amount')).exclude ( total=0 ).order_by("artistid")
 	return render ( request, 'artshow/artist-payment-report.html', { 'artists':artists } )
 	
+@permission_required ( 'artshow.is_artshow_staff' )
 def artist_payment_report ( request ):
 	artists = Artist.objects.annotate(total=Sum('payment__amount')).order_by("artistid")
 	return render ( request, 'artshow/artist-payment-report.html', { 'artists':artists } )
 			
+@permission_required ( 'artshow.is_artshow_staff' )
 def show_summary ( request ):
 
 	pieces = Piece.objects.exclude(status=Piece.StatusNotInShow)
@@ -138,6 +149,7 @@ control_forms_per_space = 0.3
 bid_sheets_per_space = 8
 sticker_sheets_per_space = 0.3
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def kit_contents ( request ):
 	artists = Artist.objects.annotate ( requested_spaces=Sum('allocation__requested') ).order_by('artistid')
 	for a in artists:
@@ -147,6 +159,7 @@ def kit_contents ( request ):
 		a.num_sticker_sheets = int ( 0.8 + sticker_sheets_per_space * spaces )
 	return render ( request, 'artshow/kit-contents.html', { 'artists': artists } )
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def voice_auction ( request ):
 	adult = request.GET.get('adult','')
 	pieces = Piece.objects.exclude ( status=Piece.StatusNotInShow ).filter ( voice_auction=True )
@@ -157,6 +170,7 @@ def voice_auction ( request ):
 
 	return render ( request, 'artshow/voice-auction.html', { 'pieces':pieces } )
 
+@permission_required ( 'artshow.is_artshow_staff' )
 def sales_percentiles ( request ):
 
 	groups=int(request.GET.get('groups','20'))

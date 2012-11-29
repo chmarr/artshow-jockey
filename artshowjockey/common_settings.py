@@ -134,6 +134,7 @@ INSTALLED_APPS = (
     'artshow',
     'south',
     'ajax_select',
+    'tinyreg',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
@@ -196,3 +197,5 @@ AJAX_LOOKUP_CHANNELS = {
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
 AJAX_SELECT_INLINES = 'inline'
+
+LOGIN_REDIRECT_URL = "/"

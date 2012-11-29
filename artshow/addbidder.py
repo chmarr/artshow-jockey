@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 import mod11codes
 import re
 from django.forms.formsets import formset_factory
+from django.contrib.auth.decorators import permission_required
 
 BIDDERS_PER_PAGE = 10
 BIDS_PER_PAGE = 10
@@ -29,6 +30,8 @@ class BidderAddForm ( forms.Form ):
 	
 BidderAddFormSet = formset_factory ( BidderAddForm, extra=BIDDERS_PER_PAGE )
 
+
+@permission_required ( 'artshow.add_bidder' )
 def bulk_add ( request ):
 	if request.method == "POST":
 		formset = BidderAddFormSet ( request.POST )
@@ -133,7 +136,7 @@ class BidAddOptionsForm ( forms.Form ):
 	stage = forms.ChoiceField ( choices=STAGE_CHOICES, widget=forms.RadioSelect )
 	
 
-
+@permission_required ( 'artshow.add_bid' )
 def bid_bulk_add ( request ):
 	if request.method == "POST":
 		formset = BidAddFormSet ( request.POST, prefix="bids" )

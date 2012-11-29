@@ -1,0 +1,21 @@
+{% extends "accounts/base.html" %}
+{% load url from future %}
+{% block title %}Logged-Out{% endblock %}
+{% block content %}
+<style>
+table.loginbox {
+	background-color: #ddddff;
+	border: 1px solid black;
+	margin: auto;
+	padding: 10px;
+}
+tr.inputrow th { text-align: right; }
+tr.inputrow td { text-align: left; }
+tr.buttonrow td { text-align: center; }
+tr.helprow td { text-align: center; }
+</style>
+<table class="loginbox">
+  <tr class="helprow"><td>You have successfully been logged-out.</td></tr>
+  <tr class="helprow"><td>You may <a href="{% url 'login' %}">log-in</a> again.</td></tr>
+</table>
+{% endblock %}

@@ -91,6 +91,10 @@ class Artist ( models.Model ):
 			return self.payment_to.name
 		else:
 			return self.person.name
+	def editable_by ( self, user ):
+		return self.artistaccess_set.filter(user=user,can_edit=True).exists()
+	def viewable_by ( self, user ):
+		return self.artistaccess_set.filter(user=user).exists()
 		
 	class Meta:
 		permissions = (

@@ -6,6 +6,7 @@ from django.forms.models import modelformset_factory, inlineformset_factory
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib import messages
+import utils
 import csv
 import re
 
@@ -20,7 +21,8 @@ def index ( request ):
 @login_required	
 def artist ( request, artist_id ):
 	artist = get_object_or_404 ( Artist.objects.viewable_by(request.user), pk=artist_id )
-	return render ( request, "artshow/manage_artist.html", {'artist':artist} )
+	can_edit = artist.editable_by(request.user)
+	return render ( request, "artshow/manage_artist.html", {'artist':artist,'can_edit':can_edit} )
 	
 class PieceForm ( forms.ModelForm ):
 	class Meta:
@@ -42,7 +44,11 @@ PieceFormSet = inlineformset_factory ( Artist, Piece, form=PieceForm,
 @login_required
 def pieces ( request, artist_id ):
 
-	artist = get_object_or_404 ( Artist.objects.editable_by(request.user), pk=artist_id )
+	artist = get_object_or_404 ( Artist.objects.viewable_by(request.user), pk=artist_id )
+	
+	if not artist.editable_by ( request.user ):
+		return render ( request, "artshow/manage_pieces_noedit.html", {'artist':artist} )
+	
 	pieces = artist.piece_set.order_by ( "pieceid" )
 
 	if request.method == "POST":
@@ -74,10 +80,11 @@ def downloadcsv ( request, artist_id ):
 	
 	response = HttpResponse ( mimetype="text/csv" )
 	response['Content-Disposition'] = "attachment; filename=" + filename
-	c = csv.writer ( response )
+	
+	c = utils.UnicodeCSVWriter ( response )
 	c.writerow ( field_names )
 
 	for p in artist.piece_set.all():
-		c.writerow ( ( p.pieceid, p.code, p.name, p.media, p.min_bid, yesno(p.buy_now), yesno(p.adult), p.not_for_sale ) )
+		c.writerow ( ( p.pieceid, p.code, p.name, p.media, p.min_bid, p.buy_now, yesno(p.adult), yesno(p.not_for_sale) ) )
 			
 	return response	

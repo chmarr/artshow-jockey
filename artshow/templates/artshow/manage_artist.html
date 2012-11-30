@@ -39,7 +39,7 @@
 {% for p in artist.piece_set.all %}
   <tr><td>{{ p.pieceid }}</td><td>{{ p.name }}</td><td>{{ p.media }}</td><td>{{ p.adult|yesno }}</td><td>{{ p.not_for_sale|yesno }}</td><td>{{ p.min_bid }}</td><td>{{ p.buy_now }}</td></tr>
 {% endfor %}
-  <tr><td colspan="7">{{ artist.piece_set.count }} piece{{ artist.piece_set.count|pluralize }} entered.</td></tr>
+  <tr class="totalsrow"><td colspan="7">{{ artist.piece_set.count }} piece{{ artist.piece_set.count|pluralize }} entered.</td></tr>
 </table>
 
 <p>{% if can_edit %}<a href="{% url 'artshow.manage.pieces' artist.pk %}">Edit</a>.{% else %}You have not been granted editing rights for this artist.{% endif %}</p>

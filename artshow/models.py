@@ -152,6 +152,7 @@ class BidderId ( models.Model ):
 
 
 class Piece ( models.Model ):
+
 	artist = models.ForeignKey ( Artist )
 	pieceid = models.IntegerField ()
 	code = models.CharField ( max_length=10, editable=False )
@@ -189,6 +190,20 @@ class Piece ( models.Model ):
 	def __unicode__ ( self ):
 		return "%s - \"%s\" by %s" % ( self.code, self.name, self.artistname() )
 		
+	def clean(self):
+		if self.min_bid is not None and self.min_bid <= 0:
+			raise ValidationError ( "Minimum Bid if specified must be greater than zero" )
+		if self.buy_now is not None and self.buy_now <= 0:
+			raise ValidationError ( "Buy Now if specified must be greater than zero" )
+		if self.not_for_sale and self.min_bid:
+			raise ValidationError ( "A Piece cannot be Not For Sale and have a Minimum Bid" )
+		if self.not_for_sale and self.buy_now:
+			raise ValidationError ( "A Piece cannot be Not For Sale and have a Buy Now Price" )
+		if not self.not_for_sale and not self.min_bid:
+			raise ValidationError ( "A Piece must either be Not For Sale or have a Minimum Bid" )
+		if self.min_bid and self.buy_now and self.min_bid >= self.buy_now:
+			raise ValidationError ( "Buy Now must be empty, or greater than Minimum Bid" )
+		
 	class Meta:
 		permissions = (
 			( 'view_piece', 'Can view Piece details outside of Admin system.' ),
@@ -196,6 +211,7 @@ class Piece ( models.Model ):
 		unique_together = (
 			( 'artist', 'pieceid' ),
 			)
+
 		
 class Product ( models.Model ):
 	artist = models.ForeignKey ( Artist )

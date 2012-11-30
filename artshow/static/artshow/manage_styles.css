@@ -80,6 +80,10 @@ tr:nth-child(odd) {
 tr:nth-child(even) {
 	background-color: #e0cbbf;
 }
+tr.totalsrow td {
+	border-top: 2px solid #603a22;
+	
+}
 th {
 	background-color: #603a22;
 	color: white;

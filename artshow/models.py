@@ -191,6 +191,8 @@ class Piece ( models.Model ):
 		return "%s - \"%s\" by %s" % ( self.code, self.name, self.artistname() )
 		
 	def clean(self):
+		if self.pieceid <= 0:
+			raise ValidationError ( "Piece IDs must be greater than 0" )
 		if self.min_bid is not None and self.min_bid <= 0:
 			raise ValidationError ( "Minimum Bid if specified must be greater than zero" )
 		if self.buy_now is not None and self.buy_now <= 0:

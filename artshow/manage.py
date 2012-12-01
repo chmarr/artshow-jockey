@@ -21,8 +21,9 @@ def index ( request ):
 @login_required	
 def artist ( request, artist_id ):
 	artist = get_object_or_404 ( Artist.objects.viewable_by(request.user), pk=artist_id )
+	pieces = artist.piece_set.order_by ( "pieceid" )
 	can_edit = artist.editable_by(request.user)
-	return render ( request, "artshow/manage_artist.html", {'artist':artist,'can_edit':can_edit} )
+	return render ( request, "artshow/manage_artist.html", {'artist':artist,'pieces':pieces,'can_edit':can_edit} )
 	
 class PieceForm ( forms.ModelForm ):
 	class Meta:

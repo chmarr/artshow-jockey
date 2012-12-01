@@ -1,6 +1,6 @@
 # Django settings for artshowjockey project.
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -9,16 +9,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    }
-}
+# DATABASES is set in local_settings.py
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -80,8 +71,7 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'q#yt*jcrzdiu&amp;l^x%qunb3-lb(_^&amp;1*wzxy+98r*vx1)cx#m@%'
+# SECRET_KEY must be specified in local_settings.py
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -168,29 +158,6 @@ LOGGING = {
     }
 }
 
-ARTSHOW_SPACE_FEE_PK = 3
-ARTSHOW_PAYMENT_SENT_PK = 5
-ARTSHOW_COMMISSION_PK = 6
-ARTSHOW_SALES_PK = 7
-
-ARTSHOW_SHOW_NAME = "Generic Art Show"
-ARTSHOW_MONEY_PRECISION = 2
-ARTSHOW_TAX_RATE = "0.0825"
-ARTSHOW_TAX_DESCRIPTION = "Santa Clara CA Tax 8.25%"
-ARTSHOW_EMAIL_SENDER = "Generic Art Show <artshow@example.com"
-ARTSHOW_COMMISSION = "0.1"
-ARTSHOW_INVOICE_PREFIX = "2012-"
-ARTSHOW_EMAIL_FOOTER = """\
---
-Random J Hacker
-Generic Art Show Lead.
-artshow@example.com - http://www.example.com/artshow
-"""
-ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
-ARTSHOW_PRINT_COMMAND = "enscript -P Samsung -B -L 66 -f Courier-Bold10"
-ARTSHOW_AUTOPRINT_INVOICE = [ "CUSTOMER COPY", "MERCHANT COPY", "PICK LIST" ]
-ARTSHOW_PERSON_CLASS = "peeps.Person"
-
 AJAX_LOOKUP_CHANNELS = {
     'person' : ( 'peeps.lookups', 'PersonLookup' ),
 }
@@ -199,3 +166,10 @@ AJAX_SELECT_BOOTSTRAP = True
 AJAX_SELECT_INLINES = 'inline'
 
 LOGIN_REDIRECT_URL = "/"
+
+ARTSHOW_SPACE_FEE_PK = 3
+ARTSHOW_PAYMENT_SENT_PK = 5
+ARTSHOW_COMMISSION_PK = 6
+ARTSHOW_SALES_PK = 7
+
+ARTSHOW_PERSON_CLASS = "peeps.Person"

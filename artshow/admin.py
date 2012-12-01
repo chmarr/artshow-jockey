@@ -18,69 +18,47 @@ from django.http import HttpResponse
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
 
-class FormfieldOverrider ( object ):
-	def formfield_for_dbfield ( self, db_field, **kwargs ):
-		try:
-			override = self.formfield_overrides2[db_field.name]
-		except KeyError:
-			pass
-		else:
-			kwargs['widget'] = override
-		return super(FormfieldOverrider,self).formfield_for_dbfield ( db_field, **kwargs )
-
-class TestWidget ( forms.TextInput ):
-	def __init__ ( self ):
-		super(TestWidget,self).__init__ ( attrs={'size':30} )
-
-class PanelCountWidget ( forms.TextInput ):
-	def __init__ ( self ):
-		super(PanelCountWidget,self).__init__ ( attrs={'size':6} )
-
-class PieceIdWidget ( forms.TextInput ):
-	def __init__ ( self ):
-		super(PieceIdWidget,self).__init__ ( attrs={'size':3} )
-
-class BidTextWidget ( forms.TextInput ):
-	def __init__ ( self ):
-		super(BidTextWidget,self).__init__ ( attrs={'size':6} )
-
-class MediaTextWidget ( forms.TextInput ):
-	def __init__ ( self ):
-		super(MediaTextWidget,self).__init__ ( attrs={'size':8} )
-		
-class LocationTextWidget ( forms.TextInput ):
-	def __init__ ( self ):
-		super(LocationTextWidget,self).__init__ ( attrs={'size':4} )	
 
 class ArtistAccessInline ( admin.TabularInline ):
 	model = ArtistAccess
 	extra = 0
 	raw_id_fields = ( 'user', )
+	
+class AllocationInlineForm ( forms.ModelForm ):
+	class Meta:
+		model = Allocation
+		widgets = {
+			'requested': forms.TextInput ( attrs={'size':6} ),
+			'allocated': forms.TextInput ( attrs={'size':6} ),
+			}
 
-class AllocationInline ( FormfieldOverrider, admin.TabularInline ):
+class AllocationInline ( admin.TabularInline ):
 	model = Allocation
 	extra = 1
-	formfield_overrides2 = {
-		'requested': PanelCountWidget,
-		'allocated': PanelCountWidget,
-		}
+	form = AllocationInlineForm
 
-class PieceInline ( FormfieldOverrider, admin.TabularInline ):
+
+class PieceInlineForm ( forms.ModelForm ):
+	class Meta:
+		model = Piece
+		fields = ( "pieceid", "name", "media", "adult", "not_for_sale", "min_bid", "buy_now", "location", "voice_auction", "status" )
+		widgets = {
+			'pieceid': forms.TextInput ( attrs={'size':3} ),
+			'media': forms.TextInput ( attrs={'size':8} ),
+			'location': forms.TextInput ( attrs={'size':4} ),
+			'min_bid': forms.TextInput ( attrs={'size':6} ),
+			'buy_now': forms.TextInput ( attrs={'size':6} ),
+			'invoice_price': forms.TextInput ( attrs={'size':6} ),
+			}
+
+
+class PieceInline ( admin.TabularInline ):
+	form = PieceInlineForm
 	fields = ( "pieceid", "name", "media", "adult", "not_for_sale", "min_bid", "buy_now", "location", "voice_auction", "status" )
-#	formfield_overrides = {
-# 		'location': { 'widget': LocationTextWidget },
-# 		}
 	model = Piece
 	extra = 5
-	formfield_overrides2 = {
-		'pieceid': PieceIdWidget,
-		'media':   MediaTextWidget,
-		'location': LocationTextWidget,
-		'min_bid': BidTextWidget,
-		'buy_now': BidTextWidget,
-		'invoice_price': BidTextWidget,
-		}
 	ordering = ( 'pieceid', )
+
 	
 #class ProductInline ( admin.TabularInline ):
 #	fields = ( "productid", "name", "adult", "price", "location" )
@@ -146,8 +124,8 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 							send_mail ( selected_template.subject, body, settings.ARTSHOW_EMAIL_SENDER, [ email ], fail_silently=False )
 							self.message_user ( request, "Mail to %s succeeded" % email )
 						except smtplib.SMTPException, x:
-							# TODO - use a error indicator
-							self.message_user ( request, "Mail to %s failed: %s" % ( email, x ) )
+							# Note: ModelAdmin message_user only supports sending info-level messages.
+							message.error ( request, "Mail to %s failed: %s" % ( email, x ) )
 					return None
 				else:
 					for a in queryset:
@@ -234,7 +212,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 					alloc.allocated += to_allocate
 					spaces_remaining[alloc.space.id] -= to_allocate
 					alloc.save ()
-					
+	
 	def create_management_users ( self, request, artists ):
 		opts = self.model._meta
 		app_label = opts.app_label
@@ -250,24 +228,45 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 				if not email:
 					messages.warning ( request, "Artist %s does not have an email address." % artist )
 				else:
+					new_user_created = False
 					try:
-						existing_user = User.objects.get ( username=email )
+						user = User.objects.get ( username=email )
 					except User.DoesNotExist:
 						user = User ( username=email, email=email, password='' )
 						user.set_unusable_password ()
 						user.save ()
+						new_user_created = True
+					new_access_created = False
+					try:
+						access = ArtistAccess.objects.get ( artist=artist, user=user )
+					except ArtistAccess.DoesNotExist:
 						access = ArtistAccess ( artist=artist, user=user, can_edit=True )
 						access.save ()
-						messages.info ( request, "User %s created, with editing permissions for artist %s." % ( email, artist ) )
-						if selected_template:
-							try:
-								send_password_reset_email ( artist, user, selected_template.subject, selected_template.template )
-								self.message_user ( request, "Mail to %s succeeded" % email )
-							except smtplib.SMTPException, x:
-								# TODO - use a error indicator
-								self.message_user ( request, "Mail to %s failed: %s" % ( email, x ) )
+						new_access_created = True
+					can_edit_adjusted = False
+					if not access.can_edit:
+						access.can_edit = True
+						access.save ()
+					s = []
+					if new_user_created:
+						s.append ( "User %s created." % email )
 					else:
-						messages.warning ( request, "User with username %s already exists. Will not create additional user for artist %s." % ( email, artist ) )
+						s.append ( "User %s already exists." % email )
+					if new_access_created:
+						s.append ( "Given access rights to artist %s." % artist )
+					else:
+						s.append ( "Already has access rights to artist %s." % artist )
+					if can_edit_adjusted:
+						s.append ( "Rights upgraded to 'can_edit'." )
+					s = " ".join ( s )
+					messages.info ( request, s )
+					if selected_template:
+						try:
+							send_password_reset_email ( artist, user, selected_template.subject, selected_template.template )
+							self.message_user ( request, "Mail to %s succeeded." % email )
+						except smtplib.SMTPException, x:
+							# Note: ModelAdmin message_user only supports sending info-level messages.
+							messages.error ( request, "Mail to %s failed: %s" % ( email, x ) )
 			return None
 		templates = EmailTemplate.objects.all()
 		context = {
@@ -429,9 +428,6 @@ class InvoiceItemInline ( admin.TabularInline ):
 	fields = ( 'piece', 'price', )
 	raw_id_fields = ( 'piece', )
 	# read_only_fields = ( 'top_bid', )
-	# formfield_overrides2 = {
-		# 'top_bid': TestWidget,
-	# }
 	
 class InvoicePaymentInline ( admin.TabularInline ):
 	model = InvoicePayment
@@ -475,13 +471,6 @@ class BatchScanAdmin ( admin.ModelAdmin ):
 	
 
 admin.site.register(BatchScan,BatchScanAdmin)
-
-# class BidderIdAdmin ( admin.ModelAdmin ):
-#	list_display = ( 'id', 'bidder' )
-#	search_fields = ( 'id', )
-#	raw_id_fields = ( 'bidder', )
-
-#admin.site.register(BidderId,BidderIdAdmin)
 
 #admin.site.register(Event)
 

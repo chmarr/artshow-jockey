@@ -30,12 +30,14 @@
   <tr><th>Agents</th><td>{% for a in artist.agents.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}</td></tr>
 </table>
 
-<p>Please contact <a href="mailto:artshow@furtherconfusion.org">artshow@furtherconfusion.org</a> if you need to change any of these details.</p>
+<p>Please <a href="mailto:{{ artshow_settings.ARTSHOW_ADMIN_EMAIL }}">contact us</a> if you need to change any of these details.</p>
 
 <h2>Piece Details</h2>
 
-<p>{% if can_edit %}<a href="{% url 'artshow.manage.pieces' artist.pk %}">Edit</a>.{% else %}You have not been granted editing rights for this artist.{% endif %}</p>
-<p>{% if artist.piece_set.count %}<a href="{% url 'artshow.manage.downloadcsv' artist.pk %}">Download as CSV</a>.{% endif %}</p>
+<p>
+  {% if can_edit %}<a href="{% url 'artshow.manage.pieces' artist.pk %}">Edit</a>.{% endif %}
+  {% if artist.piece_set.count %}<a href="{% url 'artshow.manage.downloadcsv' artist.pk %}">Download as CSV</a>.{% endif %}
+</p>
 
 <table>
   <tr><th>Piece ID</th><th>Title</th><th>Media</th><th>Adult?</th><th>Not For Sale?</th><th>Min Bid</th><th>Buy Now</th></tr>

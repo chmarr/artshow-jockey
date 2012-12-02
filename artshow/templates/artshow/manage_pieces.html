@@ -13,6 +13,11 @@
 <p>Managing pieces for artist <strong>{{ artist.artistname }}</strong></p>
 <p>To enter more than 5 pieces, click "Save and Continue Editing" and 5 more slots will appear.</p>
 <form method="post">{% csrf_token %}
+{% if formset.deleted_forms %}
+<div class="confirmdelete">
+{{ delete_confirm_form.as_p }}
+</div>
+{% endif %}
 {{ formset.management_form }}
 <table>
   <tr><th>Piece ID</th><th>Name/Title</th><th>Media</th><th>Adult?</th><th>Not For Sale</th><th>Min Bid</th><th>Buy Now</th><th>Delete?</th></tr>

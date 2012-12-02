@@ -6,6 +6,7 @@ from django.forms.models import modelformset_factory, inlineformset_factory
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib import messages
+from artshow.utils import artshow_settings
 import utils
 import csv
 import re
@@ -15,7 +16,7 @@ EXTRA_PIECES = 5
 @login_required
 def index ( request ):
 	artists = Artist.objects.viewable_by ( request.user )
-	return render ( request, "artshow/manage_index.html", {'artists':artists} )
+	return render ( request, "artshow/manage_index.html", {'artists':artists,'artshow_settings':artshow_settings} )
 	
 
 @login_required	
@@ -23,7 +24,7 @@ def artist ( request, artist_id ):
 	artist = get_object_or_404 ( Artist.objects.viewable_by(request.user), pk=artist_id )
 	pieces = artist.piece_set.order_by ( "pieceid" )
 	can_edit = artist.editable_by(request.user)
-	return render ( request, "artshow/manage_artist.html", {'artist':artist,'pieces':pieces,'can_edit':can_edit} )
+	return render ( request, "artshow/manage_artist.html", {'artist':artist,'pieces':pieces,'can_edit':can_edit,'artshow_settings':artshow_settings} )
 	
 class PieceForm ( forms.ModelForm ):
 	class Meta:
@@ -41,6 +42,10 @@ PieceFormSet = inlineformset_factory ( Artist, Piece, form=PieceForm,
 		extra=EXTRA_PIECES,
 		can_delete=True,
 		)
+		
+class DeleteConfirmForm ( forms.Form ):
+	confirm_delete = forms.BooleanField ( required=False, help_text = "You are about to delete pieces. The information is not recoverable. Please confirm." )
+
 
 @login_required
 def pieces ( request, artist_id ):
@@ -54,17 +59,20 @@ def pieces ( request, artist_id ):
 
 	if request.method == "POST":
 		formset = PieceFormSet ( request.POST, queryset=pieces, instance=artist )
-		if formset.is_valid ():
-			formset.save ()
-			messages.info ( request, "Changes to piece details have been saved" )
-			if request.POST.get('saveandcontinue'):
-				return redirect ( '.' )
-			else:
-				return redirect ( reverse('artshow.manage.artist', args=(artist_id,)) )
+		delete_confirm_form = DeleteConfirmForm ( request.POST )
+		if formset.is_valid () and delete_confirm_form.is_valid():
+			if not formset.deleted_forms or delete_confirm_form.cleaned_data['confirm_delete']:
+				formset.save ()
+				messages.info ( request, "Changes to piece details have been saved" )
+				if request.POST.get('saveandcontinue'):
+					return redirect ( '.' )
+				else:
+					return redirect ( reverse('artshow.manage.artist', args=(artist_id,)) )
 	else:
 		formset = PieceFormSet ( queryset=pieces, instance=artist )
+		delete_confirm_form = DeleteConfirmForm ()
 		
-	return render ( request, "artshow/manage_pieces.html", {'artist':artist,'formset':formset} )
+	return render ( request, "artshow/manage_pieces.html", {'artist':artist,'formset':formset,'delete_confirm_form':delete_confirm_form,'artshow_settings':artshow_settings} )
 	
 def yesno ( b ):
 	return "yes" if b else "no"

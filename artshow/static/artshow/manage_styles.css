@@ -26,7 +26,7 @@ body {
 }
 #header a:link, #header a:visited {
 	color: white;
-	text-decoration: none;
+	text-decoration: underline;
 }
 #user-tools {
 	position: absolute;
@@ -145,7 +145,7 @@ ul.errorlist {
 }
 #breadcrumbs a:visited, #breadcrumbs a:hover, #breadcrumbs a:link, #breadcrumbs a {
 	color: #603a22; 
-	text-decoration: none;
+	text-decoration: underline;
 }
 ul.messagelist {
     padding: 0 0 5px 0;
@@ -168,5 +168,17 @@ ul.messagelist li.warning{
 
 ul.messagelist li.error{
     background-image: url(/static/admin/img/icon_error.gif);
+}
+.helptext {
+	font-size: x-small;
+}
+div.confirmdelete {
+}
+.confirmdelete {
+	background-color: red;
+	color: white;
+}
+.confirmdelete p {
+	padding: 2px;
 }
 

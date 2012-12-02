@@ -10,12 +10,12 @@
 {% block content %}
 <p>Artists that you can see and manage:</p>
 <table>
-  <tr><th>Artist</th><th>Pieces Entered</th></tr>
+  <tr><th>Artist</th><th>Artist ID</th><th>Pieces Entered</th></tr>
 {% for artist in artists %}
-  <tr><td><a href="{% url 'artshow.manage.artist' artist.pk %}">{{ artist }}</a></td><td>{{ artist.piece_set.count }}</td></tr>
+  <tr><td><a href="{% url 'artshow.manage.artist' artist.pk %}">{{ artist.artistname }}</a></td><td>{{ artist.artistid }}</td><td>{{ artist.piece_set.count }}</td></tr>
 {% empty %}
-  <tr><td colspan="2">Nothing configured to manage yet.</td></tr>
+  <tr><td colspan="3">Nothing configured to manage yet.</td></tr>
 {% endfor %}
 </table>
-<p>If you have any issues regarding these pages, please contact <a href="mailto:artshow@furtherconfusion.org">artshow@furtherconfusion.org</a>.</p>
+<p>If you have any issues regarding these pages, please <a href="mailto:{{ artshow_settings.ARTSHOW_ADMIN_EMAIL }}">contact us</a>.</p>
 {% endblock %}

@@ -88,7 +88,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 	"django.core.context_processors.static",
 	"django.core.context_processors.tz",
 	"django.contrib.messages.context_processors.messages",
-	'django.core.context_processors.request',
+	"django.core.context_processors.request",
+	"tinyreg.context_processors.site_name",
+	"artshow.context_processors.artshow_settings",
 	)
 
 MIDDLEWARE_CLASSES = (

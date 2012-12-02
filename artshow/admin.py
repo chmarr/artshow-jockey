@@ -232,7 +232,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 					try:
 						user = User.objects.get ( username=email )
 					except User.DoesNotExist:
-						user = User ( username=email, email=email, password='' )
+						user = User ( username=email, email=email, first_name=artist.person.name, password='' )
 						user.set_unusable_password ()
 						user.save ()
 						new_user_created = True
@@ -247,6 +247,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 					if not access.can_edit:
 						access.can_edit = True
 						access.save ()
+						can_edit_adjusted = True
 					s = []
 					if new_user_created:
 						s.append ( "User %s created." % email )

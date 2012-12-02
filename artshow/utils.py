@@ -24,7 +24,7 @@ class AttributeFilter (object):
 			raise AttributeError ( "AttributeFilter blocked access to '%s' on object '%s'" % ( name, self.__target ) )
 
 
-artshow_settings = AttributeFilter ( settings, r"ARTSHOW_" )
+artshow_settings = AttributeFilter ( settings, r"ARTSHOW_|SITE_NAME$|SITE_ROOT_URL$" )
 
 
 class UnicodeCSVWriter:

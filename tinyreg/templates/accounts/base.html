@@ -1,12 +1,12 @@
 {% load url from future %}<!DOCTYPE html>
 <html><head>
-<title>{% block title %}{% endblock %}</title>
+<title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}artshow/manage_styles.css" />
 </head><body>
 <div id="container">
   <div id="header">
     <div id="branding">
-      <h1 id="site-name">Further Confusion Art Show</h1>
+      <h1 id="site-name">{{ SITE_NAME }}</h1>
     </div>
     <div id="user-tools">
 {% if user.is_active %}

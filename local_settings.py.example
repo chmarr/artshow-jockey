@@ -40,6 +40,9 @@ ARTSHOW_AUTOPRINT_INVOICE = [ "CUSTOMER COPY", "MERCHANT COPY", "PICK LIST" ]
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
 ARTSHOW_SCANNER_DEVICE = "/dev/ttyUSB0"
 
+SITE_NAME = ARTSHOW_SHOW_NAME
+SITE_ROOT_URL = "http://www.example.com"
+
 # Type about 40 random characters between the quotes. Don't share this with anyone.
 SECRET_KEY = ""
 

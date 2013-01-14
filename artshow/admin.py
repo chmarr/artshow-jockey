@@ -376,7 +376,7 @@ class PieceAdmin ( admin.ModelAdmin ):
 			return obj.buy_now
 	buy_now_x.short_description = "Buy Now"
 	list_filter = ( 'adult', 'not_for_sale', 'voice_auction', 'status', 'bidsheet_scanned' )
-	search_fields = ( '=code', '=artist__artistid', 'name', '=location', 'artist__name', 'artist__publicname' )
+	search_fields = ( '=code', '=artist__artistid', 'name', '=location', 'artist__person__name', 'artist__publicname' )
 	list_display = ( 'code', 'clickable_artist', 'name', 'adult', 'min_bid_x', 'buy_now_x', 'location', 'voice_auction', 'status', 'top_bid' )
 	inlines = [BidInline]
 	# raw_id_fields = ( 'invoice', )

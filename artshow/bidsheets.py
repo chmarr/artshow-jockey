@@ -92,6 +92,7 @@ def generate_bidsheets_fc ( template_pdf, output, pieces ):
 		text_into_box ( c, piece.media, 0.875, 3.5, 3.875, 3.75 )
 		text_into_box ( c, piece.not_for_sale and "NFS" or unicode(piece.min_bid), 3.25, 2.625, 3.75, 3.0 )
 		text_into_box ( c, piece.buy_now and unicode(piece.buy_now) or "N/A", 3.25, 1.9375, 3.75, 2.3125 )
+		text_into_box ( c, "X", 3.375, 0.375, 3.5625, 0.675, style=left_align_style, fontSize=16 )		
 			
 		c.restoreState ()
 		sheet_num += 1
@@ -190,7 +191,7 @@ def generate_control_forms ( template_pdf, output, artists ):
 			text_into_box ( c, artist.person.postcode, 1.7, 8.0,    4.1,  8.35, style=left_align_style  )
 			text_into_box ( c, artist.person.country, 1.7, 7.625,  4.1,  7.975, style=left_align_style )
 			text_into_box ( c, artist.person.phone, 1.7, 7.25,   4.1,  7.6, style=left_align_style   )
-			text_into_box ( c, artist.person.email, 4.9, 9.875, 8.0, 10.225, style=left_align_style )		
+			text_into_box ( c, artist.person.email, 4.9, 9.875, 8.0, 10.225, style=left_align_style, fontSize=16 )		
 			text_into_box ( c, ", ".join ( [agent.name for agent in artist.agents.all()] ), 5.9, 7.625, 8.0, 7.975, style=left_align_style )
 			for i, piece in enumerate(piecegroup):
 				if piece is None: continue

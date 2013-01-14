@@ -152,7 +152,15 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 		self.message_user ( request, "Bid sheets printed." )
 		return response
 	print_bidsheets.short_description = "Print Bid Sheets"
-	
+
+	def print_mailing_labels ( self, request, queryset ):
+		import bidsheets
+		response = HttpResponse ( mimetype="application/pdf" )
+		bidsheets.generate_mailing_labels ( output=response, artists=queryset )
+		self.message_user ( request, "Mailing labels printed." )
+		return response
+	print_mailing_labels.short_description = "Print Mailing Labels"
+			
 	def apply_space_fees ( self, request, artists ):
 		payment_type = PaymentType.objects.get(pk=settings.ARTSHOW_SPACE_FEE_PK)
 		for a in artists:
@@ -282,7 +290,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 		return render ( request, "admin/create_management_users.html", context )
 	create_management_users.short_description = "Create Management Users"
 							
-	actions = ('send_email','print_bidsheets','apply_space_fees','apply_winnings_and_commission','create_cheques','allocate_spaces','create_management_users')
+	actions = ('send_email','print_bidsheets','print_mailing_labels','apply_space_fees','apply_winnings_and_commission','create_cheques','allocate_spaces','create_management_users')
 	filter_horizontal = ('checkoffs',)
 		
 admin.site.register(Artist,ArtistAdmin)

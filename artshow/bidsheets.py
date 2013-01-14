@@ -2,7 +2,7 @@
 
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import inch
-from reportlab.lib.styles import getSampleStyleSheet, TA_CENTER, ParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet, TA_CENTER, TA_LEFT, ParagraphStyle
 from reportlab.platypus import Paragraph, Frame
 from reportlab.lib.pagesizes import letter
 
@@ -15,14 +15,17 @@ from cgi import escape
 import optparse
 
 default_style = ParagraphStyle ( "default_style", fontName="Helvetica", alignment=TA_CENTER, allowWidows=0, allowOrphans=0 )
+left_align = ParagraphStyle ( "left_align", fontName="Helvetica", alignment=TA_LEFT, allowWidows=0, allowOrphans=0 )
 
 
-def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size ):
+def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size, style=default_style ):
 	# From the largest to the smallest font sizes, try to flow the message
 	# into the given frame.
+	msg = escape(msg)
+	msg = msg.replace('\n','<br/>')
 	for size in range ( font_size, min_font_size-1, -1 ):
-		current_style = ParagraphStyle ( "temp_style", parent=default_style, fontSize=size, leading=size )
-		story = [ Paragraph ( escape(msg), current_style ) ]
+		current_style = ParagraphStyle ( "temp_style", parent=style, fontSize=size, leading=size )
+		story = [ Paragraph ( msg, current_style ) ]
 		frame.addFromList ( story, canvas )
 		if len(story) == 0: break  # Story empty, so all text was sucessfully flowed
 	else:
@@ -30,9 +33,9 @@ def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size ):
 		raise Exception ( "Could not flow text into box." )
 		
 
-def text_into_box ( canvas, msg, x0, y0, x1, y1, fontName="Helvetica", fontSize=18, minFontSize=6, units=inch ):
+def text_into_box ( canvas, msg, x0, y0, x1, y1, fontName="Helvetica", fontSize=18, minFontSize=6, units=inch, style=default_style ):
 	frame = Frame ( x0*units, y0*units, (x1-x0)*units, (y1-y0)*units, leftPadding=2, rightPadding=2, topPadding=0, bottomPadding=4, showBoundary=0 )
-	draw_msg_into_frame ( frame, canvas, msg, fontSize, minFontSize )
+	draw_msg_into_frame ( frame, canvas, msg, fontSize, minFontSize, style=style )
 	
 
 def generate_bidsheets_for_artists ( template_pdf, output, artists ):
@@ -81,5 +84,29 @@ def generate_bidsheets ( template_pdf, output, pieces ):
 			sheet_num = 0
 				
 	if sheet_num != 0:
+		c.showPage ()
+	c.save ()
+	
+
+def generate_mailing_labels ( output, artists ):
+
+	c = Canvas(output,pagesize=letter)
+	
+	label_number = 0
+	
+	for artist in artists:
+		column = label_number%3
+		row = label_number/3
+		c.saveState ()
+		c.translate ( 3/16.0*inch + column*(2+3/4.0)*inch, (9+1/2.0)*inch - row*inch )
+		text_into_box ( c, artist.person.get_mailing_label(), 0.1, 0.0, 2.5, 0.85, fontSize=14, style=left_align )
+		c.restoreState ()
+		
+		label_number += 1
+		if label_number == 30:
+			c.showPage ()
+			label_number = 0
+			
+	if label_number != 0:
 		c.showPage ()
 	c.save ()

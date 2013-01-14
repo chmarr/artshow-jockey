@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.urlresolvers import reverse
+from django.conf import settings
 
 class Person ( models.Model ):
 	name = models.CharField ( max_length = 100 )
@@ -26,5 +27,13 @@ class Person ( models.Model ):
 		# return '<a href="%s">ML</a>' % urlresolvers.reverse('artshow.views.artist_mailing_label',args=(self.pk,))
 		return "Hello"
 	mailing_label.allow_tags = True
+	def get_mailing_label ( self ):
+			lines = [ self.name ]
+			if self.address1: lines.append ( self.address1 )
+			if self.address2: lines.append ( self.address2 )
+			lines.append ( " ".join ( [ x for x in ( self.city, self.state, self.postcode ) if x ] ) )
+			if self.country and self.country != settings.PEEPS_DEFAULT_COUNTRY:
+					lines.append ( self.country )
+			return "\n".join ( lines )
 	class Meta:
 		verbose_name_plural = "People"

@@ -10,6 +10,7 @@ from artshow.utils import artshow_settings
 import utils
 import csv
 import re
+import bidsheets
 
 EXTRA_PIECES = 5
 
@@ -96,4 +97,24 @@ def downloadcsv ( request, artist_id ):
 	for p in artist.piece_set.all():
 		c.writerow ( ( p.pieceid, p.code, p.name, p.media, p.min_bid, p.buy_now, yesno(p.adult), yesno(p.not_for_sale) ) )
 			
-	return response	
+	return response
+	
+
+@login_required
+def bid_sheets ( request, artist_id ):
+
+	artist = get_object_or_404 ( Artist.objects.viewable_by(request.user), pk=artist_id )
+
+	response = HttpResponse ( mimetype="application/pdf" )
+	bidsheets.generate_bidsheets_for_artists ( template_pdf=settings.ARTSHOW_BLANK_BID_SHEET, output=response, artists=[artist] )
+	return response
+
+
+@login_required
+def control_forms ( request, artist_id ):
+
+	artist = get_object_or_404 ( Artist.objects.viewable_by(request.user), pk=artist_id )
+
+	response = HttpResponse ( mimetype="application/pdf" )
+	bidsheets.generate_control_forms ( template_pdf=settings.ARTSHOW_BLANK_CONTROL_FORM, output=response, artists=[artist] )
+	return response

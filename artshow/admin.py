@@ -161,6 +161,14 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 		return response
 	print_mailing_labels.short_description = "Print Mailing Labels"
 			
+	def print_control_forms ( self, request, artists ):
+		import bidsheets
+		response = HttpResponse ( mimetype="application/pdf" )
+		bidsheets.generate_control_forms ( template_pdf=settings.ARTSHOW_BLANK_CONTROL_FORM, output=response, artists=artists )
+		self.message_user ( request, "Control Forms printed." )
+		return response
+	print_control_forms.short_description = "Print Control Forms"
+	
 	def apply_space_fees ( self, request, artists ):
 		payment_type = PaymentType.objects.get(pk=settings.ARTSHOW_SPACE_FEE_PK)
 		for a in artists:
@@ -290,7 +298,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 		return render ( request, "admin/create_management_users.html", context )
 	create_management_users.short_description = "Create Management Users"
 							
-	actions = ('send_email','print_bidsheets','print_mailing_labels','apply_space_fees','apply_winnings_and_commission','create_cheques','allocate_spaces','create_management_users')
+	actions = ('send_email','print_bidsheets','print_control_forms','print_mailing_labels','apply_space_fees','apply_winnings_and_commission','create_cheques','allocate_spaces','create_management_users')
 	filter_horizontal = ('checkoffs',)
 		
 admin.site.register(Artist,ArtistAdmin)
@@ -376,7 +384,7 @@ class PieceAdmin ( admin.ModelAdmin ):
 			return obj.buy_now
 	buy_now_x.short_description = "Buy Now"
 	list_filter = ( 'adult', 'not_for_sale', 'voice_auction', 'status', 'bidsheet_scanned' )
-	search_fields = ( '=code', '=artist__artistid', 'name', '=location', 'artist__name', 'artist__publicname' )
+	search_fields = ( '=code', '=artist__artistid', 'name', '=location', 'artist__person__name', 'artist__publicname' )
 	list_display = ( 'code', 'clickable_artist', 'name', 'adult', 'min_bid_x', 'buy_now_x', 'location', 'voice_auction', 'status', 'top_bid' )
 	inlines = [BidInline]
 	# raw_id_fields = ( 'invoice', )

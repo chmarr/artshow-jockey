@@ -36,7 +36,7 @@
 
 <p>
   {% if can_edit %}<a href="{% url 'artshow.manage.pieces' artist.pk %}">Edit</a>.{% endif %}
-  {% if artist.piece_set.count %}<a href="{% url 'artshow.manage.downloadcsv' artist.pk %}">Download as CSV</a>.{% endif %}
+  {% if artist.piece_set.count %}<a href="{% url 'artshow.manage.downloadcsv' artist.pk %}">Download as CSV</a>. <a href="{% url 'artshow.manage.bid_sheets' artist.pk %}">Bid Sheets*</a>. <a href="{% url 'artshow.manage.control_forms' artist.pk %}">Control Forms*</a>.<br />*<small>These are for your records; we'll print forms for you for the show.</small>{% endif %}
 </p>
 
 <table>

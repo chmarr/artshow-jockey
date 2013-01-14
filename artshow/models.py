@@ -165,6 +165,7 @@ class Piece ( models.Model ):
 	buy_now = models.DecimalField ( max_digits=5, decimal_places=0, blank=True, null=True )
 	voice_auction = models.BooleanField ( default=False )
 	bidsheet_scanned = models.BooleanField ( default=False )
+	updated = models.DateTimeField ( auto_now=True )
 	
 	StatusNotInShow = 0
 	StatusInShow = 1

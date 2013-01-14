@@ -9,4 +9,6 @@ urlpatterns = patterns('artshow',
 	(r'^artist/(?P<artist_id>\d+)/$', 'manage.artist' ),
 	(r'^artist/(?P<artist_id>\d+)/pieces/$', 'manage.pieces' ),
 	(r'^artist/(?P<artist_id>\d+)/downloadcsv/$', 'manage.downloadcsv' ),
+	(r'^artist/(?P<artist_id>\d+)/bidsheets/$', 'manage.bid_sheets' ),
+	(r'^artist/(?P<artist_id>\d+)/controlforms/$', 'manage.control_forms' ),
 )

@@ -23,11 +23,14 @@ left_align_style = ParagraphStyle ( "left_align_style", fontName="Helvetica", al
 
 barcode_style = ParagraphStyle ( "barcode_style", fontName="PrecisionID C39 04", alignment=TA_CENTER, allowWidows=0, allowOrphans=0 )
 
-def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size, style=default_style ):
+piece_sticker_style = ParagraphStyle ( "piece_sticker_style", fontName="Times-Roman", alignment=TA_CENTER, allowWidows=0, allowOrphans=0, fontSize=12, leading=12 )
+
+def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size, style=default_style, escape=True ):
 	# From the largest to the smallest font sizes, try to flow the message
 	# into the given frame.
-	msg = escape(msg)
-	msg = msg.replace('\n','<br/>')
+	if escape:
+		msg = escape(msg)
+		msg = msg.replace('\n','<br/>')
 	for size in range ( font_size, min_font_size-1, -1 ):
 		current_style = ParagraphStyle ( "temp_style", parent=style, fontSize=size, leading=size )
 		story = [ Paragraph ( msg, current_style ) ]
@@ -38,9 +41,9 @@ def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size, style=de
 		raise Exception ( "Could not flow text into box." )
 		
 
-def text_into_box ( canvas, msg, x0, y0, x1, y1, fontName="Helvetica", fontSize=18, minFontSize=6, units=inch, style=default_style ):
+def text_into_box ( canvas, msg, x0, y0, x1, y1, fontName="Helvetica", fontSize=18, minFontSize=6, units=inch, style=default_style, escape=True ):
 	frame = Frame ( x0*units, y0*units, (x1-x0)*units, (y1-y0)*units, leftPadding=2, rightPadding=2, topPadding=0, bottomPadding=4, showBoundary=0 )
-	draw_msg_into_frame ( frame, canvas, msg, fontSize, minFontSize, style=style )
+	draw_msg_into_frame ( frame, canvas, msg, fontSize, minFontSize, style=style, escape=escape )
 	
 
 def generate_bidsheets_for_artists ( template_pdf, output, artists ):
@@ -230,4 +233,29 @@ def generate_control_forms ( template_pdf, output, artists ):
 				text_into_box ( c, buynoworna(piece.buy_now), 5.25, y0, 6.0, y1 )			
 			c.showPage ()
 		
+	c.save ()
+	
+	
+def generate_piece_stickers ( output, pieces ):
+
+	c = Canvas ( output, pagesize=letter )
+	x_range = range(3)
+	y_range = range(10)
+	pieceiter = iter(pieces)
+	
+	try:
+		while True:
+			for y in y_range:
+				for x in x_range:
+					piece = pieceiter.next()
+					message = "<b>%s</b><br/><i>%s</i><br/>%s" % ( piece.name, piece.artist.artistname(), piece.media )
+					c.saveState ()
+					c.translate ( (3/16.0 + x * (2+3/4.0)) * inch, (9.5 - y) * inch )
+					text_into_box ( c, message, 0.2, 0.1, 2.475, 0.9, style=piece_sticker_style, escape=False, fontSize=12 )
+					c.restoreState ()
+			c.showPage ()
+	except StopIteration:
+		if y != y_range[0] or x != x_range[0]:
+			c.showPage ()
+			
 	c.save ()

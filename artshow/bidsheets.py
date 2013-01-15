@@ -25,10 +25,10 @@ barcode_style = ParagraphStyle ( "barcode_style", fontName="PrecisionID C39 04",
 
 piece_sticker_style = ParagraphStyle ( "piece_sticker_style", fontName="Times-Roman", alignment=TA_CENTER, allowWidows=0, allowOrphans=0, fontSize=12, leading=12 )
 
-def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size, style=default_style, escape=True ):
+def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size, style=default_style, escape_text=True ):
 	# From the largest to the smallest font sizes, try to flow the message
 	# into the given frame.
-	if escape:
+	if escape_text:
 		msg = escape(msg)
 		msg = msg.replace('\n','<br/>')
 	for size in range ( font_size, min_font_size-1, -1 ):
@@ -41,9 +41,9 @@ def draw_msg_into_frame ( frame, canvas, msg, font_size, min_font_size, style=de
 		raise Exception ( "Could not flow text into box." )
 		
 
-def text_into_box ( canvas, msg, x0, y0, x1, y1, fontName="Helvetica", fontSize=18, minFontSize=6, units=inch, style=default_style, escape=True ):
+def text_into_box ( canvas, msg, x0, y0, x1, y1, fontName="Helvetica", fontSize=18, minFontSize=6, units=inch, style=default_style, escape_text=True ):
 	frame = Frame ( x0*units, y0*units, (x1-x0)*units, (y1-y0)*units, leftPadding=2, rightPadding=2, topPadding=0, bottomPadding=4, showBoundary=0 )
-	draw_msg_into_frame ( frame, canvas, msg, fontSize, minFontSize, style=style, escape=escape )
+	draw_msg_into_frame ( frame, canvas, msg, fontSize, minFontSize, style=style, escape_text=escape_text )
 	
 
 def generate_bidsheets_for_artists ( template_pdf, output, artists ):
@@ -63,6 +63,10 @@ def generate_bidsheets_fc ( template_pdf, output, pieces ):
 	pdf = PdfReader ( template_pdf )
 	xobj = pagexobj ( pdf.pages[0] )
 	rlobj = makerl ( c, xobj )
+	
+	nfs_pdf = PdfReader ( settings.ARTSHOW_BLANK_NFS_SHEET )
+	nfs_xobj = pagexobj ( nfs_pdf.pages[0] )
+	nfs_rlobj = makerl ( c, nfs_xobj )
 
 	sheet_offsets = [
 		(0,5.5),
@@ -78,7 +82,11 @@ def generate_bidsheets_fc ( template_pdf, output, pieces ):
 	
 		c.saveState ()
 		c.translate ( sheet_offsets[sheet_num][0]*inch, sheet_offsets[sheet_num][1]*inch )
-		c.doForm ( rlobj )
+		
+		if piece.not_for_sale:
+			c.doForm ( nfs_rlobj )
+		else:
+			c.doForm ( rlobj )
 		
 		c.saveState ()
 		c.setLineWidth ( 4 )
@@ -93,10 +101,14 @@ def generate_bidsheets_fc ( template_pdf, output, pieces ):
 		text_into_box ( c, "Piece "+unicode(piece.pieceid), 2.125, 4.4375, 2.875, 4.625 )
 		text_into_box ( c, piece.artist.artistname(), 1.125, 4.125, 3.875, 4.375 )
 		text_into_box ( c, piece.name, 0.75, 3.8125, 3.875, 4.0625 )
-		text_into_box ( c, piece.media, 0.875, 3.5, 3.875, 3.75 )
-		text_into_box ( c, piece.not_for_sale and "NFS" or unicode(piece.min_bid), 3.25, 2.625, 3.75, 3.0 )
-		text_into_box ( c, piece.buy_now and unicode(piece.buy_now) or "N/A", 3.25, 1.9375, 3.75, 2.3125 )
-		text_into_box ( c, "X", 3.375, 0.375, 3.5625, 0.675, style=left_align_style, fontSize=16 )		
+		
+		if piece.not_for_sale:
+			text_into_box ( c, piece.media, 0.875, 3.5, 2.375, 3.75 )
+		else:
+			text_into_box ( c, piece.media, 0.875, 3.5, 3.875, 3.75 )
+			text_into_box ( c, piece.not_for_sale and "NFS" or unicode(piece.min_bid), 3.25, 2.625, 3.75, 3.0 )
+			text_into_box ( c, piece.buy_now and unicode(piece.buy_now) or "N/A", 3.25, 1.9375, 3.75, 2.3125 )
+			text_into_box ( c, "X", 3.375, 0.375, 3.5625, 0.675, style=left_align_style, fontSize=16 )		
 			
 		c.restoreState ()
 		sheet_num += 1
@@ -251,7 +263,7 @@ def generate_piece_stickers ( output, pieces ):
 					message = "<b>%s</b><br/><i>%s</i><br/>%s" % ( piece.name, piece.artist.artistname(), piece.media )
 					c.saveState ()
 					c.translate ( (3/16.0 + x * (2+3/4.0)) * inch, (9.5 - y) * inch )
-					text_into_box ( c, message, 0.2, 0.1, 2.475, 0.9, style=piece_sticker_style, escape=False, fontSize=12 )
+					text_into_box ( c, message, 0.2, 0.1, 2.475, 0.9, style=piece_sticker_style, escape_text=False, fontSize=12 )
 					c.restoreState ()
 			c.showPage ()
 	except StopIteration:

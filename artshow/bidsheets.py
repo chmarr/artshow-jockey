@@ -77,47 +77,48 @@ def generate_bidsheets_fc ( template_pdf, output, pieces ):
 
 	sheets_per_page = len(sheet_offsets)
 	sheet_num = 0
+	pieceiter = iter(pieces)
+	last_artist = None
 	
-	for piece in pieces:
-	
-		c.saveState ()
-		c.translate ( sheet_offsets[sheet_num][0]*inch, sheet_offsets[sheet_num][1]*inch )
-		
-		if piece.not_for_sale:
-			c.doForm ( nfs_rlobj )
-		else:
-			c.doForm ( rlobj )
-		
-		c.saveState ()
-		c.setLineWidth ( 4 )
-		c.setFillColorRGB ( 1, 1, 1 )
-		c.setStrokeColorRGB ( 1, 1, 1 )
-		c.roundRect ( 1.1875*inch, 4.4375*inch, 1.75*inch, 0.5*inch, 0.0675*inch, stroke=True, fill=True )
-		c.restoreState ()
-		
-		text_into_box ( c, u"*A"+unicode(piece.artist.artistid)+u"P"+unicode(piece.pieceid)+u"*", 1.3125, 4.6, 2.8125, 4.875, fontSize=14, style=barcode_style )
-		
-		text_into_box ( c, "Artist "+unicode(piece.artist.artistid), 1.25, 4.4375, 2.0, 4.625 )
-		text_into_box ( c, "Piece "+unicode(piece.pieceid), 2.125, 4.4375, 2.875, 4.625 )
-		text_into_box ( c, piece.artist.artistname(), 1.125, 4.125, 3.875, 4.375 )
-		text_into_box ( c, piece.name, 0.75, 3.8125, 3.875, 4.0625 )
-		
-		if piece.not_for_sale:
-			text_into_box ( c, piece.media, 0.875, 3.5, 2.375, 3.75 )
-		else:
-			text_into_box ( c, piece.media, 0.875, 3.5, 3.875, 3.75 )
-			text_into_box ( c, piece.not_for_sale and "NFS" or unicode(piece.min_bid), 3.25, 2.625, 3.75, 3.0 )
-			text_into_box ( c, piece.buy_now and unicode(piece.buy_now) or "N/A", 3.25, 1.9375, 3.75, 2.3125 )
-			text_into_box ( c, "X", 3.375, 0.375, 3.5625, 0.675, style=left_align_style, fontSize=16 )		
-			
-		c.restoreState ()
-		sheet_num += 1
-		if sheet_num == sheets_per_page:
-			c.showPage ()
-			sheet_num = 0
-				
-	if sheet_num != 0:
-		c.showPage ()
+	try:
+		piece = pieceiter.next ()
+		while True:
+			try:
+				for sheet_num in range(sheets_per_page):
+					if piece.artist != last_artist and sheet_num != 0:
+						continue
+					c.saveState ()
+					c.translate ( sheet_offsets[sheet_num][0]*inch, sheet_offsets[sheet_num][1]*inch )
+					if piece.not_for_sale:
+						c.doForm ( nfs_rlobj )
+					else:
+						c.doForm ( rlobj )
+					c.saveState ()
+					c.setLineWidth ( 4 )
+					c.setFillColorRGB ( 1, 1, 1 )
+					c.setStrokeColorRGB ( 1, 1, 1 )
+					c.roundRect ( 1.1875*inch, 4.4375*inch, 1.75*inch, 0.5*inch, 0.0675*inch, stroke=True, fill=True )
+					c.restoreState ()
+					text_into_box ( c, u"*A"+unicode(piece.artist.artistid)+u"P"+unicode(piece.pieceid)+u"*", 1.3125, 4.6, 2.8125, 4.875, fontSize=13, style=barcode_style )
+					text_into_box ( c, "Artist "+unicode(piece.artist.artistid), 1.25, 4.4375, 2.0, 4.625 )
+					text_into_box ( c, "Piece "+unicode(piece.pieceid), 2.125, 4.4375, 2.875, 4.625 )
+					text_into_box ( c, piece.artist.artistname(), 1.125, 4.125, 3.875, 4.375 )
+					text_into_box ( c, piece.name, 0.75, 3.8125, 3.875, 4.0625 )
+					if piece.not_for_sale:
+						text_into_box ( c, piece.media, 0.875, 3.5, 2.375, 3.75 )
+					else:
+						text_into_box ( c, piece.media, 0.875, 3.5, 3.875, 3.75 )
+						text_into_box ( c, piece.not_for_sale and "NFS" or unicode(piece.min_bid), 3.25, 2.625, 3.75, 3.0 )
+						text_into_box ( c, piece.buy_now and unicode(piece.buy_now) or "N/A", 3.25, 1.9375, 3.75, 2.3125 )
+						text_into_box ( c, "X", 3.375, 0.375, 3.5625, 0.675, style=left_align_style, fontSize=16 )		
+					c.restoreState ()
+					last_artist = piece.artist
+					piece = pieceiter.next ()
+			finally:
+				c.showPage ()
+	except StopIteration:
+		pass
+
 	c.save ()
 
 	
@@ -255,19 +256,26 @@ def generate_piece_stickers ( output, pieces ):
 	y_range = range(10)
 	pieceiter = iter(pieces)
 	
+	last_artist = None
+
 	try:
+		piece = pieceiter.next ()
 		while True:
-			for y in y_range:
-				for x in x_range:
-					piece = pieceiter.next()
-					message = "<b>%s</b><br/><i>%s</i><br/>%s" % ( piece.name, piece.artist.artistname(), piece.media )
-					c.saveState ()
-					c.translate ( (3/16.0 + x * (2+3/4.0)) * inch, (9.5 - y) * inch )
-					text_into_box ( c, message, 0.2, 0.1, 2.475, 0.9, style=piece_sticker_style, escape_text=False, fontSize=12 )
-					c.restoreState ()
-			c.showPage ()
+			try:
+				for y in range(10):
+					for x in range(3):
+						if piece.artist != last_artist and x != 0:
+							continue
+						message = "<b>%s</b><br/><i>%s</i><br/>%s" % ( piece.name, piece.artist.artistname(), piece.media )
+						c.saveState ()
+						c.translate ( (3/16.0 + x * (2+3/4.0)) * inch, (9.5 - y) * inch )
+						text_into_box ( c, message, 0.2, 0.1, 2.475, 0.9, style=piece_sticker_style, escape_text=False, fontSize=12 )
+						c.restoreState ()
+						last_artist = piece.artist
+						piece = pieceiter.next ()
+			finally:
+				c.showPage ()
 	except StopIteration:
-		if y != y_range[0] or x != x_range[0]:
-			c.showPage ()
+		pass
 			
 	c.save ()

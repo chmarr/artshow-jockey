@@ -53,6 +53,9 @@ def pieces ( request, artist_id ):
 
 	artist = get_object_or_404 ( Artist.objects.viewable_by(request.user), pk=artist_id )
 	
+	if artshow_settings.ARTSHOW_SHUT_USER_EDITS:
+		return render ( request, "artshow/manage_pieces_shut.html", {'artist':artist} )
+	
 	if not artist.editable_by ( request.user ):
 		return render ( request, "artshow/manage_pieces_noedit.html", {'artist':artist} )
 	

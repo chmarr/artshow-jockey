@@ -85,8 +85,7 @@ def integrate_reg_db ( regfile, rejects_file=None ):
 	
 	if rejects_file:
 		rf = open(rejects_file,"w")
-		rejects = csv.writer ( rf )
-		rejects.writerow ( c.fieldnames )
+		rejects = csv.DictWriter ( rf, c.fieldnames )
 	else:
 		rejects = None
 

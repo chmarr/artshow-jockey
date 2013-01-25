@@ -21,7 +21,7 @@ cli_description = """\
 Integrate information from another database to help complete missing fields.
 """
 
-from artshow.models import Bidder
+from artshow.models import Person, Bidder
 import optparse, csv
 
 class NameDoesntMatch ( Exception ): pass
@@ -29,43 +29,47 @@ class NameDoesntMatch ( Exception ): pass
 
 def integrate_reg_entry ( entry ):
 
+	badge_id = entry['UID']+"-"+entry['FC2013_reg_num']
+
 	try:
-		bidder = Bidder.objects.get ( regid = entry['badge_id'] )
+		person = Person.objects.get ( reg_id = badge_id )
 	except Bidder.DoesNotExist:
 		try: 
-			bidder = Bidder.objects.get ( regid = entry['badge_id'].replace('-','') )
-		except Bidder.DoesNotExist:
+			person = Person.objects.get ( reg_id = badge_id.replace('-','') )
+		except Person.DoesNotExist:
 			return
-
-	print "Artshow DB:", bidder.name, bidder.bidder_ids()
-	print "Reg DB:", entry['real_name'], entry['badge_id']
-	if bidder.name != entry['real_name']:
+			
+	real_name = entry['rl_first'] + " " + entry['rl_last']
+	real_name = real_name.strip()
+	
+	print "Artshow DB:", person.name, person.bidder.bidder_ids()
+	print "Reg DB:", real_name, badge_id
+	if person.name != real_name:
 		print "names dont match"
 		while True:
 			i = raw_input ( "1) use Artshow DB name  2) use Reg DB name  3) reject" )
 			if i == "1":
-				real_name = bidder.name
+				real_name = person.name
 				break
 			elif i == "2":
-				real_name = entry['real_name']
+				real_name = real_name
 				break
 			elif i == "3":
 				real_name = None
 				break
 	else:
-		real_name = bidder.name
+		real_name = person.name
 	
 	if real_name != None:
-		bidder.name = real_name
-		bidder.address1 = entry.get('address1','')
-		bidder.address2 = entry.get('address2','')
-		bidder.city = entry.get('city','')
-		bidder.state = entry.get('state','')
-		bidder.postcode = entry.get('postcode','')
-		bidder.country = entry.get('country','')
-		bidder.email = entry.get('email','')
-		bidder.phone = entry.get('phone','')
-		bidder.save ()
+		person.name = real_name
+		person.address1 = entry.get('Address 1 Line 1','')
+		person.address2 = entry.get('Address 1 Line 2','')
+		person.city = entry.get('Address 1 City','')
+		person.state = entry.get('Address 1 State','')
+		person.postcode = entry.get('Address 1 Zip','')
+		person.country = ''
+		person.email = entry.get('EMail 1','')
+		person.save ()
 		print "saved"
 		print
 	else:
@@ -81,14 +85,15 @@ def integrate_reg_db ( regfile, rejects_file=None ):
 	
 	if rejects_file:
 		rf = open(rejects_file,"w")
-		rejects = csv.DictWriter(rf,['badge_id','real_name','fan_name','address1','address2','city','state','postcode','country','email','phone'])
+		rejects = csv.writer ( rf )
+		rejects.writerow ( c.fieldnames )
 	else:
 		rejects = None
 
 	for entry in c:
 		try:
 			integrate_reg_entry ( entry )
-		except (Bidder.DoesNotExist,NameDoesntMatch):
+		except (Person.DoesNotExist,Bidder.DoesNotExist,NameDoesntMatch):
 			if rejects:
 				rejects.writerow ( entry )
 

@@ -125,7 +125,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 							self.message_user ( request, "Mail to %s succeeded" % email )
 						except smtplib.SMTPException, x:
 							# Note: ModelAdmin message_user only supports sending info-level messages.
-							message.error ( request, "Mail to %s failed: %s" % ( email, x ) )
+							messages.error ( request, "Mail to %s failed: %s" % ( email, x ) )
 					return None
 				else:
 					for a in queryset:

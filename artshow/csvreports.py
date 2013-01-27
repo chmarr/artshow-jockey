@@ -160,7 +160,7 @@ def cheques ( request ):
 	
 	for q in cheques:
 		d = dict (
-			artistid=q.artist.artistid, name=q.artist.name, artistname=q.artist.artistname(),
+			artistid=q.artist.artistid, name=q.artist.name(), artistname=q.artist.artistname(),
 			payee=q.payee, date=q.date, number=q.number, amount=-q.amount )
 		c.writerow ( d )
 		

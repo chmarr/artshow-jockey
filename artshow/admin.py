@@ -380,6 +380,13 @@ class PieceAdmin ( admin.ModelAdmin ):
 	clickable_invoice.short_description = "Invoice"
 	def top_bid ( self, obj ):
 		return obj.bid_set.exclude ( invalid=True ).order_by ( '-amount' )[0:1].get().amount
+	def top_bid_detail ( self, obj ):
+		top_bid = obj.bid_set.exclude ( invalid=True ).order_by ( '-amount' )[0:1].get()
+		return "$%s by %s" % ( top_bid.amount, top_bid.bidder )
+	top_bid_detail.short_description = "Top Bid"
+	def invoice_item_detail ( self, obj ):
+		return str(obj.invoiceitem)
+	invoice_item_detail.short_description = "Invoice"
 	def min_bid_x ( self, obj ):
 		if obj.not_for_sale or obj.min_bid == None:
 			return "NFS"
@@ -398,9 +405,9 @@ class PieceAdmin ( admin.ModelAdmin ):
 	inlines = [BidInline]
 	# raw_id_fields = ( 'invoice', )
 	# TODO put 'invoiceitem' back into the list. Waiting on bug #16433
-	fields = ( 'artist', 'pieceid', 'name', 'media', 'location', 'not_for_sale', 'adult', 'min_bid', 'buy_now', 'voice_auction', 'bidsheet_scanned', 'status', 'top_bid', 'updated' )
+	fields = ( 'artist', 'pieceid', 'name', 'media', 'location', 'not_for_sale', 'adult', 'min_bid', 'buy_now', 'voice_auction', 'bidsheet_scanned', 'status', 'top_bid_detail', 'invoice_item_detail', 'updated' )
 	raw_id_fields = ( 'artist', )
-	readonly_fields = ( 'top_bid', 'invoiceitem', 'updated' )
+	readonly_fields = ( 'top_bid_detail', 'invoice_item_detail', 'updated' )
 	actions = ( 'clear_scanned_flag', 'set_scanned_flag', 'clear_won_status', 'apply_won_status', 'apply_won_status_to_voice_auction', 'apply_returned_status', 'print_bidsheets' )
 
 admin.site.register(Piece,PieceAdmin)

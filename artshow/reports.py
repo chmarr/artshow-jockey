@@ -145,20 +145,6 @@ def show_summary ( request ):
 
 	return render ( request, 'artshow/show-summary.html', { 'all_stats':all_stats, 'general_stats':general_stats, 'adult_stats':adult_stats, 'num_showing_artists':num_showing_artists, 'payment_types':payment_types, 'total_payments':total_payments, 'tax_paid':tax_paid, 'piece_charges':piece_charges, 'total_charges':total_charges, 'total_invoice_payments':total_invoice_payments, 'invoice_payments':invoice_payments } )
 
-control_forms_per_space = 0.3
-bid_sheets_per_space = 8
-sticker_sheets_per_space = 0.3
-
-@permission_required ( 'artshow.is_artshow_staff' )
-def kit_contents ( request ):
-	artists = Artist.objects.annotate ( requested_spaces=Sum('allocation__requested') ).order_by('artistid')
-	for a in artists:
-		spaces = float(a.requested_spaces)
-		a.num_control_forms = int ( 0.8 + control_forms_per_space * spaces )
-		a.num_bid_sheets = int ( 0.8 + bid_sheets_per_space * spaces )
-		a.num_sticker_sheets = int ( 0.8 + sticker_sheets_per_space * spaces )
-	return render ( request, 'artshow/kit-contents.html', { 'artists': artists } )
-
 @permission_required ( 'artshow.is_artshow_staff' )
 def voice_auction ( request ):
 	adult = request.GET.get('adult','')

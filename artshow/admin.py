@@ -460,12 +460,12 @@ class InvoicePaymentInline ( admin.TabularInline ):
 
 class InvoiceAdmin ( admin.ModelAdmin ):
 	def bidder_name ( self, obj ):
-		return obj.payer.name
+		return obj.payer.name()
 	def num_pieces ( self, obj ):
 		return obj.invoiceitem_set.count()
 	raw_id_fields = ( 'payer', )
 	list_display = ( 'id', 'bidder_name', 'num_pieces', 'total_paid' )
-	search_fields = ( 'id', 'payer__name' )
+	search_fields = ( 'id', 'payer__person__name' )
 	inlines = [InvoiceItemInline,InvoicePaymentInline]
 	
 

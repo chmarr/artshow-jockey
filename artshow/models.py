@@ -166,6 +166,7 @@ class Piece ( models.Model ):
 	voice_auction = models.BooleanField ( default=False )
 	bidsheet_scanned = models.BooleanField ( default=False )
 	updated = models.DateTimeField ( auto_now=True )
+	order = models.IntegerField ( null=True, blank=True )
 	
 	StatusNotInShow = 0
 	StatusInShow = 1

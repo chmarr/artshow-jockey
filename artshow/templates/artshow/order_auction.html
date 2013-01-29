@@ -1,0 +1,20 @@
+{% extends "artshow/base_generic.html" %}
+{% block content %}
+<h1>Order Auction &mdash; {% if adult %}Adult{% else %}General{% endif %}</h1>
+<form method="post">
+{% csrf_token %}{{ formset.management_form }}
+<table>
+<tr><th>Code</th><th>Artist</th><th>Title</th><th>Top Bid</th><th>Order</th></tr>
+{% for form in formset %}
+<tr>
+  <td>{{ form.id }}{{ form.instance.code }}</td>
+  <td>{{ form.instance.artist.artistname }}</td>
+  <td>{{ form.instance.name }}</td>
+  <td>{{ form.instance.top_bid.amount }}</td>
+  <td>{{ form.order }}</td>
+</tr>
+{% endfor %}
+</table>
+<input type="submit" value="Submit" />
+</form>
+{% endblock %}

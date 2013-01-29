@@ -146,15 +146,14 @@ def show_summary ( request ):
 	return render ( request, 'artshow/show-summary.html', { 'all_stats':all_stats, 'general_stats':general_stats, 'adult_stats':adult_stats, 'num_showing_artists':num_showing_artists, 'payment_types':payment_types, 'total_payments':total_payments, 'tax_paid':tax_paid, 'piece_charges':piece_charges, 'total_charges':total_charges, 'total_invoice_payments':total_invoice_payments, 'invoice_payments':invoice_payments } )
 
 @permission_required ( 'artshow.is_artshow_staff' )
-def voice_auction ( request ):
-	adult = request.GET.get('adult','')
-	pieces = Piece.objects.exclude ( status=Piece.StatusNotInShow ).filter ( voice_auction=True )
+def voice_auction ( request, adult='' ):
+	pieces = Piece.objects.exclude ( status=Piece.StatusNotInShow ).filter ( voice_auction=True ).order_by ( "order", "artist", "pieceid" )
 	if adult == "y":
 		pieces = pieces.filter ( adult=True )
 	elif adult == "n":
 		pieces = pieces.filter ( adult=False )
 
-	return render ( request, 'artshow/voice-auction.html', { 'pieces':pieces } )
+	return render ( request, 'artshow/voice-auction.html', { 'pieces':pieces, 'adult':adult } )
 
 @permission_required ( 'artshow.is_artshow_staff' )
 def sales_percentiles ( request ):

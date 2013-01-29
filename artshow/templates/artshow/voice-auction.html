@@ -7,7 +7,7 @@ table tr:nth-child(odd) { background-color:lightgray; }
 </style>
 </head><body>
 <table class="report">
-<h1>Voice Auction Status</h1>
+<h1>Voice Auction Status{% if adult == "y" %} &mdash; Adult{% elif adult == "n" %} &mdash; General{% endif %}</h1>
 <thead>
 <tr class="header"><th>Artist</th><th>Piece ID</th><th>Title</th><th>Amount</th></tr>
 </thead>

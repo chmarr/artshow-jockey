@@ -405,7 +405,7 @@ class PieceAdmin ( admin.ModelAdmin ):
 	inlines = [BidInline]
 	# raw_id_fields = ( 'invoice', )
 	# TODO put 'invoiceitem' back into the list. Waiting on bug #16433
-	fields = ( 'artist', 'pieceid', 'name', 'media', 'location', 'not_for_sale', 'adult', 'min_bid', 'buy_now', 'voice_auction', 'bidsheet_scanned', 'status', 'top_bid_detail', 'invoice_item_detail', 'updated' )
+	fields = ( 'artist', 'pieceid', 'name', 'media', 'location', 'not_for_sale', 'adult', 'min_bid', 'buy_now', 'voice_auction', 'bidsheet_scanned', 'status', 'top_bid_detail', 'invoice_item_detail', 'updated', 'order' )
 	raw_id_fields = ( 'artist', )
 	readonly_fields = ( 'top_bid_detail', 'invoice_item_detail', 'updated' )
 	actions = ( 'clear_scanned_flag', 'set_scanned_flag', 'clear_won_status', 'apply_won_status', 'apply_won_status_to_voice_auction', 'apply_returned_status', 'print_bidsheets' )

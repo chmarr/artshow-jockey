@@ -4,10 +4,12 @@
 # See file COPYING for licence details
 
 from models import Invoice
-import sys, subprocess
+import sys
+import subprocess
 from django.conf import settings
-from logging import getLogger
 from StringIO import StringIO
+import re
+from logging import getLogger
 logger = getLogger(__name__)
 
 invoice_header = """\
@@ -15,7 +17,7 @@ invoice_header = """\
 |                                                                              |
 |  %(showstr)-30s   DATE: %(datestr)-14s  INVOICE: %(invoice)-10s  |
 |                                                                              |
-|  FOR: %(name)-48s  PAGE: %(pageno)-3d of %(numpages)-3d     |
+|  FOR: %(name)-48s  PAGE: %(pageno)-3d of MMM     |
 |  (BIDDER ID: %(bidderidstr)-s) %(bidderidpad)s                        |
 |                                                                              |
 +------------------------------------------------------------------------------+
@@ -32,25 +34,22 @@ invoice_spacer = """\
 |                                                                              |
 """
 
-non_last_invoice_footer = """\
-|                                                                              |
-|                                                                              |
-|                                                                              |
-|                                                                              |
+tax_and_total_line = """\
+|                              %(taxdescstr)30s   %(taxamtstr)9s      |
+|                                                              -----------     |
+|  ITEM COUNT: %(itemcount)-4d                                     TOTAL   %(totalstr)9s      |
+"""
+
+payment_line = """\
+|     %(paymentdescstr)55s   %(paymentamtstr)9s      |
+"""
+
+invoice_footer = """\
 +------------------------------------------------------------------------------+
 
           %(copystr)60s          
 \x0c"""
 
-last_invoice_footer = """\
-|                              %(taxdescstr)30s   %(taxamtstr)9s      |
-|                                                              -----------     |
-|  ITEM COUNT: %(itemcount)-4d                                     TOTAL   %(totalstr)9s      |
-|                                                                              |
-+------------------------------------------------------------------------------+
-
-          %(copystr)60s          
-"""
 
 
 def wrap_str ( s, cols ):
@@ -76,31 +75,18 @@ def print_invoice ( invoice, copy_name="SINGLE COPY", dest=sys.stdout ):
 	taxdescstr = settings.ARTSHOW_TAX_DESCRIPTION
 	
 	invoiceitems = invoice.invoiceitem_set.all().order_by ( 'piece__location', 'piece' )
+	invoicepayments = invoice.invoicepayment_set.all()
 	
-	invoice_page = 1
-	lines_this_page = 0
-	max_lines_per_page = 48
-
-	for invoiceitem in invoiceitems:
-		piece = invoiceitem.piece
-		piece.name_wrapped = wrap_str(str(piece) + "  @ %s" % piece.location ,59)
-		num_lines = len(piece.name_wrapped)
-		if lines_this_page + num_lines + 1 > max_lines_per_page:
-			invoice_page += 1
-			lines_this_page = 0
-		invoiceitem.invoice_page = invoice_page
-		lines_this_page += num_lines + 1
-		
-	numpages = invoice_page
 	numitems = len(invoiceitems)
 
-	invoice_page = 1
-	invoice_idx = 0
-	
-	while invoice_idx < numitems:
+	buffer = StringIO()
 
-		lines_this_page = 0
-		dest.write ( invoice_header % { 
+	max_lines_per_page = 52
+	invoice_page = 1
+	lines_this_page = 0
+
+	def write_header ():
+		buffer.write ( invoice_header % { 
 				'showstr': settings.ARTSHOW_SHOW_NAME.upper(),
 				'datestr': str(invoice.paid_date),
 				'invoice': settings.ARTSHOW_INVOICE_PREFIX + str(invoice.id),
@@ -111,30 +97,68 @@ def print_invoice ( invoice, copy_name="SINGLE COPY", dest=sys.stdout ):
 				'bidderidpad': bidderidpad,
 				} )
 				
-		while invoice_idx < numitems and invoice_page==invoiceitems[invoice_idx].invoice_page:
-			invoiceitem = invoiceitems[invoice_idx]
-			piece = invoiceitem.piece
-			for l in piece.name_wrapped[:-1]:
-				dest.write (invoice_lines % { 'itemstr':l, 'amtstr': "" })
-			dest.write (invoice_lines % { 'itemstr':piece.name_wrapped[-1], 'amtstr': "$%8.2f" % invoiceitem.price })
-			dest.write (invoice_spacer)
-			lines_this_page += len(piece.name_wrapped) + 1
-			invoice_idx += 1
-			
-		for i in range ( lines_this_page, max_lines_per_page ):
-			dest.write ( invoice_spacer )
-			
-		if invoice_page == numpages:
-			dest.write ( last_invoice_footer % { 'taxdescstr':taxdescstr,
-					'taxamtstr': "$%8.2f" % invoice.tax_paid,
-					'totalstr': "$%8.2f" % invoice.total_paid(),
-					'copystr': copy_name.center(60),
-					'itemcount': numitems,
-					} )
-		else:
-			dest.write ( non_last_invoice_footer % { 'copystr': copy_name.center(60) } )
-			
+	def write_footer ():
+		for i in range( max_lines_per_page - lines_this_page ):
+			buffer.write (invoice_spacer)				
+		buffer.write ( non_last_invoice_footer % { 'copystr': copy_name.center(60) } )
+		
+	def write_item ( name_wrapped, price ):
+		for l in name_wrapped[:-1]:
+			buffer.write (invoice_lines % { 'itemstr':l, 'amtstr': "" })
+		buffer.write (invoice_lines % { 'itemstr':name_wrapped[-1], 'amtstr': "$%8.2f" % price })
+		buffer.write (invoice_spacer)				
+		
+	def write_payment ( payment ):
+		payment_description = 'Paid %s' % payment.get_payment_method_display()
+		if payment.notes:
+			payment_description += ": " + payment.notes
+		payment_description = payment_description[:55]
+		buffer.write ( payment_line % { 'paymentdescstr': payment_description, 'paymentamtstr': "$%8.2f" % payment.amount } )
+
+	write_header ()
+	
+	for item in invoiceitems:
+		name_wrapped = wrap_str( str(item.piece) + "  @ %s" % item.piece.location, 59 )
+		num_lines = len(name_wrapped)
+		if lines_this_page + num_lines + 1 > max_lines_per_page:
+			write_footer ()
+			invoice_page += 1
+			lines_this_page = 0
+			write_header ()
+		write_item ( name_wrapped, item.price )
+		lines_this_page += num_lines + 1
+
+	if lines_this_page + 5 > max_lines_per_page:
+		write_footer ()
 		invoice_page += 1
+		lines_this_page = 0
+		write_header ()
+	buffer.write ( tax_and_total_line % { 'taxdescstr':taxdescstr,
+			'taxamtstr': "$%8.2f" % invoice.tax_paid,
+			'totalstr': "$%8.2f" % invoice.total_paid(),
+			'copystr': copy_name.center(60),
+			'itemcount': numitems,
+			} )
+	buffer.write (invoice_spacer)
+	buffer.write (invoice_spacer)
+	lines_this_page += 5
+	
+	for payment in invoicepayments:
+		if lines_this_page + 1 > max_lines_per_page:
+			write_footer ()
+			invoice_page += 1
+			lines_this_page = 0
+			write_header ()
+		write_payment ( payment )
+		lines_this_page += 1
+		
+	write_footer ()
+	
+	s = buffer.getvalue ()
+	s = re.sub ( "(?<= of )MMM", "%-3d"%invoice_page, s )
+	
+	dest.write ( s )
+
 
 class PrintingError ( StandardError ):
 	pass

@@ -7,6 +7,7 @@ from models import Invoice
 import sys
 import subprocess
 from django.conf import settings
+from default_settings import _DISABLED as SETTING_DISABLED
 from StringIO import StringIO
 import re
 from logging import getLogger
@@ -100,7 +101,7 @@ def print_invoice ( invoice, copy_name="SINGLE COPY", dest=sys.stdout ):
 	def write_footer ():
 		for i in range( max_lines_per_page - lines_this_page ):
 			buffer.write (invoice_spacer)				
-		buffer.write ( non_last_invoice_footer % { 'copystr': copy_name.center(60) } )
+		buffer.write ( invoice_footer % { 'copystr': copy_name.center(60) } )
 		
 	def write_item ( name_wrapped, price ):
 		for l in name_wrapped[:-1]:
@@ -182,6 +183,9 @@ def print_invoices ( invoices, copy_names, to_printer=False ):
 	if not sbuf.getvalue():
 		logger.error ( "nothing to generate" )
 	elif to_printer:
+		if settings.ARTSHOW_PRINT_COMMAND is SETTING_DISABLED:
+			logger.error ( "Cannot print invoice. ARTSHOW_PRINT_COMMAND is DISABLED" )
+			raise PrintingError ( "Printing is DISABLED in configuration" )
 		p = subprocess.Popen ( settings.ARTSHOW_PRINT_COMMAND, stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True )
 		output, error = p.communicate ( sbuf.getvalue() )
 		if output:

@@ -16,7 +16,8 @@ from django.template import RequestContext
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from decimal import Decimal
-import logging, datetime
+import logging
+import datetime
 import invoicegen
 logger = logging.getLogger ( __name__ )
 from django.contrib import messages
@@ -168,10 +169,11 @@ class PrintInvoiceForm ( forms.Form ):
 def do_print_invoices ( request, invoice_id, copy_names ):
 	try:
 		invoicegen.print_invoices ( [invoice_id], copy_names, to_printer=True )
-	except invoicegen.PrintingError:
+	except invoicegen.PrintingError, x:
 		messages.error ( request, "Printing failed. Please ask administrator to consult error log" )
+		logger.error ( "Printing failed with exception: %s", x )
 	else:
-		messages.info ( request, "Invoice has been sent to the printer" )
+		messages.info ( request, "Invoice %s has been sent to the printer" % invoice_id )
 
 	
 @permission_required ( 'artshow.add_invoice' )
@@ -188,7 +190,6 @@ def print_invoice ( request, invoice_id ):
 			return_to = form.cleaned_data['return_to']
 			if not return_to:
 				return_to = "artshow.views.index"
-			messages.info ( request, "Invoice %s has been sent to the printer." % invoice.id )
 			return redirect ( return_to )
 	
 	messages.error ( request, "Print Invoice request is invalid" )

@@ -1,4 +1,5 @@
 from artshowjockey.common_settings import *
+from artshow.default_settings import *
 
 # This is, probably, the minimum set of settings attributes that
 # should be specified for your installation.
@@ -35,7 +36,7 @@ Generic Art Show Lead.
 artshow@example.com - http://www.example.com/artshow
 """
 ARTSHOW_CHEQUE_THANK_YOU = "Thank you for exhibiting at Generic Art Show"
-ARTSHOW_PRINT_COMMAND = "enscript -P Samsung -B -L 66 -f Courier-Bold10"
+ARTSHOW_PRINT_COMMAND = "enscript -P Samsung -B -L 66 -f Courier-Bold10 -q"
 ARTSHOW_AUTOPRINT_INVOICE = [ "CUSTOMER COPY", "MERCHANT COPY", "PICK LIST" ]
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/blank_bid_sheet.pdf"
 ARTSHOW_SCANNER_DEVICE = "/dev/ttyUSB0"

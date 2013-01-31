@@ -3,6 +3,7 @@
 # See file COPYING for licence details
 
 from django.conf.urls.defaults import *
+from artshow.bidderreg import bidderreg_wizard_view
 
 urlpatterns = patterns('artshow',
     (r'^$', 'views.index' ),
@@ -38,4 +39,6 @@ urlpatterns = patterns('artshow',
 	(r'^reports/bidders-csv/$', 'csvreports.bidders' ),
 	(r'^reports/payments-csv/$', 'csvreports.payments' ),
 	(r'^reports/cheques-csv/$', 'csvreports.cheques' ),
+	url (r'^bidderreg/$', bidderreg_wizard_view, name="artshow-bidderreg-wizard" ),
+	(r'^bidderreg/done/$', 'bidderreg.final' ),
 )

@@ -1,0 +1,49 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block title %}Bidder Self-Registration{% endblock %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li class="current">Bidder Self-Registration</li>
+</ul>
+{% endblock %}
+{% block content %}
+<h1>Bidder Self-Registration</h1>
+{% if wizard.steps.step1 == 1 %}
+<p>To Register to bid at this show, start here.</p>
+<h2>Before starting, you'll need:</h2>
+<ul>
+  <li>Your convention badge, and the number upon it.</li>
+  <li>Your identification</li>
+</ul>
+<h2>What you'll be doing:</h2>
+<ul>
+  <li>Enter your name, convention badge number, and a way to contact you during the convention.</li>
+  <li>If they've changed recently, provide us with updated address and e-mail details.</li>
+  <li>Read and sign a form we print for you.</li>
+  <li>Take these to Art Show Staff for verification, and collect your bid stickers.</li>
+</ul>
+{% else %}
+<p>You can use the TAB key to move from field to field.</p>
+{% endif %}
+<form action="" method="post">{% csrf_token %}
+<table>
+{{ wizard.management_form }}
+{% if wizard.form.forms %}
+  {{ wizard.form.management_form }}
+  {% for form in wizard.form.forms %}
+    {{ form }}
+  {% endfor %}
+{% else %}
+  {{ wizard.form }}
+{% endif %}
+</table>
+{% if wizard.steps.prev %}
+<input style="visibility:hidden;position:absolute;" type="submit" value="Next >>" />
+<button onclick="window.location='{% url "artshow-bidderreg-wizard" %}';return false;">&lt;&lt; Start Over</button>  
+<button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}"  >&lt;&lt; Back</button>  
+{% endif %}
+<input type="submit" value="Next >>" />
+</form>
+
+{% endblock %}

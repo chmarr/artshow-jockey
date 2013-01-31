@@ -1,0 +1,29 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block title %}Bidder Self-Registration{% endblock %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li class="current">Bidder Self-Registration</li>
+</ul>
+{% endblock %}
+{% block content %}
+<h1>Bidder Self-Registration</h1>
+
+<h2>Almost done!</h2>
+
+<p>A form is printing now. Grab it!</p>
+
+<p>Please read it, sign it, and take it to the Art Show Staff. We'll give you your bid sticks you'll need to place bids, as well as a handy instruction sheet.</p>
+
+<p>Keep your convention badge and identification handy. We'll need them for comparison.</p>
+
+<button onclick="return_to_start();return false;" >&lt;&lt; Ready for next Bidder</button>
+
+<script>
+function return_to_start () {
+	window.location = "{% url 'artshow-bidderreg-wizard' %}";
+}
+setTimeout ( return_to_start, 15000 );
+</script>
+{% endblock %}

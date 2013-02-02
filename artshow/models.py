@@ -61,11 +61,12 @@ class Artist ( models.Model ):
 
 	objects = ArtistManager ()
 
-	artistid = models.IntegerField ( primary_key=True )
+	artistid = models.IntegerField ( primary_key=True, verbose_name="artist ID" )
 	person = models.ForeignKey ( settings.ARTSHOW_PERSON_CLASS )
 	def name ( self ):
 		return self.person.name
-	publicname = models.CharField ( max_length = 100, blank=True )
+	publicname = models.CharField ( max_length = 100, blank=True, verbose_name="public name" )
+	
 	website = models.CharField ( max_length = 200, blank=True )
 	mailin = models.BooleanField ()
 	agents = models.ManyToManyField ( settings.ARTSHOW_PERSON_CLASS, related_name="agent_for", blank=True )
@@ -118,6 +119,7 @@ class Bidder ( models.Model ):
 	person = models.OneToOneField ( settings.ARTSHOW_PERSON_CLASS )
 	def name ( self ):
 		return self.person.name
+	at_con_contact = models.TextField ( blank=True )
 	notes = models.TextField ( blank=True )
 	def bidder_ids ( self ):
 		return [ b_id.id for b_id in self.bidderid_set.all().order_by('id') ]
@@ -156,7 +158,7 @@ class Piece ( models.Model ):
 	artist = models.ForeignKey ( Artist )
 	pieceid = models.IntegerField ()
 	code = models.CharField ( max_length=10, editable=False )
-	name = models.CharField ( max_length = 100 )
+	name = models.CharField ( max_length = 100, verbose_name="title" )
 	media = models.CharField ( max_length = 100, blank=True )
 	location = models.CharField ( max_length = 8, blank=True )
 	not_for_sale = models.BooleanField ()

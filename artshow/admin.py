@@ -97,11 +97,14 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 		return ", ".join ( "%s:%s" % (al.space.shortname,al.allocated) for al in artist.allocation_set.all() )
 	def person_name ( self, artist ):
 		return artist.person.name
+	person_name.short_description="name"
 	def person_clickable_email ( self, artist ):
 		return artist.person.clickable_email()
+	person_clickable_email.short_description = "email"
 	person_clickable_email.allow_tags = True
 	def person_mailing_label ( self, artist ):
 		return artist.person.mailing_label()
+	person_mailing_label.short_description = "mailing address"
 	person_mailing_label.allow_tags = True	
 		
 	def send_email ( self, request, queryset ):
@@ -373,32 +376,32 @@ class PieceAdmin ( admin.ModelAdmin ):
 	def clickable_artist ( self, obj ):
 		return u'<a href="%s">%s</a>' % ( urlresolvers.reverse('admin:artshow_artist_change',args=(obj.artist.pk,)), escape(obj.artist.artistname()) )
 	clickable_artist.allow_tags = True
-	clickable_artist.short_description = "Artist"
+	clickable_artist.short_description = "artist"
 	def clickable_invoice ( self, obj ):
 		return u'<a href="%s">%s</a>' % ( urlresolvers.reverse('admin:artshow_invoice_change',args=(obj.invoice.id,)), obj.invoice )
 	clickable_invoice.allow_tags = True
-	clickable_invoice.short_description = "Invoice"
+	clickable_invoice.short_description = "invoice"
 	def top_bid ( self, obj ):
 		return obj.bid_set.exclude ( invalid=True ).order_by ( '-amount' )[0:1].get().amount
 	def top_bid_detail ( self, obj ):
 		top_bid = obj.bid_set.exclude ( invalid=True ).order_by ( '-amount' )[0:1].get()
 		return "$%s by %s" % ( top_bid.amount, top_bid.bidder )
-	top_bid_detail.short_description = "Top Bid"
+	top_bid_detail.short_description = "Top bid"
 	def invoice_item_detail ( self, obj ):
 		return str(obj.invoiceitem)
-	invoice_item_detail.short_description = "Invoice"
+	invoice_item_detail.short_description = "invoice"
 	def min_bid_x ( self, obj ):
 		if obj.not_for_sale or obj.min_bid == None:
 			return "NFS"
 		else:
 			return obj.min_bid
-	min_bid_x.short_description = "Min Bid"
+	min_bid_x.short_description = "min bid"
 	def buy_now_x ( self, obj ):
 		if obj.buy_now == None:
 			return "N/A"
 		else:
 			return obj.buy_now
-	buy_now_x.short_description = "Buy Now"
+	buy_now_x.short_description = "buy now"
 	list_filter = ( 'adult', 'not_for_sale', 'voice_auction', 'status', 'bidsheet_scanned' )
 	search_fields = ( '=code', '=artist__artistid', 'name', '=location', 'artist__person__name', 'artist__publicname' )
 	list_display = ( 'code', 'clickable_artist', 'name', 'adult', 'min_bid_x', 'buy_now_x', 'location', 'voice_auction', 'status', 'top_bid', 'updated' )
@@ -426,16 +429,23 @@ class BidderAdmin ( AjaxSelectAdmin ):
 	form = make_ajax_form(Bidder,{'person':'person'})
 	def bidder_ids ( self, obj ):
 		return u", ".join ( [ bidderid.id for bidderid in obj.bidderid_set.all() ] )
+	bidder_ids.short_description = "bidder IDs"
 	def person_name ( self, bidder ):
 		return bidder.person.name
+	person_name.short_description = "name"
+	def person_reg_id ( self, bidder ):
+		return bidder.person.reg_id
+	person_reg_id.short_description = "reg ID"
 	def person_clickable_email ( self, bidder ):
 		return bidder.person.clickable_email ()
 	person_clickable_email.allow_tags = True
+	person_clickable_email.short_description = "email"
+	
 	
 	# TODO, add mailing_label back in once we figure out how to do it for bidders and artists uniformly
-	list_display = ( 'person_name', 'bidder_ids', 'person_clickable_email' )
-	search_fields = ( 'person__name', 'bidderid__id' )
-	fields = [ "person", "notes" ]
+	list_display = ( 'person_name', 'person_reg_id', 'bidder_ids', 'person_clickable_email' )
+	search_fields = ( 'person__name', 'person__reg_id', 'bidderid__id' )
+	fields = [ "person", "at_con_contact", "notes" ]
 	inlines = [BidderIdInline,BidInline]
 
 admin.site.register(Bidder,BidderAdmin)

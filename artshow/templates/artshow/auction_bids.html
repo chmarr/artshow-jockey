@@ -3,19 +3,20 @@
 <h1>Enter Voice Auction Bids &mdash; {% if adult %}Adult{% else %}General{% endif %}</h1>
 <form method="post">
 {% csrf_token %}{{ formset.management_form }}
+{{ formset.non_form_errors }}
 <table>
 <tr><th rowspan="2">Code</th><th rowspan="2">Artist</th><th rowspan="2">Title</th><th colspan="2">Sheet</th><th rowspan="2">Action</th><th colspan="2">New</th></tr>
 <tr><th>Bidder</th><th>Amount</th><th>Bidder</th><th>Amount</th></tr>
 {% for form in formset %}
 <tr>
-  <td>{{ form.piece }}{{ form.initial.piece.code }}</td>
+  <td>{{ form.id }}{{ form.piece }}{{ form.initial.piece.code }}</td>
   <td>{{ form.initial.piece.artist.artistname }}</td>
   <td>{{ form.initial.piece.name }}</td>
   <td>{{ form.initial.piece.top_bid.bidder.bidder_ids|join:", " }}</td>
   <td>{{ form.initial.piece.top_bid.amount }}</td>
-  <td>{{ form.id }}{{ form.action }}</td>
-  <td>{{ form.bidder }}</td>
-  <td>{{ form.amount }}</td>
+  <td>{{ form.action.errors }}{{ form.action }}</td>
+  <td>{{ form.bidder.errors }}{{ form.bidder }}</td>
+  <td>{{ form.amount.errors }}{{ form.amount }}</td>
 </tr>
 {% endfor %}
 </table>

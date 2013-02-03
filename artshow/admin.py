@@ -89,7 +89,7 @@ class ArtistAdmin ( AjaxSelectAdmin ):
 	list_display = ( 'person_name', 'publicname', 'artistid', 'person_clickable_email', 'requested_spaces', 'allocated_spaces', 'person_mailing_label' )
 	list_filter = ( 'mailin', 'person__country', 'checkoffs' )
 	search_fields = ( 'person__name', 'publicname', 'person__email', 'notes', 'artistid' )
-	fields = [ 'artistid', 'person', 'publicname', ( 'reservationdate', 'mailin' ), 'agents', 'notes', 'checkoffs', 'payment_to' ]
+	fields = [ 'artistid', 'person', 'publicname', ( 'reservationdate', 'attending' ), ( 'mailin', 'mailback_instructions' ), 'agents', 'notes', 'checkoffs', 'payment_to' ]
 	inlines = [ArtistAccessInline,AllocationInline,PieceInline,PaymentInline]
 	def requested_spaces ( self, artist ):
 		return ", ".join ( "%s:%s" % (al.space.shortname,al.requested) for al in artist.allocation_set.all() )

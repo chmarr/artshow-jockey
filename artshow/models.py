@@ -69,6 +69,8 @@ class Artist ( models.Model ):
 	
 	website = models.CharField ( max_length = 200, blank=True )
 	mailin = models.BooleanField ()
+	mailback_instructions = models.TextField ( blank=True )
+	attending = models.BooleanField ( default=True, help_text="is artist attending convention?" )
 	agents = models.ManyToManyField ( settings.ARTSHOW_PERSON_CLASS, related_name="agent_for", blank=True )
 	reservationdate = models.DateField ( blank=True, null=True )
 	notes = models.TextField ( blank=True )

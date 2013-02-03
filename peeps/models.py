@@ -4,15 +4,15 @@ from django.conf import settings
 
 class Person ( models.Model ):
 	name = models.CharField ( max_length = 100 )
-	address1 = models.CharField ( max_length = 100, blank=True )
-	address2 = models.CharField ( max_length = 100, blank=True )
+	address1 = models.CharField ( max_length = 100, blank=True, verbose_name="address" )
+	address2 = models.CharField ( max_length = 100, blank=True, verbose_name="address line 2" )
 	city = models.CharField ( max_length = 100, blank=True )
 	state = models.CharField ( max_length = 40, blank=True )
 	postcode = models.CharField ( max_length = 20, blank=True )
 	country = models.CharField ( max_length = 40, blank=True )
 	phone = models.CharField ( max_length = 40, blank=True )
 	email = models.CharField ( max_length = 100, blank=True )
-	reg_id = models.CharField ( max_length = 40, blank=True )
+	reg_id = models.CharField ( max_length = 40, blank=True, verbose_name="Reg ID" )
 	comment = models.CharField ( max_length = 100, blank=True )
 	def __unicode__ ( self ):
 		if self.reg_id or self.comment:

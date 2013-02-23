@@ -32,10 +32,7 @@ def order_auction ( request, adult ):
 			return redirect ( "." )
 	else:
 		formset = AuctionOrderingFormSet ( queryset=pieces )
-		
-	logger.debug ( "%s", dir(formset[0]) )
-			
-		
+				
 	return render ( request, "artshow/order_auction.html", {'formset':formset, 'adult':adult} )
 
 

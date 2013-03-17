@@ -52,3 +52,5 @@ ARTSHOW_MONEY_PRECISION = 2
 
 # Set this if something has gone wrong, and registration IDs are no longer unique
 ARTSHOW_REGID_NONUNIQUE = False
+
+ARTSHOW_MAX_PIECE_ID = 999

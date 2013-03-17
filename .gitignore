@@ -5,3 +5,4 @@ local_settings.py
 .DS_Store
 data/
 con_specific
+artshow-utils/*.csv

@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.formtools.wizard.views import CookieWizardView
 from django.shortcuts import render, redirect
-from django.core.urlresolvers import reverse
 from django.conf import settings
 from artshow.models import Person, Bidder, BidderId
 
@@ -41,7 +40,7 @@ class BidderRegistrationForm2 ( forms.Form ):
 	phone = forms.CharField ( max_length = 40, required=False )
 	email = forms.CharField ( max_length = 100, required=False )
 	
-def do_print_bidder_registration_form ( person ):
+def do_print_bidder_registration_form(person):
 	pass
 
 class BidderRegistrationWizard ( CookieWizardView ):

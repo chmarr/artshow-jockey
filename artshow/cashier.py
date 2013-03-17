@@ -61,8 +61,8 @@ class PaymentForm (ModelForm):
 
 class PaymentFormSet (BaseModelFormSet):
     def clean(self):
-# 		super(PaymentFormSet,self).clean()
         total = sum([form.cleaned_data['amount'] for form in self.forms], Decimal(0))
+        # self.items_total is set from the cashier_bidder function.
         if total != self.items_total:
             raise ValidationError("payments (%s) must equal invoice total (%s)" % (total, self.items_total))
 

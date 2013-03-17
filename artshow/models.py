@@ -42,7 +42,7 @@ class Space(models.Model):
         return self.name
 
 
-class Checkoff ( models.Model ):
+class Checkoff (models.Model):
     name = models.CharField(max_length=100)
     shortname = models.CharField(max_length=100)
 
@@ -81,6 +81,7 @@ class Artist (models.Model):
     checkoffs = models.ManyToManyField(Checkoff, blank=True)
     payment_to = models.ForeignKey(settings.ARTSHOW_PERSON_CLASS, null=True,
                                    blank=True, related_name="receiving_payment_for")
+
     def artistname(self):
         return self.publicname or self.person.name
 
@@ -106,9 +107,9 @@ class Artist (models.Model):
             return self.person.name
 
     def editable_by(self, user):
-        return self.artistaccess_set.filter(user=user,can_edit=True).exists()
+        return self.artistaccess_set.filter(user=user, can_edit=True).exists()
 
-    def viewable_by ( self, user ):
+    def viewable_by(self, user):
         return self.artistaccess_set.filter(user=user).exists()
 
     class Meta:
@@ -333,6 +334,7 @@ class EmailSignature (models.Model):
 
 class PaymentType (models.Model):
     name = models.CharField(max_length=40)
+
     def __unicode__(self):
         return self.name
 
@@ -363,7 +365,7 @@ class ChequePayment (Payment):
         if self.amount >= 0:
             raise ValidationError("Cheque amounts are a payment outbound and must be negative")
         self.payment_type = PaymentType.objects.get(pk=settings.ARTSHOW_PAYMENT_SENT_PK)
-        self.description = "Cheque %s Payee %s" % (self.number and "#"+self.number or "pending number", self.payee)
+        self.description = "Cheque %s Payee %s" % (self.number and "#" + self.number or "pending number", self.payee)
 
     class Meta:
         permissions = (

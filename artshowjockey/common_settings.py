@@ -68,7 +68,6 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # SECRET_KEY must be specified in local_settings.py
@@ -77,21 +76,20 @@ STATICFILES_FINDERS = (
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-	"django.contrib.auth.context_processors.auth",
-	"django.core.context_processors.debug",
-	"django.core.context_processors.i18n",
-	"django.core.context_processors.media",
-	"django.core.context_processors.static",
-	"django.core.context_processors.tz",
-	"django.contrib.messages.context_processors.messages",
-	"django.core.context_processors.request",
-	"tinyreg.context_processors.site_name",
-	"artshow.context_processors.artshow_settings",
-	)
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.core.context_processors.tz",
+    "django.contrib.messages.context_processors.messages",
+    "django.core.context_processors.request",
+    "tinyreg.context_processors.site_name",
+    "artshow.context_processors.artshow_settings",
+)
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -161,7 +159,7 @@ LOGGING = {
 }
 
 AJAX_LOOKUP_CHANNELS = {
-    'person' : ( 'peeps.lookups', 'PersonLookup' ),
+    'person': ('peeps.lookups', 'PersonLookup'),
 }
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
@@ -170,3 +168,5 @@ AJAX_SELECT_INLINES = 'inline'
 LOGIN_REDIRECT_URL = "/"
 
 PEEPS_DEFAULT_COUNTRY = "USA"
+
+ARTSHOW_PERSON_CLASS = 'peeps.Person'

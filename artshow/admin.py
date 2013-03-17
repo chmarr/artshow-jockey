@@ -12,7 +12,9 @@ from django import forms
 import email1
 import processbatchscan
 from django.core.mail import send_mail
-import smtplib, datetime, decimal
+import smtplib
+import datetime
+import decimal
 from django.http import HttpResponse
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
@@ -20,11 +22,10 @@ from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSele
 from django.db.models import Max
 
 
-
 class ArtistAccessInline(admin.TabularInline):
     model = ArtistAccess
     extra = 0
-    raw_id_fields = ( 'user', )
+    raw_id_fields = ('user', )
 
 
 class AllocationInlineForm(forms.ModelForm):
@@ -45,7 +46,7 @@ class AllocationInline(admin.TabularInline):
 class PieceInlineForm(forms.ModelForm):
     class Meta:
         model = Piece
-        fields = ( "pieceid", "name", "media", "adult", "not_for_sale", "min_bid", "buy_now", "location",
+        fields = ("pieceid", "name", "media", "adult", "not_for_sale", "min_bid", "buy_now", "location",
                    "voice_auction", "status")
         widgets = {
             'pieceid': forms.TextInput(attrs={'size': 3}),
@@ -60,7 +61,7 @@ class PieceInlineForm(forms.ModelForm):
 class PieceInline(admin.TabularInline):
     form = PieceInlineForm
     fields = ("pieceid", "name", "media", "adult", "not_for_sale", "min_bid", "buy_now", "location", "voice_auction",
-               "status")
+              "status")
     model = Piece
     extra = 5
     ordering = ('pieceid',)
@@ -118,10 +119,10 @@ class ArtistAdmin(AjaxSelectAdmin):
     def requested_spaces(self, artist):
         return ", ".join("%s:%s" % (al.space.shortname, al.requested) for al in artist.allocation_set.all())
 
-    def allocated_spaces( self, artist ):
+    def allocated_spaces(self, artist):
         return ", ".join("%s:%s" % (al.space.shortname, al.allocated) for al in artist.allocation_set.all())
 
-    def person_name( self, artist ):
+    def person_name(self, artist):
         return artist.person.name
 
     person_name.short_description = "name"
@@ -138,7 +139,7 @@ class ArtistAdmin(AjaxSelectAdmin):
     person_mailing_label.short_description = "mailing address"
     person_mailing_label.allow_tags = True
 
-    def send_email( self, request, queryset ):
+    def send_email(self, request, queryset):
         opts = self.model._meta
         app_label = opts.app_label
         emails = []
@@ -193,8 +194,7 @@ class ArtistAdmin(AjaxSelectAdmin):
         import bidsheets
 
         response = HttpResponse(mimetype="application/pdf")
-        bidsheets.generate_bidsheets_for_artists(template_pdf=settings.ARTSHOW_BLANK_BID_SHEET, output=response,
-                                                 artists=queryset)
+        bidsheets.generate_bidsheets_for_artists(output=response, artists=queryset)
         self.message_user(request, "Bid sheets printed.")
         return response
 
@@ -214,8 +214,7 @@ class ArtistAdmin(AjaxSelectAdmin):
         import bidsheets
 
         response = HttpResponse(mimetype="application/pdf")
-        bidsheets.generate_control_forms(template_pdf=settings.ARTSHOW_BLANK_CONTROL_FORM, output=response,
-                                         artists=artists)
+        bidsheets.generate_control_forms(output=response, artists=artists)
         self.message_user(request, "Control Forms printed.")
         return response
 
@@ -274,7 +273,8 @@ class ArtistAdmin(AjaxSelectAdmin):
                                   date=datetime.datetime.now())
                 payment.save()
 
-    def create_cheques( self, request, artists):
+    # noinspection PyUnusedLocal
+    def create_cheques(self, request, artists):
         pt_paymentsent = PaymentType.objects.get(pk=settings.ARTSHOW_PAYMENT_SENT_PK)
         for a in artists:
             balance = a.payment_set.aggregate(balance=Sum('amount'))['balance']
@@ -284,6 +284,7 @@ class ArtistAdmin(AjaxSelectAdmin):
                 chq.clean()
                 chq.save()
 
+    # noinspection PyUnusedLocal
     def allocate_spaces(self, request, artists):
         artists = artists.order_by('reservationdate', 'artistid')
         spaces_remaining = {}
@@ -400,14 +401,15 @@ class PieceAdmin(admin.ModelAdmin):
         pieces.exclude(status=Piece.StatusNotInShow).update(bidsheet_scanned=True)
         self.message_user(request, "Bidsheet_scanned flags have been set if the piece is or was in show.")
 
-    def clear_won_status( self, request, pieces ):
+    def clear_won_status(self, request, pieces):
         pieces.filter(status=Piece.StatusWon).update(status=Piece.StatusInShow)
         self.message_user(request, "Pieces marked as 'Won' have been returned to 'In Show'.")
 
-    def apply_won_status( self, request, pieces ):
+    def apply_won_status(self, request, pieces):
         # This code is duplicated in the management code
         for p in pieces.filter(status=Piece.StatusInShow, voice_auction=False):
             try:
+                # noinspection PyUnusedLocal
                 top_bid = p.top_bid()
             except Bid.DoesNotExist:
                 pass
@@ -420,6 +422,7 @@ class PieceAdmin(admin.ModelAdmin):
     def apply_won_status_incl_voice_auction(self, request, pieces):
         for p in pieces.filter(status=Piece.StatusInShow):
             try:
+                # noinspection PyUnusedLocal
                 top_bid = p.top_bid()
             except Bid.DoesNotExist:
                 pass
@@ -436,7 +439,7 @@ class PieceAdmin(admin.ModelAdmin):
         import bidsheets
 
         response = HttpResponse(mimetype="application/pdf")
-        bidsheets.generate_bidsheets(template_pdf=settings.ARTSHOW_BLANK_BID_SHEET, output=response, pieces=queryset)
+        bidsheets.generate_bidsheets(output=response, pieces=queryset)
         self.message_user(request, "Bid sheets printed.")
         return response
 
@@ -648,6 +651,7 @@ class ChequePaymentAdmin(admin.ModelAdmin):
     def cheque_amount(self, obj):
         return -obj.amount
 
+    # noinspection PyUnusedLocal
     def print_cheques(self, request, cheqs):
         import cheques
 

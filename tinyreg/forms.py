@@ -8,38 +8,37 @@ import captcha
 
 
 class ReCaptchaField(forms.CharField):
-	default_error_messages = {
-		'captcha_invalid': _(u'Invalid captcha')
-	}
+    default_error_messages = {
+        'captcha_invalid': _(u'Invalid captcha')
+    }
 
-	def __init__(self, *args, **kwargs):
-		self.widget = ReCaptchaWidget
-		self.required = True
-		super(ReCaptchaField, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        self.widget = ReCaptchaWidget
+        self.required = True
+        super(ReCaptchaField, self).__init__(*args, **kwargs)
 
-	def clean(self, values):
-		super(ReCaptchaField, self).clean(values[1])
-		recaptcha_challenge_value = smart_unicode(values[0])
-		recaptcha_response_value = smart_unicode(values[1])
-		check_captcha = captcha.submit(recaptcha_challenge_value, 
-			recaptcha_response_value, settings.RECAPTCHA_PRIVATE_KEY, {})
-		if not check_captcha.is_valid:
-			raise forms.util.ValidationError(self.error_messages['captcha_invalid'])
-		return values[0]
-		
-		
+    def clean(self, values):
+        super(ReCaptchaField, self).clean(values[1])
+        recaptcha_challenge_value = smart_unicode(values[0])
+        recaptcha_response_value = smart_unicode(values[1])
+        check_captcha = captcha.submit(recaptcha_challenge_value,
+                                       recaptcha_response_value, settings.RECAPTCHA_PRIVATE_KEY, {})
+        if not check_captcha.is_valid:
+            raise forms.ValidationError(self.error_messages['captcha_invalid'])
+        return values[0]
+
 
 class ReCaptchaWidget(forms.widgets.Widget):
-	recaptcha_challenge_name = 'recaptcha_challenge_field'
-	recaptcha_response_name = 'recaptcha_response_field'
+    recaptcha_challenge_name = 'recaptcha_challenge_field'
+    recaptcha_response_name = 'recaptcha_response_field'
 
-	def render(self, name, value, attrs=None):
-		return mark_safe(u'%s' % captcha.displayhtml(settings.RECAPTCHA_PUBLIC_KEY,use_ssl=True))
+    def render(self, name, value, attrs=None):
+        return mark_safe(u'%s' % captcha.displayhtml(settings.RECAPTCHA_PUBLIC_KEY, use_ssl=True))
 
-	def value_from_datadict(self, data, files, name):
-		return [data.get(self.recaptcha_challenge_name, None), 
-			data.get(self.recaptcha_response_name, None)]
-			
-			
+    def value_from_datadict(self, data, files, name):
+        return [data.get(self.recaptcha_challenge_name, None),
+                data.get(self.recaptcha_response_name, None)]
+
+
 class CaptchaPasswordResetForm(PasswordResetForm):
     recaptcha = ReCaptchaField()

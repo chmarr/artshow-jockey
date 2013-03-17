@@ -16,6 +16,9 @@ import smtplib, datetime, decimal
 from django.http import HttpResponse
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
+from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
+from django.db.models import Max
+
 
 
 class ArtistAccessInline(admin.TabularInline):
@@ -88,8 +91,22 @@ def send_password_reset_email(artist, user, subject, body_template):
     send_mail(subject, body, settings.ARTSHOW_EMAIL_SENDER, [user.email], fail_silently=False)
 
 
+class ArtistForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        if 'instance' not in kwargs:
+            kwargs['initial']['artistid'] = \
+                (Artist.objects.aggregate(artistid=Max('artistid'))['artistid'] or 0) + 1
+        super(ArtistForm, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = Artist
+    person = AutoCompleteSelectField('person', required=True)
+    agents = AutoCompleteSelectMultipleField('person', required=False)
+    payment_to = AutoCompleteSelectField('person', required=False)
+
+
 class ArtistAdmin(AjaxSelectAdmin):
-    form = make_ajax_form(Artist, {'person': 'person', 'agents': 'person', 'payment_to': 'person'})
+    form = ArtistForm
     list_display = ('person_name', 'publicname', 'artistid', 'person_clickable_email', 'requested_spaces',
                     'allocated_spaces', 'person_mailing_label')
     list_filter = ('mailin', 'person__country', 'checkoffs')

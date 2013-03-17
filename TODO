@@ -1,0 +1,13 @@
+- Upgrade invoice date field to date/time
+- Record logged-in user when invoices are created
+- Put permissions around all views
+- Create a cashier permission
+- Create a generate reports permission
+- Create a progress show (apply won status, etc) permission
+- Create manual bid entry form
+- Make bidder numbers more flexible, and allow entry of initial letters, and adjust mod11 check to suit
+- use pdf gen to create invoices - keep text output version around.
+- remove all "utils" functions where appropriate
+- printing an invoice currently generates two messages
+- make sure the AttributeFilter in artshow.utils works as expected
+- Set up a bunch of useful stock Email Templates for common phases of the show.

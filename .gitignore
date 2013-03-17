@@ -6,3 +6,4 @@ local_settings.py
 data/
 con_specific
 .idea
+artshow-utils/*.csv

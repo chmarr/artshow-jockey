@@ -323,6 +323,14 @@ class EmailTemplate (models.Model):
         return self.name
 
 
+class EmailSignature (models.Model):
+    name = models.CharField(max_length=100)
+    signature = models.TextField()
+
+    def __unicode__(self):
+        return self.name
+
+
 class PaymentType (models.Model):
     name = models.CharField(max_length=40)
     def __unicode__(self):

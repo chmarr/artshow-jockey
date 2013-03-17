@@ -15,6 +15,10 @@
         <option value=""{% if template_id == None %} selected="selected"{% endif %}>--------</option>{% for t in templates %}
         <option value="{{t.pk}}"{% if template_id == t.pk %} selected="selected"{% endif %}>{{t.name}}</option>{% endfor %}
         </select></p>
+    <p>Signature: <select name="signature">
+        <option value=""{% if signature_id == None %} selected="selected"{% endif %}>- No Signature -</option>{% for s in signatures %}
+        <option value="{{s.pk}}"{% if signature_id == s.pk %} selected="selected"{% endif %}>{{s.name}}</option>{% endfor %}
+    </select></p>
     <p>Send email to the following artists:</p>
     <ul>
     {% for obj in queryset %}

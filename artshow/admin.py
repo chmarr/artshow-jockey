@@ -143,17 +143,21 @@ class ArtistAdmin(AjaxSelectAdmin):
         app_label = opts.app_label
         emails = []
         template_id = None
+        signature_id = None
         if request.POST.get('post'):
             template_id = request.POST.get('template')
+            signature_id = request.POST.get('signature')
             if not template_id:
                 messages.error(request, "Please select a template")
             else:
                 template_id = int(template_id)
+                signature_id = int(signature_id or 0)
                 selected_template = EmailTemplate.objects.get(pk=template_id)
+                signature = EmailSignature.objects.get(pk=signature_id).signature if signature_id else ""
                 if request.POST.get('send_email'):
                     for a in queryset:
                         email = a.person.email
-                        body = email1.make_email(a, selected_template.template)
+                        body = email1.make_email(a, selected_template.template, signature)
                         try:
                             send_mail(selected_template.subject, body, settings.ARTSHOW_EMAIL_SENDER, [email],
                                       fail_silently=False)
@@ -164,8 +168,10 @@ class ArtistAdmin(AjaxSelectAdmin):
                     return None
                 else:
                     for a in queryset:
-                        emails.append({'to': a.person.email, 'body': email1.make_email(a, selected_template.template)})
+                        emails.append({'to': a.person.email,
+                                       'body': email1.make_email(a, selected_template.template, signature)})
         templates = EmailTemplate.objects.all()
+        signatures = EmailSignature.objects.all()
         context = {
             "title": "Send E-mail to Artists",
             "queryset": queryset,
@@ -174,8 +180,10 @@ class ArtistAdmin(AjaxSelectAdmin):
             "app_label": app_label,
             "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
             "templates": templates,
+            "signatures": signatures,
             "emails": emails,
             "template_id": template_id,
+            "signature_id": signature_id,
         }
         return render(request, "admin/email_selected_confirmation.html", context)
 
@@ -546,8 +554,10 @@ admin.site.register(Bidder, BidderAdmin)
 class EmailTemplateAdmin(admin.ModelAdmin):
     save_as = True
 
-
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
+
+
+admin.site.register(EmailSignature)
 
 
 class PaymentAdmin(admin.ModelAdmin):

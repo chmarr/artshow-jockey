@@ -1,1 +1,58 @@
-[{"pk": 1, "model": "artshow.paymenttype", "fields": {"name": "Payment Received"}}, {"pk": 2, "model": "artshow.paymenttype", "fields": {"name": "Shipping"}}, {"pk": 3, "model": "artshow.paymenttype", "fields": {"name": "Space Fee"}}, {"pk": 4, "model": "artshow.paymenttype", "fields": {"name": "Cancelled Space Penalty"}}, {"pk": 5, "model": "artshow.paymenttype", "fields": {"name": "Payment Sent"}}, {"pk": 6, "model": "artshow.paymenttype", "fields": {"name": "Commission"}}, {"pk": 7, "model": "artshow.paymenttype", "fields": {"name": "Sales"}}, {"pk": 8, "model": "artshow.paymenttype", "fields": {"name": "Other"}}]
+[
+    {
+        "pk": 1,
+        "model": "artshow.paymenttype",
+        "fields": {
+            "name": "Payment Received"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "artshow.paymenttype",
+        "fields": {
+            "name": "Shipping"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "artshow.paymenttype",
+        "fields": {
+            "name": "Space Fee"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "artshow.paymenttype",
+        "fields": {
+            "name": "Cancelled Space Penalty"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "artshow.paymenttype",
+        "fields": {
+            "name": "Payment Sent"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "artshow.paymenttype",
+        "fields": {
+            "name": "Commission"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "artshow.paymenttype",
+        "fields": {
+            "name": "Sales"
+        }
+    },
+    {
+        "pk": 8,
+        "model": "artshow.paymenttype",
+        "fields": {
+            "name": "Other"
+        }
+    }
+]

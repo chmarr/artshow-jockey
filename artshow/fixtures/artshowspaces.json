@@ -1,1 +1,42 @@
-[{"pk": 1, "model": "artshow.space", "fields": {"available": "100", "shortname": "GP", "price": "10", "name": "General Panel"}}, {"pk": 2, "model": "artshow.space", "fields": {"available": "15", "shortname": "GT", "price": "10", "name": "General Table"}}, {"pk": 3, "model": "artshow.space", "fields": {"available": "30", "shortname": "AP", "price": "10", "name": "Adult Panel"}}, {"pk": 4, "model": "artshow.space", "fields": {"available": "3", "shortname": "AT", "price": "10", "name": "Adult Table"}}]
+[
+    {
+        "pk": 1,
+        "model": "artshow.space",
+        "fields": {
+            "available": "100",
+            "shortname": "GP",
+            "price": "10",
+            "name": "General Panel"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "artshow.space",
+        "fields": {
+            "available": "15",
+            "shortname": "GT",
+            "price": "10",
+            "name": "General Table"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "artshow.space",
+        "fields": {
+            "available": "30",
+            "shortname": "AP",
+            "price": "10",
+            "name": "Adult Panel"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "artshow.space",
+        "fields": {
+            "available": "3",
+            "shortname": "AT",
+            "price": "10",
+            "name": "Adult Table"
+        }
+    }
+]

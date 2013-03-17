@@ -1,0 +1,10 @@
+[
+    {
+        "pk": 1, 
+        "model": "artshow.emailsignature", 
+        "fields": {
+            "name": "Default", 
+            "signature": "--\r\nRandom J Hacker\r\nGeneric Art Show Director\r\nartshow@example.com - http://www.example.com/artshow/\r\n"
+        }
+    }
+]

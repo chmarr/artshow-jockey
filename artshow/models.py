@@ -317,7 +317,7 @@ class EmailTemplate (models.Model):
     template = models.TextField()
     template.help_text = "Begin a line with \".\" to enable word-wrap. " \
         "Use Django template language. " \
-        "Variables \"artist\", \"pieces_in_show\", \"payments\" and \"artshow_settings\" are available."
+        "Available variables: artist, pieces_in_show, payments, signature, artshow_settings. "
 
     def __unicode__(self):
         return self.name

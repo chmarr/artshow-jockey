@@ -36,12 +36,12 @@ class PRINT_GRID:
             print >> f, line
 
 
-def dotpad(s, max):
+def dotpad(s, max_length):
     l = len(s)
-    if l >= max:
+    if l >= max_length:
         return s
-    s += " " * ((max - l) % 4)
-    s += "  .." * ((max - l) / 4)
+    s += " " * ((max_length - l) % 4)
+    s += "  .." * ((max_length - l) / 4)
     return s
 
 
@@ -84,10 +84,10 @@ def cheque_to_text(cheque, f):
     grid.save(f)
 
 
-def print_items( cheque, grid, offset, payee_side ):
+def print_items(cheque, grid, offset, payee_side):
     date_str = cheque.date.strftime("%d %b %Y").upper()
 
-    s = "(%d) %s" % ( cheque.artist.artistid, cheque.artist.person.name )
+    s = "(%d) %s" % (cheque.artist.artistid, cheque.artist.person.name)
     if cheque.artist.publicname:
         s += " (%s)" % cheque.artist.publicname
 
@@ -102,10 +102,10 @@ def print_items( cheque, grid, offset, payee_side ):
         if item.id == cheque.id:
             name = dotpad("This cheque", 71)
         else:
-            name = dotpad("%s: %s" % ( item.payment_type.name, item.description), 71)[:71]
-        grid.print_on_next_line(" %2d. %-71s $%8.2f" % ( item_no, name, item.amount ))
+            name = dotpad("%s: %s" % (item.payment_type.name, item.description), 71)[:71]
+        grid.print_on_next_line(" %2d. %-71s $%8.2f" % (item_no, name, item.amount))
 
-    grid.print_on_next_line("     %71s $%8.2f" % ( "Balance:", cheque.artist.balance() ))
+    grid.print_on_next_line("     %71s $%8.2f" % ("Balance:", cheque.artist.balance()))
 
     if payee_side:
         grid.print_on_next_line("")
@@ -113,10 +113,7 @@ def print_items( cheque, grid, offset, payee_side ):
         message_lines = message.split("\n")
         for l in message_lines:
             grid.print_on_next_line(l)
-
     else:
         grid.print_on_next_line("")
         grid.print_on_next_line("Signature: _____________________________________________ Date: __________")
         grid.print_on_next_line("I have received this cheque and agree to return any amount paid in error.")
-		
-	

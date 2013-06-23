@@ -123,7 +123,7 @@ class Artist (models.Model):
             try:
                 highest_idd_artist = Artist.objects.order_by('-artistid')[0]
                 self.artistid = highest_idd_artist.artistid + 1
-            except Artist.DoesNotExist:
+            except IndexError:
                 self.artistid = 1
         super(Artist,self).save()
 

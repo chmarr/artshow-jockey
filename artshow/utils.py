@@ -65,7 +65,8 @@ class UnicodeCSVWriter:
 
 
 def create_user_from_email(email):
-    if len(email) > 30:
+    max_username_length = User._meta.get_field('username').max_length
+    if len(email) > max_username_length:
         username = email.split("@")[0]
         if User.objects.filter(username=username).exists():
             for i in range(1, 1000):

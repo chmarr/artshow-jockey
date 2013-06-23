@@ -5,40 +5,48 @@ from artshow.models import Person, Artist, ArtistAccess
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from artshow.utils import create_user_from_email, send_password_reset_email
-from artshow.forms import ArtistDetailsForm
+from artshow.forms import ArtistRegisterForm, LongerTextInput
 
 
 class AgreementForm(forms.Form):
     electronic_signature = \
         forms.CharField(required=True,
-                        help_text="You must read and agree to our Artist Agreement. "
-                                  "Please type in your full name here as your \"electronic signature\".")
-
+                        help_text="You must read and agree to our <a href=\"%s\" target=\"_blank\">"
+                                  "Artist Agreement</a>. "
+                                  "Please type in your full name here as your \"electronic signature\"." %
+                                  settings.ARTSHOW_ARTIST_AGREEMENT_URL,
+                        widget=LongerTextInput)
 
 class PersonForm(forms.ModelForm):
-    name = forms.CharField(required=True, label="Real Name", help_text="Your real, legal name")
+    name = forms.CharField(required=True, label="Real Name", help_text="Your real, legal name", widget=LongerTextInput)
     address1 = forms.CharField(required=True, label="Postal Address",
-                               help_text="Address where we can send correspondence")
-    address2 = forms.CharField(required=False, label="Address Continuation", help_text="If you need more space")
-    city = forms.CharField(required=True)
-    state = forms.CharField(required=True, label="State/Province")
-    postcode = forms.CharField(required=True, label="Postcode/ZIP")
+                               help_text="Address where we can send paper correspondence", widget=LongerTextInput)
+    address2 = forms.CharField(required=False, label="Apt, Suite, etc.", widget=LongerTextInput)
+    city = forms.CharField(required=True, widget=LongerTextInput)
+    state = forms.CharField(required=True, label="State/Province", widget=LongerTextInput)
+    postcode = forms.CharField(required=True, label="Postcode/ZIP", widget=LongerTextInput)
     country = forms.CharField(required=False,
-                              help_text="We'll assume %s if left blank" % settings.PEEPS_DEFAULT_COUNTRY)
+                              help_text="We'll assume %s if left blank" % settings.PEEPS_DEFAULT_COUNTRY,
+                              widget=LongerTextInput)
     phone = forms.CharField(required=True,
-                            help_text="We rarely call artists. We need this in case there's a urgent problem.")
-    email = forms.CharField(required=True, help_text="We'll create a management account with this.")
-    email_confirm = forms.CharField(required=True, help_text="Type your e-mail address again. Banish the TypoDemon!")
+                            help_text="We rarely call artists. We need this in case there's a urgent problem.",
+                            widget=LongerTextInput)
+    email = forms.CharField(required=True, help_text="We contact you at this address. "
+                                                     "Also, we create an on-line management account with this address.",
+                            widget=LongerTextInput)
+    email_confirm = forms.CharField(required=True,
+                                    help_text="To ensure correctness, please type your e-mail address again.",
+                                    widget=LongerTextInput)
 
     class Meta:
         model = Person
-        exclude = ('reg_id', 'comment')
+        exclude = ("reg_id", "comment")
 
     def clean_email_confirm(self):
         email_confirm = self.cleaned_data['email_confirm']
         try:
             if self.cleaned_data['email'] != email_confirm:
-                raise forms.ValidationError("The two e-mails don't match. Lucky we asked!")
+                raise forms.ValidationError("The two e-mails don't match. Please re-enter both carefully.")
         except KeyError:
             pass
         return email_confirm

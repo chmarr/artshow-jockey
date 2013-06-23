@@ -140,8 +140,11 @@ class Allocation(models.Model):
     requested = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space])
     allocated = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space], default=0)
 
+    def requested_charge(self):
+        return self.requested * self.space.price
+
     def allocated_charge(self):
-        return self.allocated * 10
+        return self.allocated * self.space.price
 
     def __unicode__(self):
         return "%s (%s) - %s/%s %s" % (self.artist.artistname(), self.artist.artistid,

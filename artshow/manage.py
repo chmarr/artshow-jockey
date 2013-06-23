@@ -1,4 +1,7 @@
+from django.core.signing import Signer
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.http import urlencode
+from django.utils.timezone import now
 from artshow.models import *
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -73,7 +76,7 @@ class PieceForm(forms.ModelForm):
 PieceFormSet = inlineformset_factory(Artist, Piece, form=PieceForm,
                                      extra=EXTRA_PIECES,
                                      can_delete=True,
-)
+                                     )
 
 
 class DeleteConfirmForm(forms.Form):
@@ -90,8 +93,8 @@ def pieces(request, artist_id):
 
     if not artist.editable_by(request.user):
         error = "You do not have permissions to edit pieces for this artist."
-        return render(request, "artshow/manage_error.html", {'artshow_settings':artshow_settings,
-                                                             'error':error})
+        return render(request, "artshow/manage_error.html", {'artshow_settings': artshow_settings,
+                                                             'error': error})
 
     pieces = artist.piece_set.order_by("pieceid")
 
@@ -260,8 +263,86 @@ def person_details(request, artist_id):
                                                                   "artshow_settings": artshow_settings})
 
 
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ("amount",)
+
+    def clean_amount(self):
+        amount = self.cleaned_data["amount"]
+        if amount <= 0:
+            raise forms.ValidationError("Amount must be above zero")
+        return amount
+
+
+# Example URL
+# https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=sales%40internetwonders.com&undefined_quantity=0&
+# item_name=Art+Show+Payment&item_number=12345-123124134&amount=23&shipping=0&no_shipping=1&return=internetwonders.com&
+# cancel_return=internetwonders.com&currency_code=USD&bn=PP%2dBuyNowBF&cn=&charset=UTF%2d8
+
+def make_paypal_url(payment, return_url, cancel_return_url):
+
+    signer = Signer()
+    item_number = signer.sign(unicode(payment.id))
+
+    params = {"cmd": "_xclick",
+              "business": settings.ARTSHOW_PAYPAL_ACCOUNT,
+              "undefined_quantity": "0",
+              "item_name": "Art Show Payment from " + payment.artist.artistname(),
+              "item_number": item_number,
+              "amount": unicode(payment.amount),
+              "shipping": "0",
+              "no_shipping": "1",
+              "return": return_url,
+              "cancel_return": cancel_return_url,
+              "currency_code": "USD",
+              "bn": "PP-BuyNow",
+              "charset": "UTF-8"
+    }
+
+    return "https://www.paypal.com/cgi-bin/webscr?" + urlencode(params)
+
+
 @login_required
 @user_edits_allowable
 def make_payment(request, artist_id):
-    error = "We're not set up to take payments this way, yet."
-    return render(request, "artshow/manage_error.html", {"artshow_settings": artshow_settings, "error": error})
+    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    allocations = artist.allocation_set.order_by("id")
+    total_requested_cost = 0
+    for a in allocations:
+        total_requested_cost += a.space.price * a.requested
+    space_fee = PaymentType(id=settings.ARTSHOW_SPACE_FEE_PK)
+    payment_received = PaymentType(id=settings.ARTSHOW_PAYMENT_RECEIVED_PK)
+    # Deductions from accounts are always negative, so we re-negate it.
+    deduction_to_date = - artist.payment_set.filter(payment_type=space_fee).aggregate(amount=Sum("amount"))["amount"]
+    deduction_remaining = total_requested_cost - deduction_to_date
+    if deduction_remaining < 0:
+        deduction_remaining = 0
+    account_balance = artist.payment_set.aggregate(amount=Sum("amount"))["amount"]
+    payment_remaining = deduction_remaining - account_balance
+    if payment_remaining < 0:
+        payment_remaining = 0
+
+    payment = Payment(artist=artist, amount=payment_remaining, payment_type=payment_received,
+                      description="PayPal pending confirmation", date=now())
+    if request.method == "POST":
+        form = PaymentForm(request.POST, instance=payment)
+        if form.is_valid():
+            form.save()
+            return_url = reverse("artshow.manage.artist", args=(artist_id,))
+            url = make_paypal_url(payment, return_url, return_url)
+            return redirect(url)
+    else:
+        form = PaymentForm(instance=payment)
+
+    context = {"form": form,
+               "artist": artist,
+               "allocations": allocations,
+               "total_requested_cost": total_requested_cost,
+               "deduction_to_date": deduction_to_date,
+               "deduction_remaining": deduction_remaining,
+               "account_balance": account_balance,
+               "payment_remaining": payment_remaining
+               }
+
+    return render(request, "artshow/make_payment.html", context)

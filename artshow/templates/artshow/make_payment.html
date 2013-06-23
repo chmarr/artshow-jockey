@@ -1,0 +1,64 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+  <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
+  <li class="current">Make Payment</li>
+</ul>
+{% endblock %}
+{% block content %}
+    <h1>Make a payment</h1>
+    <p>To secure your space requests, we require pre-payment for the cost of that space. We can accept payment with
+        your PayPal account, a major credit card (which uses PayPal but does not require a PayPal account),
+        or via a cheque in the mail.</p>
+    <p>The "suggested payment" below takes into account what spaces you have requested, what payments you have
+        made so far, and what fees have already been deducted. You may choose to pay more if you desire; any
+        over-payments will be returned to you at the completion of the show. Refunds for unused space requests
+        will be made according to the Artist Agreement.</p>
+    <p>To pay via PayPal, enter the desired payment and press "Pay via Paypal". You will be taken to the PayPal site
+        to complete payment. Currently, these payments are confirmed manually, and will show up as
+        "pending confirmation" in your Artist Accounting.</p>
+    <p>Suggested payment: ${{ payment_remaining|floatformat:2 }}</p>
+    <form method="post">{% csrf_token %}
+        {{ form.non_field_errors }}
+        {% if form.amount.errors %}<p>{{ form.amount.errors }}</p>{% endif %}
+        <p>{{ form.amount.label_tag }}: {{ form.amount }}
+        <input type="submit" value="Pay via PayPal"/></p>
+    </form>
+    <hr/>
+    <p>Here's how we arrived at the above figure. Firstly, here's the spaces you have requested:</p>
+    <table>
+        <tr>
+            <th>Space</th>
+            <th>Requested</th>
+            <th>Cost</th>
+        </tr>
+        {% for a in allocations %}
+        <tr>
+            <td>{{ a.space }}</td>
+            <td>{{ a.requested }}</td>
+            <td>${{ a.requested_charge|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>Total cost for requested spaces: ${{ total_requested_cost|floatformat:2 }}</p>
+    {% if deduction_to_date %}
+        <p>We usually don't deduct space fees from your account until the middle of the show. If we do, we'll tell
+            you why.</p>
+        <p>Space fees deducted to date: ${{ deduction_to_date|floatformat:2 }}</p>
+        <p>Remaining cost for requested spaces: ${{ deduction_remaining|floatformat:2 }}</p>
+    {% endif %}
+
+    {% if account_balance %}
+        <p>Your "account" has a balance of ${{ account_balance|floatformat:2 }}. Before the show, this is most
+            often used to secure your space requests, and is thus taken into account here. If it is to be used for
+            something
+            else that has not shown up in your accounting, please make your own adjustments to the suggested
+            payment.</p>
+    {% endif %}
+
+    <p>Suggested payment: ${{ payment_remaining|floatformat:2 }}</p>
+
+{% endblock %}

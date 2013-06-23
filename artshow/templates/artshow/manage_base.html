@@ -1,4 +1,5 @@
-{% load url from future %}<!DOCTYPE html>
+{% load url from future %}
+{% load tinyannounce_extras %}<!DOCTYPE html>
 <html><head>
 <title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}artshow/manage_styles.css" />
@@ -20,6 +21,11 @@
 {% block breadcrumbs %}
 {% endblock %}
   </div>
+{% block announcements %}
+  <div id="announcements">
+  {% announcements_available %}
+  </div>
+{% endblock %}
   <div id="messages">
 {% block messages %}
 {% if messages %}

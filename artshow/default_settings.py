@@ -32,6 +32,8 @@ Random J Hacker
 Generic Art Show Lead.
 artshow@example.com - http://www.example.com/artshow
 """
+ARTSHOW_PASSWORD_RESET_TEMPLATE = "artshow/manage_password_reset.txt"
+ARTSHOW_PASSWORD_RESET_SUBJECT = "Your Art Show Management Account"
 ARTSHOW_CHEQUE_THANK_YOU = "Thank you for exhibiting at Generic Art Show"
 ARTSHOW_BLANK_BID_SHEET = "artshow/files/BidSheet.pdf"
 ARTSHOW_BLANK_CONTROL_FORM = "artshow/files/ControlForm.pdf"
@@ -40,6 +42,9 @@ ARTSHOW_BLANK_CONTROL_FORM = "artshow/files/ControlForm.pdf"
 # Specify as a 2-tuple: ( "font name", "font path" )
 ARTSHOW_BARCODE_FONT = ('Free3of9', 'artshow/files/free3of9/FREE3OF9.TTF')
 ARTSHOW_SCANNER_DEVICE = "/dev/ttyUSB0"
+
+# Set this to "True" to display allocated spaces to logged-in artists
+ARTSHOW_SHOW_ALLOCATED_SPACES = False
 
 # Set this to "True" to prevent all standard logins from making edits to
 # piece details. Best used when this database is no longer the "master".

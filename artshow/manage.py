@@ -11,7 +11,18 @@ import utils
 import re
 import bidsheets
 
+
 EXTRA_PIECES = 5
+
+
+def user_edits_allowable(view_func):
+    def decorator(request, *args, **kwargs):
+        if artshow_settings.ARTSHOW_SHUT_USER_EDITS:
+            error = "The Art Show Administration has disallowed edits for the time being."
+            return render(request, "artshow/manage_error.html", {'artshow_settings': artshow_settings,
+                                                                 'error': error})
+        return view_func(request, *args, **kwargs)
+    return decorator
 
 
 @login_required
@@ -22,11 +33,28 @@ def index(request):
 
 @login_required
 def artist(request, artist_id):
+
     artist = get_object_or_404(Artist.objects.viewable_by(request.user), pk=artist_id)
     pieces = artist.piece_set.order_by("pieceid")
+    payments = artist.payment_set.order_by("date", "id")
+    payments_total = payments.aggregate(payments_total=Sum('amount'))['payments_total'] or Decimal(0)
+    allocations = artist.allocation_set.order_by("pk")
+
     can_edit = artist.editable_by(request.user)
+    can_edit_personal_details = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and \
+                                (request.user.email == artist.person.email)
+    can_edit_artist_details = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and can_edit
+    can_edit_piece_details = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and can_edit
+    can_edit_space_reservations = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and can_edit
+
     return render(request, "artshow/manage_artist.html",
-                  {'artist': artist, 'pieces': pieces, 'can_edit': can_edit, 'artshow_settings': artshow_settings})
+                  {'artist': artist, 'pieces': pieces, 'allocations': allocations,
+                   'payments': payments, 'payments_total': payments_total,
+                   'can_edit_personal_details': can_edit_personal_details,
+                   'can_edit_artist_details': can_edit_artist_details,
+                   'can_edit_piece_details': can_edit_piece_details,
+                   'can_edit_space_reservations': can_edit_space_reservations,
+                   'artshow_settings': artshow_settings})
 
 
 class PieceForm(forms.ModelForm):
@@ -45,7 +73,7 @@ class PieceForm(forms.ModelForm):
 PieceFormSet = inlineformset_factory(Artist, Piece, form=PieceForm,
                                      extra=EXTRA_PIECES,
                                      can_delete=True,
-                                     )
+)
 
 
 class DeleteConfirmForm(forms.Form):
@@ -56,14 +84,14 @@ class DeleteConfirmForm(forms.Form):
 
 
 @login_required
+@user_edits_allowable
 def pieces(request, artist_id):
     artist = get_object_or_404(Artist.objects.viewable_by(request.user), pk=artist_id)
 
-    if artshow_settings.ARTSHOW_SHUT_USER_EDITS:
-        return render(request, "artshow/manage_pieces_shut.html", {'artist': artist})
-
     if not artist.editable_by(request.user):
-        return render(request, "artshow/manage_pieces_noedit.html", {'artist': artist})
+        error = "You do not have permissions to edit pieces for this artist."
+        return render(request, "artshow/manage_error.html", {'artshow_settings':artshow_settings,
+                                                             'error':error})
 
     pieces = artist.piece_set.order_by("pieceid")
 
@@ -74,10 +102,7 @@ def pieces(request, artist_id):
             if not formset.deleted_forms or delete_confirm_form.cleaned_data['confirm_delete']:
                 formset.save()
                 messages.info(request, "Changes to piece details have been saved")
-                if request.POST.get('saveandcontinue'):
-                    return redirect('.')
-                else:
-                    return redirect(reverse('artshow.manage.artist', args=(artist_id,)))
+                return redirect('.')
     else:
         formset = PieceFormSet(queryset=pieces, instance=artist)
         delete_confirm_form = DeleteConfirmForm()
@@ -128,3 +153,115 @@ def control_forms(request, artist_id):
     response = HttpResponse(mimetype="application/pdf")
     bidsheets.generate_control_forms(output=response, artists=[artist])
     return response
+
+
+def allocation_form_factory(available_space_types):
+    class AllocationForm(forms.ModelForm):
+        space = forms.ModelChoiceField(queryset=available_space_types)
+
+        class Meta:
+            model = Allocation
+            fields = ('space', 'requested')
+
+        def clean(self):
+            cleaned_data = super(AllocationForm, self).clean()
+            try:
+                if self.instance.space != cleaned_data['space']:
+                    raise forms.ValidationError(
+                        "You were somehow able to try to change the space type. "
+                        "Instead, set one space to zero, and create another.")
+            except Space.DoesNotExist:
+                pass
+            return cleaned_data
+
+    return AllocationForm
+
+
+@login_required
+@user_edits_allowable
+def spaces(request, artist_id):
+    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+
+    allocations = artist.allocation_set.order_by("id")
+    available_space_types = Space.objects.filter(reservable=True) | Space.objects.filter(
+        pk__in=allocations.values('space'))
+
+    AllocationForm = allocation_form_factory(available_space_types)
+    AllocationFormSet = inlineformset_factory(Artist, Allocation, form=AllocationForm, can_delete=False)
+
+    if request.method == "POST":
+        formset = AllocationFormSet(request.POST, queryset=allocations, instance=artist)
+        if formset.is_valid():
+            formset.save()
+            messages.info(request, "Changes to your space requests have been saved")
+            return redirect(reverse('artshow.manage.artist', args=(artist_id,)))
+    else:
+        formset = AllocationFormSet(queryset=allocations, instance=artist)
+
+    return render(request, "artshow/manage_spaces.html", {"artist": artist, "formset": formset,
+                                                          "artshow_settings": artshow_settings})
+
+
+class ArtistModelForm(forms.ModelForm):
+    publicname = forms.CharField(label="Artist Name", required=False,
+                                 help_text="The name we'll display to the public. "
+                                           "Make this blank to use your real name")
+
+    class Meta:
+        model = Artist
+        fields = ('publicname', 'mailin')
+
+
+@login_required
+@user_edits_allowable
+def artist_details(request, artist_id):
+    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+
+    if request.method == "POST":
+        form = ArtistModelForm(request.POST, instance=artist)
+        if form.is_valid():
+            form.save()
+            messages.info(request, "Changes to your artist details have been saved")
+            return redirect(reverse('artshow.manage.artist', args=(artist_id,)))
+    else:
+        form = ArtistModelForm(instance=artist)
+
+    return render(request, "artshow/manage_artist_details.html", {"artist": artist, "form": form,
+                                                                  "artshow_settings": artshow_settings})
+
+
+class PersonModelForm(forms.ModelForm):
+    class Meta:
+        model = Person
+        fields = ('name', 'address1', 'address2', 'city', 'state', 'postcode', 'country', 'phone')
+
+
+@login_required
+@user_edits_allowable
+def person_details(request, artist_id):
+    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    person = artist.person
+    if person.email != request.user.email:
+        error = "You do not have permission to edit this person's details. Please make this request by " \
+                "submitting to the Art Show Administration."
+        return render(request, "artshow/manage_error.html", {"artshow_settings": artshow_settings, "error": error})
+
+    if request.method == "POST":
+        form = PersonModelForm(request.POST, instance=person)
+        if form.is_valid():
+            form.save()
+            messages.info(request, "Changes to your personal details have been saved")
+            return redirect(reverse('artshow.manage.artist', args=(artist_id,)))
+    else:
+        form = PersonModelForm(instance=person)
+
+    return render(request, "artshow/manage_person_details.html", {"person": person, "artist": artist,
+                                                                  "form": form,
+                                                                  "artshow_settings": artshow_settings})
+
+
+@login_required
+@user_edits_allowable
+def make_payment(request, artist_id):
+    error = "We're not set up to take payments this way, yet."
+    return render(request, "artshow/manage_error.html", {"artshow_settings": artshow_settings, "error": error})

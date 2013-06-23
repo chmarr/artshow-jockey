@@ -1,0 +1,21 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block title %}Edit Person Details{% endblock %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+  <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
+  <li class="current">Edit</li>
+</ul>
+{% endblock %}
+{% block content %}
+<h1>Edit details for {{ person.name }}</h1>
+<form method="post">{% csrf_token %}
+<table>
+    {{ form.as_table }}
+    <tr><th>Email:</th><td>{{ form.instance.email }}<br/><span class="helptext">To change your email, please submit a request to the Art Show Management.</span></td></tr>
+</table>
+<p><input type="submit" value="Save and Return" /></p>
+</form>
+{% endblock %}

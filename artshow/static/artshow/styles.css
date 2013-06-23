@@ -48,6 +48,9 @@ td {
 .money.excluded {
 	color: #bbbbbb;
 }
+input {
+    font-size: 14px;
+}
 input.delbutton {
 	margin: 0px 4px 0px 4px;
 }

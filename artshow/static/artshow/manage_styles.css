@@ -1,6 +1,6 @@
 body {
-	margin: 0px;
-	padding: 0px;
+	margin: 0;
+	padding: 0;
 	color: #000;
 	background-color: #fff;
 	font-family: "Verdana", "Ariel", sans-serif;
@@ -9,7 +9,7 @@ body {
 	position: relative;
 	width: 100%;
 	min-width: 760px;
-	padding: 0px;
+	padding: 0;
 }
 #header {
 	background: #603a22;
@@ -97,8 +97,7 @@ td {
 .formbox th { 
 	background-color: inherit;
 	color: black;
-	font-size: inherit;
-	text-align: right; 
+	text-align: right;
 	font-size: small;
 }
 .formbox td { text-align: left; }
@@ -106,9 +105,8 @@ td {
 .formbox tr.help td { text-align: center; }
 
 ul.errorlist {
-	margin: 0px;
-	padding: 0px;
-	list-style-type: 
+	margin: 0;
+	padding: 0;
 }
 .errorlist li {
 	display: block;
@@ -135,7 +133,7 @@ ul.errorlist {
 	display: inline;
 	font-size: small;
 	color: #603a22;
-	margin: 0px 4px;
+	margin: 0 4px;
 }
 #breadcrumbs li.current {
 	font-weight: bold;
@@ -181,4 +179,9 @@ div.confirmdelete {
 .confirmdelete p {
 	padding: 2px;
 }
-
+input {
+    font-size: 14px;
+}
+table.announcementsindex tr.seen {
+    color: grey;
+}

@@ -1,0 +1,37 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li class="current">Announcements</li>
+    </ul>
+{% endblock %}
+{% block announcements %}{% endblock %}
+{% block content %}
+    {% if announcements %}
+    <table class="announcementsindex">
+        <tr>
+            <th>Date</th>
+            <th>Subject</th>
+        </tr>
+        {% for a in announcements %}
+            {% if not a.is_seen %}
+                <tr class="new">
+                    <td>{{ a.created }}</td>
+                    <td><a href="{% url 'artshow.announcement.show' a.id %}">{{ a.subject }}</a></td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        {% for a in announcements %}
+            {% if a.is_seen %}
+                <tr class="seen">
+                    <td>{{ a.created }}</td>
+                    <td><a href="{% url 'artshow.announcement.show' a.id %}">{{ a.subject }}</a></td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No announcements available to display.</p>
+    {% endif %}
+{% endblock %}

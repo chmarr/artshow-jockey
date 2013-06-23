@@ -314,11 +314,12 @@ def make_payment(request, artist_id):
     space_fee = PaymentType(id=settings.ARTSHOW_SPACE_FEE_PK)
     payment_received = PaymentType(id=settings.ARTSHOW_PAYMENT_RECEIVED_PK)
     # Deductions from accounts are always negative, so we re-negate it.
-    deduction_to_date = - artist.payment_set.filter(payment_type=space_fee).aggregate(amount=Sum("amount"))["amount"]
+    deduction_to_date = - (
+        artist.payment_set.filter(payment_type=space_fee).aggregate(amount=Sum("amount"))["amount"] or 0)
     deduction_remaining = total_requested_cost - deduction_to_date
     if deduction_remaining < 0:
         deduction_remaining = 0
-    account_balance = artist.payment_set.aggregate(amount=Sum("amount"))["amount"]
+    account_balance = artist.payment_set.aggregate(amount=Sum("amount"))["amount"] or 0
     payment_remaining = deduction_remaining - account_balance
     if payment_remaining < 0:
         payment_remaining = 0

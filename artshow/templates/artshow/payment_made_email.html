@@ -1,0 +1,16 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+  <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
+  <li class="current">Make Payment</li>
+</ul>
+{% endblock %}
+{% block content %}
+    <p>Thank you!</p>
+    <p>We have recorded that you intend to mail us a payment, and this is reflected in your accounting.</p>
+    <p>Once we receive the payment, the accounting record will be changed to remove the "pending" status. If this
+    does not happen for several weeks, please let us know.</p>
+{% endblock %}

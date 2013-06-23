@@ -329,10 +329,16 @@ def make_payment(request, artist_id):
     if request.method == "POST":
         form = PaymentForm(request.POST, instance=payment)
         if form.is_valid():
+            via_mail = request.POST.get("via_mail", "")
+            if via_mail:
+                payment.description = "Mail-in pending receipt"
             form.save()
-            return_url = reverse("artshow.manage.artist", args=(artist_id,))
-            url = make_paypal_url(payment, return_url, return_url)
-            return redirect(url)
+            if via_mail:
+                return redirect(reverse("artshow.manage.payment_made_email", args=(artist_id,)))
+            else:
+                return_url = reverse("artshow.manage.artist", args=(artist_id,))
+                url = make_paypal_url(payment, return_url, return_url)
+                return redirect(url)
     else:
         form = PaymentForm(instance=payment)
 
@@ -347,3 +353,9 @@ def make_payment(request, artist_id):
                }
 
     return render(request, "artshow/make_payment.html", context)
+
+
+@login_required
+def payment_made_email(request, artist_id):
+    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    return render(request, "artshow/payment_made_email.html", {"artist":artist})

@@ -20,12 +20,14 @@
     <p>To pay via PayPal, enter the desired payment and press "Pay via Paypal". You will be taken to the PayPal site
         to complete payment. Currently, these payments are confirmed manually, and will show up as
         "pending confirmation" in your Artist Accounting.</p>
+    <p>To pay via a mailed-in payment, enter the desired payment amount and press "Pay via Mail".</p></o>
     <p>Suggested payment: ${{ payment_remaining|floatformat:2 }}</p>
     <form method="post">{% csrf_token %}
         {{ form.non_field_errors }}
         {% if form.amount.errors %}<p>{{ form.amount.errors }}</p>{% endif %}
         <p>{{ form.amount.label_tag }}: {{ form.amount }}
-        <input type="submit" value="Pay via PayPal"/></p>
+        <input type="submit" value="Pay via PayPal"/>
+        <input type="submit" name="via_mail" value="Pay via Mail"/></p>
     </form>
     <hr/>
     <p>Here's how we arrived at the above figure. Firstly, here's the spaces you have requested:</p>

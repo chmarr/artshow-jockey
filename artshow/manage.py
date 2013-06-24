@@ -1,4 +1,4 @@
-from django.core.signing import Signer
+from django.core.signing import Signer, BadSignature
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.http import urlencode
 from django.utils.timezone import now
@@ -280,7 +280,7 @@ class PaymentForm(forms.ModelForm):
 # item_name=Art+Show+Payment&item_number=12345-123124134&amount=23&shipping=0&no_shipping=1&return=internetwonders.com&
 # cancel_return=internetwonders.com&currency_code=USD&bn=PP%2dBuyNowBF&cn=&charset=UTF%2d8
 
-def make_paypal_url(payment, return_url, cancel_return_url):
+def make_paypal_url(request, payment):
 
     signer = Signer()
     item_number = signer.sign(unicode(payment.id))
@@ -293,8 +293,9 @@ def make_paypal_url(payment, return_url, cancel_return_url):
               "amount": unicode(payment.amount),
               "shipping": "0",
               "no_shipping": "1",
-              "return": return_url,
-              "cancel_return": cancel_return_url,
+              "return": request.build_absolute_uri(reverse("artshow.manage.payment_made_paypal", args=(payment.artist_id,))),
+              "cancel_return": request.build_absolute_uri(reverse("artshow.manage.payment_cancelled_paypal",
+                                       args=(payment.artist_id,)) + "?" + urlencode({"item_number": item_number})),
               "currency_code": "USD",
               "bn": "PP-BuyNow",
               "charset": "UTF-8"
@@ -312,7 +313,7 @@ def make_payment(request, artist_id):
     for a in allocations:
         total_requested_cost += a.space.price * a.requested
     space_fee = PaymentType(id=settings.ARTSHOW_SPACE_FEE_PK)
-    payment_received = PaymentType(id=settings.ARTSHOW_PAYMENT_RECEIVED_PK)
+    payment_pending = PaymentType(id=settings.ARTSHOW_PAYMENT_PENDING_PK)
     # Deductions from accounts are always negative, so we re-negate it.
     deduction_to_date = - (
         artist.payment_set.filter(payment_type=space_fee).aggregate(amount=Sum("amount"))["amount"] or 0)
@@ -324,7 +325,7 @@ def make_payment(request, artist_id):
     if payment_remaining < 0:
         payment_remaining = 0
 
-    payment = Payment(artist=artist, amount=payment_remaining, payment_type=payment_received,
+    payment = Payment(artist=artist, amount=payment_remaining, payment_type=payment_pending,
                       description="PayPal pending confirmation", date=now())
     if request.method == "POST":
         form = PaymentForm(request.POST, instance=payment)
@@ -336,8 +337,7 @@ def make_payment(request, artist_id):
             if via_mail:
                 return redirect(reverse("artshow.manage.payment_made_email", args=(artist_id,)))
             else:
-                return_url = reverse("artshow.manage.artist", args=(artist_id,))
-                url = make_paypal_url(payment, return_url, return_url)
+                url = make_paypal_url(request, payment)
                 return redirect(url)
     else:
         form = PaymentForm(instance=payment)
@@ -359,3 +359,25 @@ def make_payment(request, artist_id):
 def payment_made_email(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
     return render(request, "artshow/payment_made_email.html", {"artist":artist})
+
+def payment_made_paypal(request, artist_id):
+    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    return render(request, "artshow/payment_made_paypal.html", {"artist":artist})
+
+def payment_cancelled_paypal(request, artist_id):
+    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    signer = Signer()
+    payment_found_and_deleted = False
+    try:
+        item_number = request.GET["item_number"]
+        payment_id = signer.unsign(item_number)
+        payment = Payment.objects.get(id=payment_id)
+        if payment.artist == artist and payment.payment_type_id == settings.ARTSHOW_PAYMENT_PENDING_PK:
+            payment.delete()
+            payment_found_and_deleted = True
+    except (KeyError, BadSignature, Payment.DoesNotExist):
+        pass
+
+    return render(request, "artshow/payment_cancelled_paypal.html",
+                  {"artist": artist,
+                   "payment_found_and_deleted": payment_found_and_deleted})

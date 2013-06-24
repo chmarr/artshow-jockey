@@ -185,3 +185,9 @@ input {
 table.announcementsindex tr.seen {
     color: grey;
 }
+
+#announcements p {
+    background-color: lavenderblush;
+    padding: 5px 10px;
+    margin: 0px;
+}

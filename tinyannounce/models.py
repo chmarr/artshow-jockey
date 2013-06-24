@@ -2,13 +2,14 @@ from django.db import models
 from django.db.models import Q, Count
 from django.contrib.auth.models import User
 import datetime
+from django.utils import timezone
 
 
 class AnnouncementManager(models.Manager):
 
     def active(self):
-        now = datetime.datetime.utcnow()
-        query = self.get_query_set().filter(Q(created__lt=now) and (Q(expires__isnull=True) or Q(expires__gt=now)))
+        now = timezone.now()
+        query = self.get_query_set().filter(Q(created__lt=now), (Q(expires__isnull=True) | Q(expires__gt=now)))
         return query
 
 

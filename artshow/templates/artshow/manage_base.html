@@ -1,43 +1,49 @@
 {% load url from future %}
 {% load tinyannounce_extras %}<!DOCTYPE html>
-<html><head>
-<title>{% block title %}{% endblock %}</title>
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}artshow/manage_styles.css" />
-</head><body>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}artshow/manage_styles.css"/>
+</head>
+<body>
 <div id="container">
-  <div id="header">
-    <div id="branding">
-      <h1 id="site-name">{{ SITE_NAME }}</h1>
+    <div id="header">
+        <div id="branding">
+            <h1 id="site-name">{{ SITE_NAME }}</h1>
+        </div>
+        <div id="user-tools">
+            {% if user.is_active %}
+                Welcome,
+                <strong>{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}</strong>.
+                <a href="{% url 'view_announcements' %}">View Announcements</a> /
+                <a href="{% url 'password_change' %}">Change password</a> / <a href="{% url 'logout' %}">Log out</a>
+            {% else %}
+                <a href="{% url 'login' %}">Log in</a>
+            {% endif %}
+        </div>
     </div>
-    <div id="user-tools">
-{% if user.is_active %}
-      Welcome, <strong>{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}</strong>. <a href="{% url 'password_change' %}">Change password</a> / <a href="{% url 'logout' %}">Log out</a>
-{% else %}
-      <a href="{% url 'login' %}">Log in</a>
-{% endif %}
+    <div id="breadcrumbs">
+        {% block breadcrumbs %}
+        {% endblock %}
     </div>
-  </div>
-  <div id="breadcrumbs">
-{% block breadcrumbs %}
-{% endblock %}
-  </div>
-{% block announcements %}
-  <div id="announcements">
-  {% announcements_available %}
-  </div>
-{% endblock %}
-  <div id="messages">
-{% block messages %}
-{% if messages %}
-  <ul class="messagelist">{% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}</ul>
-{% endif %}
-{% endblock %}
-  </div>
-  <div id="content">
-{% block content %}
-{% endblock %}
-  </div>
+    <div id="messages">
+        {% block messages %}
+            {% if messages %}
+                <ul class="messagelist">{% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}</ul>
+            {% endif %}
+        {% endblock %}
+    </div>
+    {% block announcements %}
+        <div id="announcements">
+            {% announcements_available %}
+        </div>
+    {% endblock %}
+    <div id="content">
+        {% block content %}
+        {% endblock %}
+    </div>
 </div>
-</body></html>
+</body>
+</html>

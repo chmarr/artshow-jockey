@@ -8,7 +8,7 @@ Useful to construct text overlay boxes for printing to existing PDF forms.
 cli_defaults = {
     'lpi': 10,
 }
-cli_usage = "%prog infile"
+cli_usage = "%prog [options] infile"
 cli_description = """\
 Read in a PDF file and overlay a 0.1" grid on top of it. Writes to stdout.
 """

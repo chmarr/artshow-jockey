@@ -1,4 +1,3 @@
-#! /usr/bin/env python26
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details

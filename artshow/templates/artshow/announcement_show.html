@@ -1,0 +1,22 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.announcement.index' %}">Announcements</a></li>
+        <li class="current">{{ announcement.subject }}</li>
+    </ul>
+{% endblock %}
+{% block announcements %}{% endblock %}
+{% block content %}
+    <table>
+    <tr><td>{{ announcement.subject }}</td></tr>
+    <tr><td>From: {{ announcement.author }} at {{ announcement.created }}</td></tr>
+    <tr><td>{{ announcement.body|linebreaksbr }}</td></tr>
+    </table>
+    {% if not is_seen %}
+    <form method="post">{% csrf_token %}
+    <input type="submit" value="Mark as Read and Return" />
+    </form>
+    {% endif %}
+{% endblock %}

@@ -125,6 +125,7 @@ INSTALLED_APPS = (
     'south',
     'ajax_select',
     'tinyreg',
+    'tinyannounce',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )

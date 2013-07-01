@@ -11,7 +11,7 @@
 {% endblock %}
 {% block content %}
 <p>Managing pieces for artist <strong>{{ artist.artistname }}</strong></p>
-<p>To enter more than 5 pieces, click "Save and Continue Editing" and 5 more slots will appear.</p>
+<p>To enter more than 5 pieces, click "Save" and 5 more slots will appear.</p>
 <form method="post">{% csrf_token %}
 {% if formset.deleted_forms %}
 <div class="confirmdelete">
@@ -37,7 +37,6 @@
   </tr>
 {% endfor %}
 </table>
-<p><input type="submit" value="Save" /> <input type="submit" name="saveandcontinue" value="Save and Continue Editing" /></p>
+<p><input type="submit" value="Save" /></p>
 </form>
 {% endblock %}
-</body></html>

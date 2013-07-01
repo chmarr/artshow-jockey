@@ -1,0 +1,19 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+  <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
+  <li class="current">Make Payment</li>
+</ul>
+{% endblock %}
+{% block content %}
+        <p>You have cancelled your payment on Paypal.</p>
+    {% if payment_found_and_deleted %}
+        <p>The corresponding "Pending Payment" has been removed from your Artist Accounting.</p>
+    {% else %}
+    <p>We could not find the corresponding "Pending Payment" in our
+    records. Please check your Artist Accounting and let us know if there are any unexpected entries.</p>
+    {% endif %}
+{% endblock %}

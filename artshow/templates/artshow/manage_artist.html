@@ -2,50 +2,155 @@
 {% load url from future %}
 {% block title %}Manage Artist {{ artist.artistname }}{% endblock %}
 {% block breadcrumbs %}
-<ul class="breadcrumbs">
-  <li><a href="/">Home</a></li>
-  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
-  <li class="current">{{ artist.artistname }}</li>
-</ul>
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+        <li class="current">{{ artist.artistname }}</li>
+    </ul>
 {% endblock %}
 {% block content %}
+    <style type="text/css">
+        h2 a {
+            font-size: 50%;
+        }
+    </style>
 
-<h2>Personal Details</h2>
+    <h2>Personal Details {% if can_edit_personal_details %}
+        <a href="{% url 'artshow.manage.person_details' artist.artistid %}">Edit</a>{% endif %}</h2>
 
-<table>
-  <tr><th>Artist ID</th><td>{{ artist.artistid }}</td></tr>
-  <tr><th>Artist Name</th><td>{{ artist.artistname }}</td></tr>
-  <tr><th>Mail In</th><td>{{ artist.mailin|yesno }}</td></tr>
-{% with person=artist.person %}
-{% if person.name %}  <tr><th>Name</th><td>{{ person.name }}</td></tr>{% endif %}
-{% if person.address1 %}  <tr><th>Address</th><td>{{ person.address1 }}</td></tr>{% endif %}
-{% if person.address2 %}  <tr><th>Address</th><td>{{ person.address2 }}</td></tr>{% endif %}
-{% if person.city %}  <tr><th>City</th><td>{{ person.city }}</td></tr>{% endif %}
-{% if person.state %}  <tr><th>State</th><td>{{ person.state }}</td></tr>{% endif %}
-{% if person.postcode %}  <tr><th>Postcode</th><td>{{ person.postcode }}</td></tr>{% endif %}
-{% if person.country %}  <tr><th>Country</th><td>{{ person.country }}</td></tr>{% endif %}
-{% if person.phone %}  <tr><th>Phone</th><td>{{ person.phone }}</td></tr>{% endif %}
-{% if person.email %}  <tr><th>E-mail</th><td>{{ person.email }}</td></tr>{% endif %}
-{% endwith %}
-  <tr><th>Agents</th><td>{% for a in artist.agents.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}</td></tr>
-</table>
+    <table>
+        {% with person=artist.person %}
+            <tr>
+                <th>Name</th>
+                <td>{{ person.name }}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>{{ person.get_mailing_label|linebreaksbr }}</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>{{ person.phone }}</td>
+            </tr>
+            {% if person.email %}
+                <tr>
+                    <th>E-mail</th>
+                    <td>{{ person.email }}</td>
+                </tr>{% endif %}
+        {% endwith %}
+    </table>
 
-<p>Please <a href="mailto:{{ artshow_settings.ARTSHOW_ADMIN_EMAIL }}">contact us</a> if you need to change any of these details.</p>
+    <h2>Artist Details {% if can_edit_artist_details %}
+        <a href="{% url 'artshow.manage.artist_details' artist.artistid %}">Edit</a>{% endif %}</h2>
 
-<h2>Piece Details</h2>
+    <table>
+        <tr>
+            <th>Artist ID</th>
+            <td>{{ artist.artistid }}</td>
+        </tr>
+        <tr>
+            <th>Artist Name</th>
+            <td>{{ artist.artistname }}</td>
+        </tr>
+        <tr>
+            <th>Mail In</th>
+            <td>{{ artist.mailin|yesno }}</td>
+        </tr>
+        <tr>
+            <th>Agents</th>
+            <td>{% for a in artist.agents.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}
+                None{% endfor %}</td>
+        </tr>
+        <tr>
+            <th>Payment To</th>
+            <td>{% if artist.payment_to %}{{ artist.payment_to.get_mailing_label|linebreaksbr }}{% else %}As Shown in
+                Personal Details{% endif %}</td>
+        </tr>
+    </table>
 
-{% if can_edit and artshow_settings.ARTSHOW_SHUT_USER_EDITS %}<p><strong>Piece editing has been disabled. Please make any adjustments with the Art Show Staff at the convention.</strong></p>{% endif %}
-<p>
-  {% if can_edit and not artshow_settings.ARTSHOW_SHUT_USER_EDITS %}<a href="{% url 'artshow.manage.pieces' artist.pk %}">Edit</a>.{% endif %}
-  {% if artist.piece_set.count %}<a href="{% url 'artshow.manage.downloadcsv' artist.pk %}">Download as CSV</a>. <a href="{% url 'artshow.manage.bid_sheets' artist.pk %}">Bid Sheets*</a>. <a href="{% url 'artshow.manage.control_forms' artist.pk %}">Control Forms*</a>.<br />*<small>These are for your records; we'll print forms for you for the show.</small>{% endif %}
-</p>
 
-<table>
-  <tr><th>Piece ID</th><th>Title</th><th>Media</th><th>Adult?</th><th>Not For Sale?</th><th>Min Bid</th><th>Buy Now</th></tr>
-{% for p in pieces %}
-  <tr><td>{{ p.pieceid }}</td><td>{{ p.name }}</td><td>{{ p.media }}</td><td>{{ p.adult|yesno }}</td><td>{{ p.not_for_sale|yesno }}</td><td>{{ p.min_bid }}</td><td>{{ p.buy_now }}</td></tr>
-{% endfor %}
-  <tr class="totalsrow"><td colspan="7">{{ artist.piece_set.count }} piece{{ artist.piece_set.count|pluralize }} entered.</td></tr>
-</table>
+
+    <h2>Space Reservations {% if can_edit_space_reservations %}<a href="{% url "artshow.manage.spaces" artist.pk %}">
+        Edit</a>{% endif %}</h2>
+    {% if allocations %}
+    <table>
+        <tr>
+            <th>Space Type</th>
+            <th>Requested</th>
+            {% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}
+                <th>Allocated</th>
+            {% endif %}
+        </tr>
+        {% for a in allocations %}
+            <tr>
+                <td>{{ a.space }}</td>
+                <td>{{ a.requested }}</td>
+                {% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}
+                    <td>{{ a.allocated }}</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No spaces have been requested yet.</p>
+    {% endif %}
+
+    <h2>Piece Details
+        {% if can_edit_piece_details %}
+            <a href="{% url 'artshow.manage.pieces' artist.pk %}">Edit</a>
+        {% endif %}
+        {% if artist.piece_set.count %}
+            <a href="{% url 'artshow.manage.downloadcsv' artist.pk %}">Download as CSV</a>
+            <a href="{% url 'artshow.manage.bid_sheets' artist.pk %}">Preview Bid Sheets</a>
+            <a href="{% url 'artshow.manage.control_forms' artist.pk %}">Preview Control Forms</a>
+        {% endif %}
+    </h2>
+
+    <table>
+        <tr>
+            <th>Piece ID</th>
+            <th>Title</th>
+            <th>Media</th>
+            <th>Adult?</th>
+            <th>Not For Sale?</th>
+            <th>Min Bid</th>
+            <th>Buy Now</th>
+        </tr>
+        {% for p in pieces %}
+            <tr>
+                <td>{{ p.pieceid }}</td>
+                <td>{{ p.name }}</td>
+                <td>{{ p.media }}</td>
+                <td>{{ p.adult|yesno }}</td>
+                <td>{{ p.not_for_sale|yesno }}</td>
+                <td>{{ p.min_bid }}</td>
+                <td>{{ p.buy_now }}</td>
+            </tr>
+        {% endfor %}
+        <tr class="totalsrow">
+            <td colspan="7">{{ artist.piece_set.count }} piece{{ artist.piece_set.count|pluralize }} entered.</td>
+        </tr>
+    </table>
+
+    <h2>Accounting <a href="{% url 'artshow.manage.make_payment' artist.pk %}">Make Payment</a></h2>
+
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Amount</th>
+        </tr>
+        {% for p in payments %}
+            <tr>
+                <td>{{ p.date }}</td>
+                <td>{{ p.payment_type }}: {{ p.description }}</td>
+                <td style="text-align:right;">{{ p.amount|floatformat:"2" }}</td>
+            </tr>
+        {% endfor %}
+        <tr class="totalsrow">
+            <td colspan="2">Balance:</td>
+            <td style="text-align:right;">{{ payments_total|floatformat:"2" }}</td>
+        </tr>
+    </table>
 
 {% endblock %}

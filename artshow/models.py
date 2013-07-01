@@ -15,11 +15,17 @@ Person = get_model(*settings.ARTSHOW_PERSON_CLASS.split('.', 1))
 del get_model
 
 
+def validate_space(value):
+    if (Decimal(value) / Decimal("0.5")).remainder_near(1) != 0:
+        raise ValidationError ( "Spaces must be given in multiples of 0.5")
+
+
 class Space(models.Model):
     name = models.CharField(max_length=20)
     shortname = models.CharField(max_length=8)
-    available = models.DecimalField(max_digits=4, decimal_places=1)
+    available = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space])
     price = models.DecimalField(max_digits=4, decimal_places=2)
+    reservable = models.BooleanField(default=True)
 
     def allocated(self):
         allocated = self.allocation_set.aggregate(sum=Sum('allocated'))['sum']
@@ -112,6 +118,15 @@ class Artist (models.Model):
     def viewable_by(self, user):
         return self.artistaccess_set.filter(user=user).exists()
 
+    def save(self):
+        if self.artistid is None:
+            try:
+                highest_idd_artist = Artist.objects.order_by('-artistid')[0]
+                self.artistid = highest_idd_artist.artistid + 1
+            except IndexError:
+                self.artistid = 1
+        super(Artist,self).save()
+
     class Meta:
         permissions = (
             ('view_artist', 'Can view Piece details outside of Admin system.'),
@@ -122,15 +137,21 @@ class Artist (models.Model):
 class Allocation(models.Model):
     artist = models.ForeignKey(Artist)
     space = models.ForeignKey(Space)
-    requested = models.DecimalField(max_digits=4, decimal_places=1)
-    allocated = models.DecimalField(max_digits=4, decimal_places=1)
+    requested = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space])
+    allocated = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space], default=0)
+
+    def requested_charge(self):
+        return self.requested * self.space.price
 
     def allocated_charge(self):
-        return self.allocated * 10
+        return self.allocated * self.space.price
 
     def __unicode__(self):
         return "%s (%s) - %s/%s %s" % (self.artist.artistname(), self.artist.artistid,
                                        self.allocated, self.requested, self.space.name)
+
+    class Meta:
+        unique_together = (('artist', 'space'), )
 
 
 class Bidder (models.Model):

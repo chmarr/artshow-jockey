@@ -1,0 +1,33 @@
+{% extends "artshow/manage_base.html" %}
+{% load url from future %}
+{% block title %}Edit Space Reservations{% endblock %}
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+  <li><a href="/">Home</a></li>
+  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+  <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
+  <li class="current">Edit</li>
+</ul>
+{% endblock %}
+{% block content %}
+<p>Managing space reservations for <strong>{{ artist.artistname }}</strong></p>
+<form method="post">{% csrf_token %}
+{{ formset.management_form }}
+<table>
+  <tr><th>Space</th><th>Requested</th>{% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}<th>Allocated</th>{% endif %}</tr>
+{% for form in formset %}
+{% if form.non_field_errors %}
+  <tr><td colspan="8">{{ form.non_field_errors }}</td></tr>
+{% endif %}
+  <tr>{{ form.id.errors }}{{ form.id }}{{ form.artist.errors }}{{ form.artist }}
+    <td>{{ form.space.errors }}{% if form.instance.id %}<input type="hidden" value="{{ form.space.value }}" name="{{ form.space.html_name }}">{{ form.instance.space }}{% else %}{{ form.space }}{% endif %}</td>
+    <td>{{ form.requested.errors }}{{ form.requested }}</td>
+{% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}
+    <td>{{ form.instance.allocated }}</td>
+{% endif %}
+  </tr>
+{% endfor %}
+</table>
+<p><input type="submit" value="Save and Return" /></p>
+</form>
+{% endblock %}

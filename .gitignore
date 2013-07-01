@@ -7,3 +7,4 @@ data/
 con_specific
 .idea
 artshow-utils/*.csv
+static/

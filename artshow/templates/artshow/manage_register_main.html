@@ -1,0 +1,16 @@
+{% extends "artshow/manage_base.html" %}
+{% block content %}
+<p>Welcome to the Art Show! To register for space in the show, please fill in the following information.
+    You'll be prompted to provide payment for the spaces you have requested in the following pages.
+    You can add additional information, such as agents, or additional artist names, once your registration
+    is complete.</p>
+
+<form method="post">{% csrf_token %}
+    <table>
+    {{ person_form.as_table }}
+    {{ artist_form.as_table }}
+    {{ agreement_form.as_table }}
+    </table>
+    <input type="submit" value="Register">
+</form>
+{% endblock %}

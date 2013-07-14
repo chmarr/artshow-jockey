@@ -57,7 +57,7 @@ class UnicodeCSVWriter:
         # write to the target stream
         self.stream.write(data)
         # empty queue
-        self.queue.truncate()
+        self.queue.truncate(0)
 
     def writerows(self, rows):
         for row in rows:

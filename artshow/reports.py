@@ -180,6 +180,7 @@ def sales_percentiles(request):
     groups = int(request.GET.get('groups', '20'))
 
     amounts = []
+    perc_amounts = []
     pieces = Piece.objects.exclude(status=Piece.StatusNotInShow)
     for p in pieces:
         try:
@@ -187,17 +188,18 @@ def sales_percentiles(request):
             amounts.append(tb.amount)
         except Bid.DoesNotExist:
             pass
-    amounts.sort()
-    num_amounts = len(amounts)
-    groups = min(groups, num_amounts)
 
-    perc_amounts = []
-    for i in range(1, groups):
-        j = float(i) * num_amounts / groups
-        j_before = int(j)
-        j_after = j_before + 1
-        amount = float(amounts[j_before]) * (j_after - j) + float(amounts[j_after]) * (j - j_before)
-        perc_amounts.append({'perc': float(i) / groups, 'amount': amount})
-    perc_amounts.append({'perc': 1.0, 'amount': float(amounts[-1])})
+    if amounts:
+        amounts.sort()
+        num_amounts = len(amounts)
+        groups = min(groups, num_amounts)
+
+        for i in range(1, groups):
+            j = float(i) * num_amounts / groups
+            j_before = int(j)
+            j_after = j_before + 1
+            amount = float(amounts[j_before]) * (j_after - j) + float(amounts[j_after]) * (j - j_before)
+            perc_amounts.append({'perc': float(i) / groups, 'amount': amount})
+        perc_amounts.append({'perc': 1.0, 'amount': float(amounts[-1])})
 
     return render(request, 'artshow/sales-percentiles.html', {'perc_amounts': perc_amounts})

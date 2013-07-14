@@ -1,6 +1,5 @@
 from django.core.signing import Signer, BadSignature
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.http import urlencode
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from artshow.models import *
@@ -15,6 +14,9 @@ from paypal import make_paypal_url
 import utils
 import re
 import bidsheets
+from logging import getLogger
+
+logger = getLogger('paypal')
 
 
 EXTRA_PIECES = 5
@@ -337,6 +339,7 @@ def payment_made_email(request, artist_id):
 @csrf_exempt
 def payment_made_paypal(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    logger.debug ( "paypal post data: %s", request.body )
     return render(request, "artshow/payment_made_paypal.html", {"artist":artist})
 
 @login_required

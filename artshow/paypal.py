@@ -94,13 +94,16 @@ def process_ipn(sender, **kwargs):
             raise IPNProcessingError("payment is not Payment Pending state")
 
         if payment.amount != amount_gross:
-            paypal_logger.warning("payment is being changed from %s to %s", payment.amount, payment_gross )
+            paypal_logger.warning("payment is being changed from %s to %s", payment.amount, amount_gross )
+
+        paypal_logger.info("marking payment received. payment id: %s  amount: %s  paypal email: %s",
+                           payment_id, amount_gross, payer_email)
 
         payment.amount = amount_gross
         payment.payment_type_id = settings.ARTSHOW_PAYMENT_RECEIVED_PK
         payment.description = "Paypal " + payer_email
         payment.date = payment_date
-        payment.save ()
+        payment.save()
 
     except Exception, x:
         paypal_logger.error("Error when getting validation for: %s", query)

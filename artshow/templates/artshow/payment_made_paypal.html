@@ -9,7 +9,14 @@
 </ul>
 {% endblock %}
 {% block content %}
-    <p>Thank you!</p>
-    <p>We have recorded that you have made a payment to paypal, or that at least directed you there.</p>
-    <p>The payment will stay as "Payment Pending" in your accounting until we have reconciled our information.</p>
+    <p>Thank you for your payment!</p>
+    {% if payment.payment_type_id == pr_pk %}
+        <p>We have already received notification from PayPal that a payment of {{ payment.amount }} has been
+        sent to us. Your payment details have been adjusted accordingly.</p>
+    {% else %}
+        <p>We have recorded that you have made a payment to PayPal. The payment is marked "Pending" and
+        will be adjusted as soon as we can reconcile the information with our information.</p>
+        <p>If the payment remains as "Pending" for several days, please let us know and we'll
+        investigate.</p>
+    {% endif %}
 {% endblock %}

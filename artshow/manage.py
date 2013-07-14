@@ -339,8 +339,17 @@ def payment_made_email(request, artist_id):
 @csrf_exempt
 def payment_made_paypal(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
-    logger.debug ( "paypal post data: %s", request.body )
-    return render(request, "artshow/payment_made_paypal.html", {"artist":artist})
+    payment = None
+    try:
+        signer = Signer()
+        item_number = request.POST['item_number']
+        payment_id = signer.unsign(item_number)
+        payment = Payment.objects.get(id=payment_id)
+    except (KeyError, BadSignature, Payment.DoesNotExist):
+        pass
+    return render(request, "artshow/payment_made_paypal.html",
+                  {"artist": artist, "payment": payment, "pr_pk": settings.ARTSHOW_PAYMENT_RECEIVED_PK})
+
 
 @login_required
 @csrf_exempt

@@ -1,6 +1,7 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
+from django.core.urlresolvers import reverse
 
 from models import *
 from django.contrib import admin, messages
@@ -95,8 +96,9 @@ def send_password_reset_email(artist, user, subject, body_template):
 class ArtistForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         if 'instance' not in kwargs:
+            kwargs.setdefault('initial',{})
             kwargs['initial']['artistid'] = \
-                (Artist.objects.aggregate(artistid=Max('artistid'))['artistid'] or 0) + 1
+                (Artist.objects.aggregate(artistid=Max('artistid')).get('artistid', 0) or 0) + 1
         super(ArtistForm, self).__init__(*args, **kwargs)
 
     class Meta:
@@ -564,7 +566,13 @@ admin.site.register(EmailSignature)
 
 
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('artist', 'amount', 'payment_type', 'description', 'date')
+    def clickable_artist(self, obj):
+        return u'<a href="%s">%s</a>' % (
+            urlresolvers.reverse('admin:artshow_artist_change', args=(obj.artist.pk,)), escape(str(obj.artist)))
+    clickable_artist.allow_tags = True
+    clickable_artist.short_description = "artist"
+
+    list_display = ('id', 'clickable_artist', 'amount', 'payment_type', 'description', 'date')
     list_filter = ('payment_type', )
     date_hierarchy = 'date'
     raw_id_fields = ('artist', )

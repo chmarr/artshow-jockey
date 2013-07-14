@@ -14,9 +14,6 @@ from paypal import make_paypal_url, ipn_received
 import utils
 import re
 import bidsheets
-from logging import getLogger
-
-logger = getLogger('paypal')
 
 
 EXTRA_PIECES = 5
@@ -333,7 +330,7 @@ def make_payment(request, artist_id):
 @login_required
 def payment_made_email(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
-    return render(request, "artshow/payment_made_email.html", {"artist":artist})
+    return render(request, "artshow/payment_made_email.html", {"artist": artist})
 
 
 @login_required

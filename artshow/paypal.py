@@ -33,14 +33,16 @@ def make_paypal_url(request, payment):
               "amount": unicode(payment.amount),
               "shipping": "0",
               "no_shipping": "1",
-              "return": request.build_absolute_uri(reverse("artshow.manage.payment_made_paypal", args=(payment.artist_id,))),
-              "cancel_return": request.build_absolute_uri(reverse("artshow.manage.payment_cancelled_paypal",
-                                       args=(payment.artist_id,)) + "?" + urlencode({"item_number": item_number})),
+              "return": request.build_absolute_uri(reverse("artshow.manage.payment_made_paypal",
+                                                           args=(payment.artist_id,))),
+              "cancel_return": request.build_absolute_uri(
+                  reverse("artshow.manage.payment_cancelled_paypal",
+                          args=(payment.artist_id,)) + "?" + urlencode({"item_number": item_number})),
               "currency_code": "USD",
               "bn": "PP-BuyNow",
               "charset": "UTF-8",
               "notify_url": request.build_absolute_uri(reverse(ipn_handler)),
-    }
+              }
 
     return settings.ARTSHOW_PAYPAL_URL + "?" + urlencode(params)
 
@@ -50,6 +52,7 @@ ipn_received = Signal(providing_args=["query"])
 
 class IPNProcessingError(Exception):
     pass
+
 
 @receiver(ipn_received)
 def process_ipn(sender, **kwargs):
@@ -92,12 +95,12 @@ def process_ipn(sender, **kwargs):
 
         if payment.payment_type_id != settings.ARTSHOW_PAYMENT_PENDING_PK:
             if payment.payment_type_id == settings.ARTSHOW_PAYMENT_RECEIVED_PK and payment.amount == amount_gross:
-                paypal_logger.info("additional notification received for payment id %s. this is normal", payment_id )
+                paypal_logger.info("additional notification received for payment id %s. this is normal", payment_id)
                 return
             raise IPNProcessingError("payment is not Payment Pending state")
 
         if payment.amount != amount_gross:
-            paypal_logger.warning("payment is being changed from %s to %s", payment.amount, amount_gross )
+            paypal_logger.warning("payment is being changed from %s to %s", payment.amount, amount_gross)
 
         paypal_logger.info("marking payment received. payment id: %s  amount: %s  paypal email: %s",
                            payment_id, amount_gross, payer_email)
@@ -127,17 +130,3 @@ def ipn_handler(request):
     ipn_received.send(None, query=query_string)
 
     return HttpResponse("", mimetype="text/plain")
-
-
-
-
-
-
-
-
-
-
-
-
-
-

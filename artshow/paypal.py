@@ -1,9 +1,10 @@
 from urllib import urlopen
+from urlparse import parse_qs
 from django.core.signing import Signer
 from django.core.urlresolvers import reverse
 from django.dispatch import Signal, receiver
 from django.http import HttpResponse
-from django.utils.http import urlencode, urlunquote_plus
+from django.utils.http import urlencode
 from django.conf import settings
 from logging import getLogger
 from django.views.decorators.csrf import csrf_exempt
@@ -67,7 +68,7 @@ def process_ipn(sender, **kwargs):
         paypal_logger.error("PayPal returned %s for verification", text)
         return
 
-    params = urlunquote_plus(query)
+    params = parse_qs(query)
     paypal_logger.info("received PayPal IPN. params: %s", repr(params))
 
     # TODO do the fancy processing here.

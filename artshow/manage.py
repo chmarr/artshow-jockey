@@ -2,6 +2,7 @@ from django.core.signing import Signer, BadSignature
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.http import urlencode
 from django.utils.timezone import now
+from django.views.decorators.csrf import csrf_exempt
 from artshow.models import *
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -332,10 +333,14 @@ def payment_made_email(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
     return render(request, "artshow/payment_made_email.html", {"artist":artist})
 
+@login_required
+@csrf_exempt
 def payment_made_paypal(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
     return render(request, "artshow/payment_made_paypal.html", {"artist":artist})
 
+@login_required
+@csrf_exempt
 def payment_cancelled_paypal(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
     signer = Signer()

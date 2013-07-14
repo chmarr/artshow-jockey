@@ -143,15 +143,15 @@ def show_summary(request):
     payment_types = PaymentType.objects.annotate(total_payments=Sum('payment__amount'))
     total_payments = sum([(pt.total_payments or Decimal("0.0")) for pt in payment_types])
 
-    tax_paid = Invoice.objects.aggregate(tax_paid=Sum('tax_paid'))['tax_paid']
-    piece_charges = InvoiceItem.objects.aggregate(piece_charges=Sum('price'))['piece_charges']
+    tax_paid = Invoice.objects.aggregate(tax_paid=Sum('tax_paid'))['tax_paid'] or Decimal(0)
+    piece_charges = InvoiceItem.objects.aggregate(piece_charges=Sum('price'))['piece_charges'] or Decimal(0)
     total_charges = tax_paid + piece_charges
 
     invoice_payments = InvoicePayment.objects.values('payment_method').annotate(total=Sum('amount'))
     payment_method_choice_dict = dict(InvoicePayment.PAYMENT_METHOD_CHOICES)
     for ip in invoice_payments:
         ip['payment_method_desc'] = payment_method_choice_dict[ip['payment_method']]
-    total_invoice_payments = InvoicePayment.objects.aggregate(total=Sum('amount'))['total']
+    total_invoice_payments = InvoicePayment.objects.aggregate(total=Sum('amount'))['total'] or Decimal(0)
 
     # all_invoices = Invoice.objects.aggregate ( Sum('tax_paid'), Sum('invoicepayment__amount') )
 

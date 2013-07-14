@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from artshow.utils import artshow_settings
-from paypal import make_paypal_url
+from paypal import make_paypal_url, ipn_received
 import utils
 import re
 import bidsheets
@@ -335,18 +335,21 @@ def payment_made_email(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
     return render(request, "artshow/payment_made_email.html", {"artist":artist})
 
+
 @login_required
 @csrf_exempt
 def payment_made_paypal(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
     payment = None
-    try:
-        signer = Signer()
-        item_number = request.POST['item_number']
-        payment_id = signer.unsign(item_number)
-        payment = Payment.objects.get(id=payment_id)
-    except (KeyError, BadSignature, Payment.DoesNotExist):
-        pass
+    if request.method == "POST":
+        ipn_received.send(None, query=request.body)
+        try:
+            signer = Signer()
+            item_number = request.POST['item_number']
+            payment_id = signer.unsign(item_number)
+            payment = Payment.objects.get(id=payment_id)
+        except (KeyError, BadSignature, Payment.DoesNotExist):
+            pass
     return render(request, "artshow/payment_made_paypal.html",
                   {"artist": artist, "payment": payment, "pr_pk": settings.ARTSHOW_PAYMENT_RECEIVED_PK})
 

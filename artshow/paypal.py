@@ -91,6 +91,9 @@ def process_ipn(sender, **kwargs):
         payment = Payment.objects.get(id=payment_id)
 
         if payment.payment_type_id != settings.ARTSHOW_PAYMENT_PENDING_PK:
+            if payment.payment_type_id == settings.ARTSHOW_PAYMENT_RECEIVED_PK and payment.amount == amount_gross:
+                paypal_logger.info("additional notification received for payment id %s. this is normal", payment_id )
+                return
             raise IPNProcessingError("payment is not Payment Pending state")
 
         if payment.amount != amount_gross:
@@ -110,29 +113,6 @@ def process_ipn(sender, **kwargs):
         if payment_id:
             paypal_logger.error("... during processing of payment_id: %s", payment_id)
         paypal_logger.error("%s", x)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # TODO do the fancy processing here.
-    # Find the relevant Payemnt using the item number
-    # ensure that the type is "Payment Pending"
-    # switch it to "Payment received", adjust the amount, set the comment field, update the timestamp, and save.
 
 
 @csrf_exempt

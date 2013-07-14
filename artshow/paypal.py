@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.utils.http import urlencode, urlunquote_plus
 from django.conf import settings
 from logging import getLogger
+from django.views.decorators.csrf import csrf_exempt
 
 paypal_logger = getLogger("paypal")
 
@@ -75,6 +76,7 @@ def process_ipn(sender, **kwargs):
     # switch it to "Payment received", adjust the amount, set the comment field, update the timestamp, and save.
 
 
+@csrf_exempt
 def ipn_handler(request):
 
     query_string = request.META['QUERY_STRING']

@@ -70,6 +70,9 @@ ARTSHOW_REGID_NONUNIQUE = False
 # Disallow piece IDs greater than
 ARTSHOW_MAX_PIECE_ID = 999
 
+# URL To the paypal standard payments API. Don't put a trailing comma or questionmark.
+ARTSHOW_PAYPAL_URL = "https://www.paypal.com/cgi-bin/webscr"
+
 ARTSHOW_PAYPAL_ACCOUNT = _UNCONFIGURED
 
 ARTSHOW_ARTIST_AGREEMENT_URL = _UNCONFIGURED

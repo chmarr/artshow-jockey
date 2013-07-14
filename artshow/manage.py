@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from artshow.utils import artshow_settings
+from paypal import make_paypal_url
 import utils
 import re
 import bidsheets
@@ -273,35 +274,6 @@ class PaymentForm(forms.ModelForm):
         if amount <= 0:
             raise forms.ValidationError("Amount must be above zero")
         return amount
-
-
-# Example URL
-# https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=sales%40internetwonders.com&undefined_quantity=0&
-# item_name=Art+Show+Payment&item_number=12345-123124134&amount=23&shipping=0&no_shipping=1&return=internetwonders.com&
-# cancel_return=internetwonders.com&currency_code=USD&bn=PP%2dBuyNowBF&cn=&charset=UTF%2d8
-
-def make_paypal_url(request, payment):
-
-    signer = Signer()
-    item_number = signer.sign(unicode(payment.id))
-
-    params = {"cmd": "_xclick",
-              "business": settings.ARTSHOW_PAYPAL_ACCOUNT,
-              "undefined_quantity": "0",
-              "item_name": "Art Show Payment from " + payment.artist.artistname(),
-              "item_number": item_number,
-              "amount": unicode(payment.amount),
-              "shipping": "0",
-              "no_shipping": "1",
-              "return": request.build_absolute_uri(reverse("artshow.manage.payment_made_paypal", args=(payment.artist_id,))),
-              "cancel_return": request.build_absolute_uri(reverse("artshow.manage.payment_cancelled_paypal",
-                                       args=(payment.artist_id,)) + "?" + urlencode({"item_number": item_number})),
-              "currency_code": "USD",
-              "bn": "PP-BuyNow",
-              "charset": "UTF-8"
-    }
-
-    return "https://www.paypal.com/cgi-bin/webscr?" + urlencode(params)
 
 
 @login_required

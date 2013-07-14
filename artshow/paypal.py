@@ -79,7 +79,10 @@ def process_ipn(sender, **kwargs):
 @csrf_exempt
 def ipn_handler(request):
 
-    query_string = request.META['QUERY_STRING']
+    if request.method == "POST":
+        query_string = request.body
+    else:
+        query_string = request.META['QUERY_STRING']
 
     paypal_logger.debug("received IPN notification with query: %s ", query_string)
     ipn_received.send(None, query=query_string)

@@ -1,5 +1,7 @@
+from decimal import Decimal
 from urllib import urlopen
 from urlparse import parse_qs
+import datetime
 from django.core.signing import Signer
 from django.core.urlresolvers import reverse
 from django.dispatch import Signal, receiver
@@ -8,6 +10,7 @@ from django.utils.http import urlencode
 from django.conf import settings
 from logging import getLogger
 from django.views.decorators.csrf import csrf_exempt
+from artshow.models import Payment
 
 paypal_logger = getLogger("paypal")
 
@@ -45,31 +48,83 @@ def make_paypal_url(request, payment):
 ipn_received = Signal(providing_args=["query"])
 
 
+class IPNProcessingError(Exception):
+    pass
+
 @receiver(ipn_received)
 def process_ipn(sender, **kwargs):
 
     query = kwargs['query']
+    payment_id = None
 
-    def log_query_for_error():
-        paypal_logger.error("Error when getting validation for: %s", query)
-
-    verify_url = settings.ARTSHOW_PAYPAL_URL + "?cmd=_notify-validate&" + query
-    paypal_logger.debug("requesting verification from: %s", verify_url)
     try:
+        verify_url = settings.ARTSHOW_PAYPAL_URL + "?cmd=_notify-validate&" + query
+        paypal_logger.debug("requesting verification from: %s", verify_url)
         pipe = urlopen(verify_url)
         text = pipe.read(128)
+
+        if text != "VERIFIED":
+            raise IPNProcessingError("Paypal returned %s for verification" % text)
+
+        params = parse_qs(query)
+        paypal_logger.info("validated PayPal IPN: %s", repr(params))
+
+        txn_type = params['txn_type'][0]
+        if txn_type != "web_accept":
+            raise IPNProcessingError("txn_type is %s not web_accept" % txn_type)
+
+        item_number = params['item_number'][0]
+        payment_status = params['payment_status'][0]
+        amount_gross = params['mc_gross'][0]
+        amount_gross = Decimal(amount_gross)
+        payer_email = params['payer_email'][0]
+        payment_date = params['payment_date'][0]
+
+        # PayPal uses dates in this format: HH:MM:SS Mmm DD, YYYY PDT
+        payment_date = datetime.datetime.strptime(payment_date, "%H:%M:%S %b %d, %Y PDT")
+
+        if payment_status != "Completed":
+            raise IPNProcessingError("payment status is %s != Completed" % payment_status)
+
+        signer = Signer()
+        payment_id = signer.unsign(item_number)
+        payment = Payment.objects.get(id=payment_id)
+
+        if payment.payment_type_id != settings.ARTSHOW_PAYMENT_PENDING_PK:
+            raise IPNProcessingError("payment is not Payment Pending state")
+
+        if payment.amount != amount_gross:
+            paypal_logger.warning("payment is being changed from %s to %s", payment.amount, payment_gross )
+
+        payment.amount = amount_gross
+        payment.payment_type_id = settings.ARTSHOW_PAYMENT_RECEIVED_PK
+        payment.description = "Paypal " + payer_email
+        payment.date = payment_date
+        payment.save ()
+
     except Exception, x:
-        log_query_for_error()
-        paypal_logger.error("error getting verification: %s", str(x))
-        return
+        paypal_logger.error("Error when getting validation for: %s", query)
+        if payment_id:
+            paypal_logger.error("... during processing of payment_id: %s", payment_id)
+        paypal_logger.error("%s", x)
 
-    if text != "VERIFIED":
-        log_query_for_error()
-        paypal_logger.error("PayPal returned %s for verification", text)
-        return
 
-    params = parse_qs(query)
-    paypal_logger.info("received PayPal IPN. params: %s", repr(params))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # TODO do the fancy processing here.
     # Find the relevant Payemnt using the item number

@@ -114,7 +114,7 @@ class ArtistAdmin(AjaxSelectAdmin):
                     'allocated_spaces', 'person_mailing_label')
     list_filter = ('mailin', 'person__country', 'checkoffs')
     search_fields = ('person__name', 'publicname', 'person__email', 'notes', 'artistid')
-    fields = ['artistid', 'person', 'publicname', ('reservationdate', 'attending'),
+    fields = ['artistid', 'person', 'publicname', 'website', ('reservationdate', 'attending'),
               ('mailin', 'mailback_instructions'), 'agents', 'notes', 'checkoffs', 'payment_to']
     inlines = [ArtistAccessInline, AllocationInline, PieceInline, PaymentInline]
 

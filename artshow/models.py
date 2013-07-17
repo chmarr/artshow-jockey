@@ -76,7 +76,7 @@ class Artist (models.Model):
     def name(self):
         return self.person.name
     publicname = models.CharField(max_length=100, blank=True, verbose_name="public name")
-    website = models.CharField(max_length=200, blank=True)
+    website = models.URLField(max_length=200, blank=True)
     mailin = models.BooleanField()
     mailback_instructions = models.TextField(blank=True)
     attending = models.BooleanField(default=True, help_text="is artist attending convention?")

@@ -213,7 +213,7 @@ class ArtistModelForm(forms.ModelForm):
 
     class Meta:
         model = Artist
-        fields = ('publicname', 'mailin')
+        fields = ('publicname', 'website', 'mailin')
 
 
 @login_required

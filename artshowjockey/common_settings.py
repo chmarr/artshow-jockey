@@ -70,7 +70,9 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-# SECRET_KEY must be specified in local_settings.py
+# SECRET_KEY must be specified in local_settings.py. A intentionally short one is listed here.
+# to prevent a deprecation warning from Django.
+# SECRET_KEY = "0000"
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -106,10 +108,12 @@ ROOT_URLCONF = 'artshowjockey.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'artshowjockey.wsgi.application'
 
+import os
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    os.path.join(os.path.dirname(__file__), 'templates'),
 )
 
 INSTALLED_APPS = (

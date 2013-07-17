@@ -19,8 +19,10 @@ def index(request):
 
 @permission_required('artshow.is_artshow_staff')
 def artists(request):
-    artists = Artist.objects.all().distinct().filter(allocation__allocated__gt=0).order_by('artistid')
-    return render(request, 'artshow/reports-artists.html', {'artists': artists})
+    query = request.GET.get('q','all')
+    artists = Artist.objects.annotate(requested=Sum("allocation__requested"),
+                                      allocated=Sum("allocation__allocated")).order_by('artistid')
+    return render(request, 'artshow/reports-artists.html', {'artists': artists, 'query': query})
 
 
 @permission_required('artshow.is_artshow_staff')

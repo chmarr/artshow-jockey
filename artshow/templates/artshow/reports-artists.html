@@ -3,16 +3,22 @@
 {% block title %}{{ section.title }}{% endblock %}
 
 {% block content %}
-<h1>{{ section.title }}</h1>
+    <h1>{{ section.title }}</h1>
 
-{% if artists %}
-  <ul>
-  {% for a in artists %}
-    <li>{% if a.website %}<a href="{{ a.website }}">{{ a.artistname }}</a>{% else %}{{ a.artistname }}{% endif %}</li>
-  {% endfor %}
-  </ul>
-{% else %}
-  <p>No Artists Entered Yet</p>
-{% endif %}
+    <p><a href="?q=all">All</a> | <a href="?q=req">Requested Space</a> | <a href="?q=reqp">Requested w/Pending</a> | <a
+            href="?q=alloc">Allocated Space</a></p>
+
+    {% if artists %}
+        <ul>
+            {% for a in artists %}
+                {% if query == "all" or query == "req" and a.requested > 0 or query == "reqp" and a.requested > 0 or query == "alloc" and a.allocated > 0 %}
+                    <li>{% if a.website %}<a href="{{ a.website }}">{{ a.artistname }}</a>{% else %}
+                        {{ a.artistname }}{% endif %} {% if query == "reqp" and a.allocated == 0 %}(Pending){% endif %}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No Artists Entered Yet</p>
+    {% endif %}
 
 {% endblock %}

@@ -26,19 +26,21 @@ class BidderSearchForm (forms.Form):
 
 @permission_required('artshow.add_invoice')
 def cashier(request):
+    search_executed = False
     if request.method == "POST":
         form = BidderSearchForm(request.POST)
         if form.is_valid():
             text = form.cleaned_data['text']
             # TODO - the following will return multiple entries for name base if bidder has two IDs
             bidders = Bidder.objects.filter(Q(person__name__icontains=text) | Q(bidderid__id=text))
+            search_executed = True
         else:
             bidders = []
     else:
         form = BidderSearchForm()
         bidders = []
 
-    c = {"form": form, "bidders": bidders}
+    c = {"form": form, "bidders": bidders, "search_executed": search_executed}
     return render(request, 'artshow/cashier.html', c)
 
 

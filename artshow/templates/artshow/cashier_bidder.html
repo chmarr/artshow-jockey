@@ -1,5 +1,12 @@
 {% extends "artshow/base_generic.html" %}
-{% block title %}Bidder Information{% endblock %}
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.cashier.cashier' %}">Casher</a></li>
+        <li class="current">Showing Artists</li>
+    </ul>
+{% endblock %}
 {% block extra_head %}
   <link rel="stylesheet" href="{{ STATIC_URL }}artshow/cashierstyle.css" />
   <title>Bidder Information</title>
@@ -208,7 +215,7 @@
 </table>
 {% endif %}
 <hr>
-<form action="{% url artshow.cashier.cashier_bidder bidder_id=bidder.id %}" method="POST">{% csrf_token %}
+<form action="{% url 'artshow.cashier.cashier_bidder' bidder_id=bidder.id %}" method="POST">{% csrf_token %}
 
 <table class="selecttable purchasetable" precision="{{ money_precision }}" taxrate="{{ tax_rate }}" amountclass="amount">
 <tr><th>Select All<input type="checkbox" class="selectallcontrol"/></th><th>Piece</th><th>Artist</th><th>Amount</th></tr>

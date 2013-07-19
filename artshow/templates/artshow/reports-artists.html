@@ -1,10 +1,14 @@
 {% extends "artshow/base_generic.html" %}
-
-{% block title %}{{ section.title }}{% endblock %}
-
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.reports.index' %}">Reports</a></li>
+        <li class="current">Showing Artists</li>
+    </ul>
+{% endblock %}
 {% block content %}
-    <h1>{{ section.title }}</h1>
-
+    <title>Showing Artists | {{ SITE_NAME }}</title>
     <p><a href="?q=all">All</a> | <a href="?q=req">Requested Space</a> | <a href="?q=reqp">Requested w/Pending</a> | <a
             href="?q=alloc">Allocated Space</a></p>
 
@@ -13,7 +17,8 @@
             {% for a in artists %}
                 {% if query == "all" or query == "req" and a.requested > 0 or query == "reqp" and a.requested > 0 or query == "alloc" and a.allocated > 0 %}
                     <li>{% if a.website %}<a href="{{ a.website }}">{{ a.artistname }}</a>{% else %}
-                        {{ a.artistname }}{% endif %} {% if query == "reqp" and a.allocated == 0 %}(Pending){% endif %}</li>
+                        {{ a.artistname }}{% endif %} {% if query == "reqp" and a.allocated == 0 %}(Pending){% endif %}
+                    </li>
                 {% endif %}
             {% endfor %}
         </ul>

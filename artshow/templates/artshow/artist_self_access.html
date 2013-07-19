@@ -1,0 +1,15 @@
+{% extends "artshow/base_generic.html" %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li class="current">Artist Self Access</li>
+    </ul>
+{% endblock %}
+{% block content %}
+    <p>To allow an artist to modify their own information at show, select the artist and press "Log In Artist".</p>
+    <p>To return to Art Show administration, you will need to log-out the artist, and log in again.</p>
+    <form method="post">{% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Log In Artist" />
+    </form>
+{% endblock %}

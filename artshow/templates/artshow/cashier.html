@@ -1,21 +1,33 @@
 {% extends "artshow/base_generic.html" %}
-{% block title %}Search For Bidder {% endblock %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li class="current">Cashier</li>
+    </ul>
+{% endblock %}
 {% block content %}
-<h1>Search For Bidder</h1>
-<p>Please ask for the bidder's name, or bidder ID</p>
-<form action="{% url artshow.cashier.cashier %}" method="post">{% csrf_token %}
-{{ form.as_p }}
-<input type="submit" value="Submit" />
-</form>
-{% if bidders %}
-<hr>
-<p>Verify the bidder's identification, and click on the appropriate bidder below, or search again.</p>
-<ul>
-<table>
-<tr><th>Name</th><th>Bidder IDs</th></tr>
-{% for b in bidders %}
-<tr><td><a href="{% url artshow.cashier.cashier_bidder bidder_id=b.id %}">{{ b.name }}</a></td><td>{{ b.bidder_ids|join:", " }}</td></tr>
-{% endfor %}
-{% endif %}
+    <p>Please ask for the bidder's name, or bidder ID</p>
+    <form method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit"/>
+    </form>
+    {% if bidders %}
+        <hr>
+        <p>Verify the bidder's identification, and click on the appropriate bidder below, or search again.</p>
+        <ul>
+        <table>
+        <tr>
+            <th>Name</th>
+            <th>Bidder IDs</th>
+        </tr>
+        {% for b in bidders %}
+            <tr>
+                <td><a href="{% url artshow.cashier.cashier_bidder bidder_id=b.id %}">{{ b.name }}</a></td>
+                <td>{{ b.bidder_ids|join:", " }}</td>
+            </tr>
+        {% endfor %}
+    {% elif search_executed %}
+        <p>Nothing was found. Please check the spelling and try again.</p>
+    {% endif %}
 {% endblock %}
 

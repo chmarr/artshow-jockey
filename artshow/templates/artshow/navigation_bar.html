@@ -1,0 +1,19 @@
+{% load url from future %}
+<ul>
+    {% if is_artshow_staff %}
+        <li><a href="{% url 'artshow.reports.index' %}">Reports</a></li>
+        <li><a href="{% url 'artshow.views.dataentry' %}">Data Entry</a></li>
+    {% endif %}
+    {% if has_add_invoice %}
+        <li><a href="{% url 'artshow.cashier.cashier' %}">Cashier</a></li>{% endif %}
+    {% if is_artshow_staff %}
+        <li><a href="{% url 'artshow.views.artist_self_access' %}">Artist Self-Access</a></li>
+    {% endif %}
+    {% if user.is_staff %}
+        <li><a href="{% url 'admin:app_list' 'artshow' %}">Admin</a></li>{% endif %}
+    {% if announcement_counts.total %}
+        <li class="announcements"><a href="{% url 'view_announcements' %}">Announcements{% if announcement_counts.new %}
+            <strong>({{ announcement_counts.new }} new{% if announcement_counts.new_and_important %},
+                {{ announcement_counts.new_and_important }} important{% endif %})</strong>{% endif %}</a></li>
+    {% endif %}
+</ul>

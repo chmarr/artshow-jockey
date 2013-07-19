@@ -1,12 +1,24 @@
-{% extends "base_generic.html" %}
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
 {% block title %}Panel to Artist Report{% endblock %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.reports.index' %}">Reports</a></li>
+        <li class="current">Panel to Artist Report</li>
+    </ul>
+{% endblock %}
 {% block content %}
-
-<table border="1">
-<tr><th>Location</th><th>Artists</th></tr>
-{% for l in locations %}
-<tr><td>{{ l.location }}</td><td>{% for a in l.artists %}{{ a }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td></tr>
-{% endfor %}
-</table>
-
+    <table>
+        <tr>
+            <th>Location</th>
+            <th>Artists</th>
+        </tr>
+        {% for l in locations %}
+            <tr>
+                <td>{{ l.location }}</td>
+                <td>{% for a in l.artists %}{{ a }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td>
+            </tr>
+        {% endfor %}
+    </table>
 {% endblock %}

@@ -1,38 +1,40 @@
-<html><head>
-<link rel="stylesheet" type="text/css" href="/artshow/media/styles.css">
-<style type="text/css">
-table.winning-bidders-report { border-collapse:collapse; border: 2px white; font:helvetica }
-table.winning-bidders-report tr { page-break-inside: avoid; }
-table.winning-bidders-report thead { display: table-header-group; }
-table.winning-bidders-report tbody { border: 3px solid black; page-break-inside: avoid; page-break-after: always; }
-table.winning-bidders-report td { padding-left:4px; padding-right:4px; border: 2px solid white; }
-table.winning-bidders-report th { padding-left:4px; padding-right:4px; text-align:left; border: 2px solid white; }
-table.winning-bidders-report tr:nth-child(even) { background-color:white; }
-table.winning-bidders-report tr:nth-child(odd) { background-color:lightgray; }
-table.winning-bidders-report tr.header { background-color:white; }
-table.winning-bidders-report th.bidder { background-color:black; color:white; border: 3px solid white; }
-</style>
-<style type="text/css" media="print">
-ul.toc { display: none; }
-</style>
-</head><body>
-<table class="winning-bidders-report">
-<thead>
-<tr class="header"><th>Bidder</th><th>Piece</th><th>Amount</th><th>Notes</th></tr>
-</thead>
-{% for bidder in bidders %}
-<tbody>
-{% for bid in bidder.top_bids %}
-<tr>
-{% if forloop.first %}<th class="bidder" rowspan="{{ bidder.top_bids|length }}">B{{ bidder.bidder_ids|join:", " }}</td>{% endif %}
-<td>{{ bid.piece.code }} - <i>{{ bid.piece.name }}</i> by {{ bid.piece.artist.artistname }}</td><td>{{ bid.amount }}</td><td>{{bid.piece.voice_auction|yesno:"Voice Auction,"}}</td>
-</tr>
-{% empty %}
-<tr>
-<th class="bidder" rowspan="{{ bidder.top_bids.count }}">B{{ bidder.bidder_ids|join:", " }}</td><td colspan="3">No winning bids</td></tr>
-{% endfor %}
-</tbody>
-{% endfor %}
-</table>
-
-</body></html>
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.reports.index' %}">Reports</a></li>
+        <li class="current">Winning Bidders</li>
+    </ul>
+{% endblock %}
+{% block content %}
+    <table class="winning-bidders-report">
+        <thead>
+        <tr class="header">
+            <th>Bidder</th>
+            <th>Piece</th>
+            <th>Amount</th>
+            <th>Notes</th>
+        </tr>
+        </thead>
+        {% for bidder in bidders %}
+            <tbody>
+            {% for bid in bidder.top_bids %}
+                <tr>
+                    {% if forloop.first %}
+                        <th class="bidder" rowspan="{{ bidder.top_bids|length }}">B
+                        {{ bidder.bidder_ids|join:", " }}</th>{% endif %}
+                    <td>{{ bid.piece.code }} - <i>{{ bid.piece.name }}</i> by {{ bid.piece.artist.artistname }}</td>
+                    <td>{{ bid.amount }}</td>
+                    <td>{{ bid.piece.voice_auction|yesno:"Voice Auction," }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <th class="bidder" rowspan="{{ bidder.top_bids.count }}">B{{ bidder.bidder_ids|join:", " }}</th>
+                        <td colspan="3">No winning bids</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        {% endfor %}
+    </table>
+{% endblock %}

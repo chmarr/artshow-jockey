@@ -1,8 +1,16 @@
-{% extends "base_generic.html" %}
-{% block title %}Artist to Panel Report{% endblock %}
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.reports.index' %}">Reports</a></li>
+        <li class="current">Artist to Panel Report</li>
+    </ul>
+{% endblock %}
 {% block content %}
+    <title>Artist to Panel Report | {{ SITE_NAME }}</title>
 
-<table border=1>
+<table>
 <tr><th>Artist ID</th><th>Artist Name</th><th>Locations Used</th><th>Spaces Assigned</th></tr>
 {% for artist in artists %}
 <tr><td>{{ artist.artistid }}</td><td>{{ artist.artistname }}</td><td>{{ artist.used_locations|join:", " }}</td><td>{% for a in artist.allocation_set.all %}{{ a.space.shortname }}:{{ a.allocated }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>{% endfor %}

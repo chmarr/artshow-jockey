@@ -31,35 +31,6 @@ def winning_bidders(request):
     return render(request, 'artshow/reports-winning-bidders.html', {'bidders': bidders})
 
 
-class PieceStickersForm(forms.Form):
-    perpanel = forms.IntegerField()
-
-
-@permission_required('artshow.is_artshow_staff')
-def piece_stickers(request):
-    if request.method == "POST":
-        form = PieceStickersForm(request.POST)
-        if form.is_valid():
-            perpanel = form.cleaned_data['perpanel']
-            artists = Artist.objects.order_by('artistid').annotate(panels=Sum('allocation__requested')).filter(
-                panels__gt=0)
-            import csv
-
-            response = HttpResponse(mimetype="text/csv")
-            writer = csv.writer(response)
-            writer.writerow(("barcode", "artist", "piece"))
-            for a in artists:
-                pieces = int(perpanel * a.panels)
-                for p in range(1, pieces + 1):
-                    writer.writerow(("A%dP%d" % (a.artistid, p), a.artistid, p))
-            return response
-    else:
-        form = PieceStickersForm()
-    c = {'form': form}
-    c.update(csrf(request))
-    return render(request, 'artshow/generate-piece-stickers.html', c)
-
-
 @permission_required('artshow.is_artshow_staff')
 def artist_piece_report(request, artist_id):
     artist = Artist.objects.get(id=artist_id)
@@ -82,15 +53,12 @@ def panel_artist_report(request):
 
 
 @permission_required('artshow.is_artshow_staff')
-def nonzero_artist_payment_report(request):
-    artists = Artist.objects.annotate(total=Sum('payment__amount')).exclude(total=0).order_by("artistid")
-    return render(request, 'artshow/artist-payment-report.html', {'artists': artists})
-
-
-@permission_required('artshow.is_artshow_staff')
 def artist_payment_report(request):
+    non_zero = request.GET.get('nonzero', '1') == '1'
     artists = Artist.objects.annotate(total=Sum('payment__amount')).order_by("artistid")
-    return render(request, 'artshow/artist-payment-report.html', {'artists': artists})
+    if non_zero:
+        artists = artists.exclude(total=0)
+    return render(request, 'artshow/artist-payment-report.html', {'artists': artists, 'non_zero':non_zero})
 
 
 @permission_required('artshow.is_artshow_staff')
@@ -166,7 +134,11 @@ def show_summary(request):
 
 
 @permission_required('artshow.is_artshow_staff')
-def voice_auction(request, adult=''):
+def voice_auction(request):
+    adult = request.GET.get('adult', '')
+    if adult not in ['y','n']:
+        adult = ''
+
     pieces = Piece.objects.exclude(status=Piece.StatusNotInShow).filter(voice_auction=True).order_by("order", "artist",
                                                                                                      "pieceid")
     if adult == "y":

@@ -1,38 +1,41 @@
 {% extends "artshow/base_generic.html" %}
 
 {% block title %}Artshow Reports{% endblock %}
-
-{% block content %}
-<h1>Artshow Reports</h1>
-<ul>
-  <li><a href="{% url artshow.reports.artists %}">Showing Artists</a></li>
-  <li><a href="{% url artshow.reports.winning_bidders %}">Winning Bidders</a></li>
-  <li><a href="{% url artshow.reports.piece_stickers %}">Piece Stickers</a></li>
-  <li><a href="{% url artshow.reports.artist_panel_report %}">Artist to Panel Report</a></li>
-  <li><a href="{% url artshow.reports.panel_artist_report %}">Panel to Artist Report</a></li>
-  <li><a href="{% url artshow.reports.artist_payment_report %}">Artist Payment Report</a></li>
-  <li><a href="{% url artshow.reports.nonzero_artist_payment_report %}">Artist Non-Zero Payment Report</a></li>
-  <li><a href="{% url artshow.reports.show_summary %}">Show Summary</a></li>
-  <li><a href="{% url artshow.reports.voice_auction %}">Voice Auction</a>
-    <ul>
-	  <li><a href="{% url artshow.reports.voice_auction adult='y' %}">Adult</a></li>
-	  <li><a href="{% url artshow.reports.voice_auction adult='n' %}">General</a></li>
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li class="current">Reports</li>
     </ul>
-  </li>
-  <li><a href="{% url artshow.reports.sales_percentiles %}">Sales Percentiles</a></li>
-</ul>
+{% endblock %}
+{% block content %}
+    <h3>General Stuff</h3>
+    <ul>
+        <li><a href="{% url artshow.reports.artists %}">Showing Artists</a></li>
+        <li><a href="{% url artshow.reports.winning_bidders %}">Winning Bidders</a></li>
+        <li><a href="{% url artshow.reports.artist_panel_report %}">Artist to Panel Report</a></li>
+        <li><a href="{% url artshow.reports.panel_artist_report %}">Panel to Artist Report</a></li>
+        <li><a href="{% url artshow.reports.artist_payment_report %}">Artist Payment Report</a></li>
+        <li><a href="{% url artshow.reports.show_summary %}">Show Summary</a></li>
+        <li><a href="{% url artshow.reports.voice_auction %}">Voice Auction</a>
+            <ul>
+                <li><a href="{% url artshow.reports.voice_auction %}?adult=y">Adult</a></li>
+                <li><a href="{% url artshow.reports.voice_auction %}?adult=n">General</a></li>
+            </ul>
+        </li>
+        <li><a href="{% url artshow.reports.sales_percentiles %}">Sales Percentiles</a></li>
+    </ul>
 
-<h3>PDF Reports</h3>
-<ul>
-  <li><a href="{% url artshow.pdfreports.winning_bidders %}">Winning Bidders</a></li>
-</ul>
+    <h3>PDF Reports</h3>
+    <ul>
+        <li><a href="{% url artshow.pdfreports.winning_bidders %}">Winning Bidders</a></li>
+    </ul>
 
-<h3>CSV Reports</h3>
-<ul>
-  <li><a href="{% url artshow.csvreports.artists %}">Artists</a></li>
-  <li><a href="{% url artshow.csvreports.pieces %}">Pieces</a></li>
-  <li><a href="{% url artshow.csvreports.bidders %}">Bidders</a></li>
-  <li><a href="{% url artshow.csvreports.payments %}">Payments</a></li>
-  <li><a href="{% url artshow.csvreports.cheques %}">Cheques</a></li>
-</ul>
+    <h3>CSV Reports</h3>
+    <ul>
+        <li><a href="{% url artshow.csvreports.artists %}">Artists</a></li>
+        <li><a href="{% url artshow.csvreports.pieces %}">Pieces</a></li>
+        <li><a href="{% url artshow.csvreports.bidders %}">Bidders</a></li>
+        <li><a href="{% url artshow.csvreports.payments %}">Payments</a></li>
+        <li><a href="{% url artshow.csvreports.cheques %}">Cheques</a></li>
+    </ul>
 {% endblock %}

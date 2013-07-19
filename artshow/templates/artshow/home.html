@@ -1,0 +1,11 @@
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
+{% block content %}
+    <p>Welcome to the {{ artshow_settings.ARTSHOW_SHOW_NAME }} management website.</p>
+    <p>To do anything here, you will first need to <a href="{% url 'login' %}">log in</a>.</p>
+    <p>If you want to exhibit your artwork in the show, you will need to:</p>
+    <ol>
+        <li>Read and agree to our <a href="{{ artshow_settings.ARTSHOW_ARTIST_AGREEMENT_URL }}">Rules</a></li>
+        <li><a href="{% url 'artshow.register.main' %}">Register</a>.</li>
+    </ol>
+{% endblock %}

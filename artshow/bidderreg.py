@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.decorators import permission_required
 from django.contrib.formtools.wizard.views import CookieWizardView
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -88,7 +89,8 @@ class BidderRegistrationWizard(CookieWizardView):
         do_print_bidder_registration_form(p)
         return redirect(final)
 
-
+# TODO. Create a better permission for this
+@permission_required('artshow.is_artshow_staff')
 def final(request):
     return render(request, "artshow/bidderreg_final.html")
 
@@ -97,7 +99,7 @@ def process_step_2(wizard):
     cleaned_data = wizard.get_cleaned_data_for_step('1') or {}
     return cleaned_data.get('details_changed', False)
 
-
+@permission_required('artshow.is_artshow_staff')
 bidderreg_wizard_view = BidderRegistrationWizard.as_view(
     [BidderRegistrationForm0, BidderRegistrationForm1, BidderRegistrationForm2],
     condition_dict={'2': process_step_2})

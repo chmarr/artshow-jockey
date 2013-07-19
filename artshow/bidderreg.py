@@ -99,7 +99,7 @@ def process_step_2(wizard):
     cleaned_data = wizard.get_cleaned_data_for_step('1') or {}
     return cleaned_data.get('details_changed', False)
 
-@permission_required('artshow.is_artshow_staff')
+# permission is applied in urls.py
 bidderreg_wizard_view = BidderRegistrationWizard.as_view(
     [BidderRegistrationForm0, BidderRegistrationForm1, BidderRegistrationForm2],
     condition_dict={'2': process_step_2})

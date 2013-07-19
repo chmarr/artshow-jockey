@@ -4,6 +4,7 @@
 
 from django.conf.urls import patterns, url
 from artshow.bidderreg import bidderreg_wizard_view
+from django.contrib.auth.decorators import permission_required
 
 urlpatterns = patterns('artshow',
                        (r'^$', 'views.index'),
@@ -37,6 +38,7 @@ urlpatterns = patterns('artshow',
                        (r'^reports/payments-csv/$', 'csvreports.payments'),
                        (r'^reports/cheques-csv/$', 'csvreports.cheques'),
                        (r'^access/$', 'views.artist_self_access'),
-                       url(r'^bidderreg/$', bidderreg_wizard_view, name="artshow-bidderreg-wizard"),
+                       url(r'^bidderreg/$', permission_required('artshow.is_artshow_staff')(bidderreg_wizard_view),
+                           name="artshow-bidderreg-wizard"),
                        (r'^bidderreg/done/$', 'bidderreg.final'),
                        )

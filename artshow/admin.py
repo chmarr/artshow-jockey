@@ -111,7 +111,7 @@ class ArtistForm(forms.ModelForm):
 class ArtistAdmin(AjaxSelectAdmin):
     form = ArtistForm
     list_display = ('person_name', 'publicname', 'artistid', 'person_clickable_email', 'requested_spaces',
-                    'allocated_spaces', 'person_mailing_label')
+                    'allocated_spaces')
     list_filter = ('mailin', 'person__country', 'checkoffs')
     search_fields = ('person__name', 'publicname', 'person__email', 'notes', 'artistid')
     fields = ['artistid', 'person', 'publicname', 'website', ('reservationdate', 'attending'),
@@ -134,12 +134,6 @@ class ArtistAdmin(AjaxSelectAdmin):
 
     person_clickable_email.short_description = "email"
     person_clickable_email.allow_tags = True
-
-    def person_mailing_label(self, artist):
-        return artist.person.mailing_label()
-
-    person_mailing_label.short_description = "mailing address"
-    person_mailing_label.allow_tags = True
 
     def send_email(self, request, queryset):
         opts = self.model._meta

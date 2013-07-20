@@ -12,16 +12,48 @@
 
     <table>
         <tr>
+            <th>Artists Registered</th><td>{{ num_artists }}</td>
+        </tr>
+        <tr>
+            <th>Artists Active (Requested Space)</th><td>{{ num_active_artists }}</td>
+        </tr>
+        <tr>
+            <th>Artists Showing (Allocated Space)</th><td>{{ num_showing_artists }}</td>
+        </tr>
+    </table>
+    <br/>
+
+    <table>
+    <tr><th>Space</th><th>Available</th><th>Requested</th><th>Allocated</th></tr>
+    {% for s in spaces %}
+        <tr>
+            <th>{{ s }}</th>
+            <td>{{ s.available }}</td>
+            <td>{{ s.requested }} ({{ s.requested_perc|floatformat:1 }}%)</td>
+            <td>{{ s.allocated2 }} ({{ s.allocated_perc|floatformat:1 }}%)</td>
+        </tr>
+    {% endfor %}
+    </table>
+    <br/>
+
+    <table>
+        <tr>
             <th></th>
             <th>All</th>
             <th>General</th>
             <th>Adult</th>
         </tr>
         <tr>
-            <th>Number of Pieces</th>
-            <td align="right">{{ all_stats.pieces }}</td>
-            <td align="right">{{ general_stats.pieces }}</td>
-            <td align="right">{{ adult_stats.pieces }}</td>
+            <th>Number of Pieces Entered</th>
+            <td align="right">{{ all_stats.pieces_entered }}</td>
+            <td align="right">{{ general_stats.pieces_entered }}</td>
+            <td align="right">{{ adult_stats.pieces_entered }}</td>
+        </tr>
+        <tr>
+            <th>Number of Pieces Showing</th>
+            <td align="right">{{ all_stats.pieces_showing }}</td>
+            <td align="right">{{ general_stats.pieces_showing }}</td>
+            <td align="right">{{ adult_stats.pieces_showing }}</td>
         </tr>
         <tr>
             <th>Pieces with Bids</th>
@@ -66,15 +98,7 @@
             <td align="right">${{ adult_stats.highest_amt_sa|stringformat:"0.2f" }}</td>
         </tr>
     </table>
-    <br>
-
-    <table>
-        <tr>
-            <th>Artists Showing</th>
-            <td>{{ num_showing_artists }}</td>
-        </tr>
-    </table>
-    <br>
+    <br/>
 
     <h3>Artist Payments, Charges and Assignments</h3>
 

@@ -63,10 +63,11 @@ def artist_payment_report(request):
 
 @permission_required('artshow.is_artshow_staff')
 def show_summary(request):
-    pieces = Piece.objects.exclude(status=Piece.StatusNotInShow)
+    pieces = Piece.objects.all()
 
     class Stats:
-        pieces = 0
+        pieces_entered = 0
+        pieces_showing = 0
         bids = 0
         pieces_va = 0
         bidamt = 0
@@ -81,8 +82,12 @@ def show_summary(request):
 
     for p in pieces:
         section_stats = adult_stats if p.adult else general_stats
-        all_stats.pieces += 1
-        section_stats.pieces += 1
+        all_stats.pieces_entered += 1
+        section_stats.pieces_entered += 1
+        # TODO we might need to cover other cases here
+        if p.status != p.StatusNotInShow:
+            all_stats.pieces_showing += 1
+            section_stats.pieces_showing += 1
         try:
             top_bid = p.top_bid()
             all_stats.bids += 1
@@ -105,10 +110,13 @@ def show_summary(request):
             pass
 
     artists = Artist.objects.all()
-    num_showing_artists = 0
+    num_artists = num_showing_artists = num_active_artists = 0
     for a in artists:
+        num_artists += 1
         if a.is_showing():
             num_showing_artists += 1
+        if a.is_active():
+            num_active_artists += 1
 
     payment_types = PaymentType.objects.annotate(total_payments=Sum('payment__amount'))
     total_payments = sum([(pt.total_payments or Decimal("0.0")) for pt in payment_types])
@@ -123,6 +131,11 @@ def show_summary(request):
         ip['payment_method_desc'] = payment_method_choice_dict[ip['payment_method']]
     total_invoice_payments = InvoicePayment.objects.aggregate(total=Sum('amount'))['total'] or Decimal(0)
 
+    spaces = Space.objects.annotate(requested=Sum('allocation__requested'), allocated2=Sum('allocation__allocated'))
+    for s in spaces:
+        s.requested_perc = s.requested/s.available*100 if s.requested is not None and s.available>0 else 0
+        s.allocated_perc = s.allocated2/s.available*100 if s.allocated2 is not None and s.available>0 else 0
+
     # all_invoices = Invoice.objects.aggregate ( Sum('tax_paid'), Sum('invoicepayment__amount') )
 
     return render(request, 'artshow/show-summary.html',
@@ -130,7 +143,8 @@ def show_summary(request):
                    'num_showing_artists': num_showing_artists, 'payment_types': payment_types,
                    'total_payments': total_payments, 'tax_paid': tax_paid, 'piece_charges': piece_charges,
                    'total_charges': total_charges, 'total_invoice_payments': total_invoice_payments,
-                   'invoice_payments': invoice_payments})
+                   'invoice_payments': invoice_payments, 'spaces':spaces, 'num_artists':num_artists,
+                   'num_active_artists': num_active_artists})
 
 
 @permission_required('artshow.is_artshow_staff')

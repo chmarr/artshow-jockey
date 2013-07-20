@@ -82,7 +82,11 @@ tr:nth-child(even) {
 }
 tr.totalsrow td {
 	border-top: 2px solid #603a22;
-	
+}
+td.tablenotes {
+    font-size: small;
+    background-color: white;
+    width: 400px;
 }
 th {
 	background-color: #603a22;
@@ -93,7 +97,12 @@ th {
 td {
 	padding: 2px 4px;
 }
-
+td.money {
+    text-align: right;
+}
+td.number {
+    text-align: right;
+}
 .formbox th { 
 	background-color: inherit;
 	color: black;

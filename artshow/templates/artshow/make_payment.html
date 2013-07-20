@@ -11,15 +11,14 @@
 {% block content %}
     <h1>Make a payment</h1>
     <p>To secure your space requests, we require pre-payment for the cost of that space. We can accept payment with
-        your PayPal account, a major credit card (which uses PayPal but does not require a PayPal account),
+        your PayPal account, a major credit card (via PayPal but does not require a PayPal account),
         or via a cheque in the mail.</p>
     <p>The "suggested payment" below takes into account what spaces you have requested, what payments you have
         made so far, and what fees have already been deducted. You may choose to pay more if you desire; any
         over-payments will be returned to you at the completion of the show. Refunds for unused space requests
         will be made according to the Artist Agreement.</p>
     <p>To pay via PayPal, enter the desired payment and press "Pay via Paypal". You will be taken to the PayPal site
-        to complete payment. Currently, these payments are confirmed manually, and will show up as
-        "pending confirmation" in your Artist Accounting.</p>
+        to complete payment, and returned here afterwards.</p>
     <p>To pay via a mailed-in payment, enter the desired payment amount and press "Pay via Mail".</p></o>
     <p>Suggested payment: ${{ payment_remaining|floatformat:2 }}</p>
     <form method="post">{% csrf_token %}
@@ -30,7 +29,7 @@
         <input type="submit" name="via_mail" value="Pay via Mail"/></p>
     </form>
     <hr/>
-    <p>Here's how we arrived at the above figure. Firstly, here's the spaces you have requested:</p>
+    <p>Here's how we arrived at the above figure.</p>
     <table>
         <tr>
             <th>Space</th>
@@ -40,27 +39,43 @@
         {% for a in allocations %}
         <tr>
             <td>{{ a.space }}</td>
-            <td>{{ a.requested }}</td>
-            <td>${{ a.requested_charge|floatformat:2 }}</td>
+            <td class="number">{{ a.requested }}</td>
+            <td class="money">${{ a.requested_charge|floatformat:2 }}</td>
         </tr>
         {% endfor %}
+        <tr class="totalsrow">
+            <td colspan="2">Total cost for requested spaces</td>
+            <td class="money">${{ total_requested_cost|floatformat:2 }}</td>
+        </tr>
+        {% if deduction_to_date %}
+            <tr>
+                <td colspan="2">Minus space fees already deducted</td>
+                <td class="money">${{ deduction_to_date|floatformat:2 }}</td>
+                <td class="tablenotes">&larr; We usually don't deduct space fees from your account until the middle of
+                    the show. If we do, we'll tell you why.
+                </td>
+            </tr>
+            <tr class="totalsrow">
+                <td colspan="2">Remaining cost for requested spaces</td>
+                <td class="money">${{ deduction_remaining|floatformat:2 }}</td>
+            </tr>
+        {% endif %}
+        {% if account_balance %}
+            <tr>
+                <td colspan="2">Minus account balance</td>
+                <td class="money">${{ account_balance|floatformat:2 }}</td>
+                <td class="tablenotes">&larr; You have a positive account balance. Before the show, this is most often
+                    used to secure your space requests, and is thus taken into account here. If it is to be used for
+                    something else that has not shown up in your accounting, please make your own adjustments to the
+                    suggested payment.
+                </td>
+            </tr>
+        {% endif %}
+        <tr class="totalsrow">
+            <td colspan="2">Suggested payment</td>
+            <td class="money">${{ payment_remaining|floatformat:2 }}</td>
+        </tr>
+
     </table>
-    <p>Total cost for requested spaces: ${{ total_requested_cost|floatformat:2 }}</p>
-    {% if deduction_to_date %}
-        <p>We usually don't deduct space fees from your account until the middle of the show. If we do, we'll tell
-            you why.</p>
-        <p>Space fees deducted to date: ${{ deduction_to_date|floatformat:2 }}</p>
-        <p>Remaining cost for requested spaces: ${{ deduction_remaining|floatformat:2 }}</p>
-    {% endif %}
-
-    {% if account_balance %}
-        <p>Your "account" has a balance of ${{ account_balance|floatformat:2 }}. Before the show, this is most
-            often used to secure your space requests, and is thus taken into account here. If it is to be used for
-            something
-            else that has not shown up in your accounting, please make your own adjustments to the suggested
-            payment.</p>
-    {% endif %}
-
-    <p>Suggested payment: ${{ payment_remaining|floatformat:2 }}</p>
 
 {% endblock %}

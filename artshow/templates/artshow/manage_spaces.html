@@ -6,7 +6,7 @@
         <li><a href="/">Home</a></li>
         <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
         <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
-        <li class="current">Edit</li>
+        <li class="current">Reserve Spaces</li>
     </ul>
 {% endblock %}
 {% block content %}
@@ -41,6 +41,7 @@
         <p><input type="submit" value="Save and Return"/></p>
     </form>
     <hr/>
+    <p>Half spaces may be reserved at half the listed price.</p>
     <p>Use "Make Payment" on the previous screen to make a payment for spaces requested.</p>
 
 {% endblock %}

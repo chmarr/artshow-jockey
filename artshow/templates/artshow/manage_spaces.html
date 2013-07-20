@@ -16,22 +16,24 @@
         <table>
             <tr>
                 <th>Space</th>
+                <th>Cost per</th>
                 <th>Requested</th>
                 {% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}
-                    <th>Allocated</th>{% endif %}</tr>
+                    <th>Allocated</th>
+                {% endif %}
+            </tr>
             {% for form in formset %}
                 {% if form.non_field_errors %}
                     <tr>
                         <td colspan="8">{{ form.non_field_errors }}</td>
                     </tr>
                 {% endif %}
-                <tr>{{ form.id.errors }}{{ form.id }}{{ form.artist.errors }}{{ form.artist }}
-                    <td>{{ form.space.errors }}{% if form.instance.id %}
-                        <input type="hidden" value="{{ form.space.value }}" name="{{ form.space.html_name }}">
-                        {{ form.instance.space }}{% else %}{{ form.space }}{% endif %}</td>
+                <tr>
+                    <td>{{ form.space }}{{ form.initial.space }}</td>
+                    <td class="money">${{ form.initial.space.price }}</td>
                     <td>{{ form.requested.errors }}{{ form.requested }}</td>
                     {% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}
-                        <td>{{ form.instance.allocated }}</td>
+                        <td>{{ form.initial.space.artist_allocation.allocated }}</td>
                     {% endif %}
                 </tr>
             {% endfor %}

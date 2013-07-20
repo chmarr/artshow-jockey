@@ -1,11 +1,14 @@
 from django.core.signing import Signer, BadSignature
+from django.db.models import Q
+from django.forms import IntegerField, HiddenInput, ModelChoiceField
+from django.forms.formsets import formset_factory
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from artshow.models import *
 from django import forms
 from django.contrib.auth.decorators import login_required
-from django.forms.models import inlineformset_factory
+from django.forms.models import inlineformset_factory, modelformset_factory
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -42,7 +45,7 @@ def artist(request, artist_id):
     pieces = artist.piece_set.order_by("pieceid")
     payments = artist.payment_set.order_by("date", "id")
     payments_total = payments.aggregate(payments_total=Sum('amount'))['payments_total'] or Decimal(0)
-    allocations = artist.allocation_set.order_by("pk")
+    allocations = artist.allocation_set.order_by("space__id")
 
     can_edit = artist.editable_by(request.user)
     can_edit_personal_details = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and \
@@ -159,48 +162,69 @@ def control_forms(request, artist_id):
     return response
 
 
-def allocation_form_factory(available_space_types):
-    class AllocationForm(forms.ModelForm):
-        space = forms.ModelChoiceField(queryset=available_space_types)
-
-        class Meta:
-            model = Allocation
-            fields = ('space', 'requested')
-
-        def clean(self):
-            cleaned_data = super(AllocationForm, self).clean()
+def requestspaceform_factory(artist):
+    class RequestSpaceForm(forms.Form):
+        space = ModelChoiceField(queryset=Space.objects.all(), widget=HiddenInput)
+        requested = forms.IntegerField(validators=[validate_space])
+        def clean_space(self):
+            # We're going to use this to force a form to have initial data for this field.
+            # so the template can go form.initial.space to get details on the space.
+            space = self.cleaned_data['space']
             try:
-                if self.instance.space != cleaned_data['space']:
-                    raise forms.ValidationError(
-                        "You were somehow able to try to change the space type. "
-                        "Instead, set one space to zero, and create another.")
-            except Space.DoesNotExist:
-                pass
-            return cleaned_data
-
-    return AllocationForm
+                space.artist_allocation = space.allocation_set.get(artist=artist)
+            except Allocation.DoesNotExist:
+                space.artist_allocation = None
+            self.initial['space'] = space
+            return space
+    return RequestSpaceForm
 
 
 @login_required
 @user_edits_allowable
 def spaces(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    RequestSpaceForm = requestspaceform_factory(artist)
+    RequestSpaceFormSet = formset_factory(RequestSpaceForm, extra=0)
 
-    allocations = artist.allocation_set.order_by("id")
-    available_space_types = Space.objects.filter(reservable=True) | Space.objects.filter(
-        pk__in=allocations.values('space'))
-
-    AllocationForm = allocation_form_factory(available_space_types)
-    AllocationFormSet = inlineformset_factory(Artist, Allocation, form=AllocationForm, can_delete=False)
+    spaces = Space.objects.order_by('id')
+    for s in spaces:
+        try:
+            s.artist_allocation = s.allocation_set.get(artist=artist)
+        except Allocation.DoesNotExist:
+            s.artist_allocation = None
+    spaces = [s for s in spaces if s.reservable == True or s.artist_allocation is not None]
 
     if request.method == "POST":
-        formset = AllocationFormSet(request.POST, queryset=allocations, instance=artist)
+        formset = RequestSpaceFormSet(request.POST)
         if formset.is_valid():
-            formset.save()
-            messages.info(request, "Changes to your space requests have been saved")
+            for form in formset:
+                space = form.cleaned_data['space']
+                requested = form.cleaned_data['requested']
+                try:
+                    allocation = Allocation.objects.get(artist=artist, space=space)
+                except Allocation.DoesNotExist:
+                    # If the Allocation didn't exist and the space is not reservable, then this should
+                    # have not been possible. Just raise it as a error message and keep moving.
+                    if not space.reservable:
+                        messages.error(request, "%s is not reservable, and was removed from your request" % space)
+                        continue
+                    # Allocation doesn't exist, and we're not requesting any. Move on.
+                    if requested == 0:
+                        continue
+                    # Allocation doesn't exist, and we want to reserve it. Create one.
+                    allocation = Allocation(artist=artist, space=space)
+                else:
+                    # If the Allocation existed, the current allocated is 0, and the request is 0, then
+                    # just delete the Allocation object.
+                    if allocation.allocated == 0 and requested == 0:
+                        allocation.delete()
+                        continue
+                allocation.requested = requested
+                allocation.save()
             return redirect(reverse('artshow.manage.artist', args=(artist_id,)))
     else:
-        formset = AllocationFormSet(queryset=allocations, instance=artist)
+        formset = RequestSpaceFormSet(initial=[{'requested': s.artist_allocation.requested if s.artist_allocation is not None else 0,
+                                                'space': s} for s in spaces])
 
     return render(request, "artshow/manage_spaces.html", {"artist": artist, "formset": formset,
                                                           "artshow_settings": artshow_settings})

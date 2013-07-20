@@ -165,7 +165,7 @@ def control_forms(request, artist_id):
 def requestspaceform_factory(artist):
     class RequestSpaceForm(forms.Form):
         space = ModelChoiceField(queryset=Space.objects.all(), widget=HiddenInput)
-        requested = forms.IntegerField(validators=[validate_space])
+        requested = forms.DecimalField(validators=[validate_space])
         def clean_space(self):
             # We're going to use this to force a form to have initial data for this field.
             # so the template can go form.initial.space to get details on the space.

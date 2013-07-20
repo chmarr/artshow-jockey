@@ -1,8 +1,6 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
-from django.core.urlresolvers import reverse
-
 from models import *
 from django.contrib import admin, messages
 from django.core import urlresolvers
@@ -376,7 +374,8 @@ admin.site.register(Artist, ArtistAdmin)
 
 
 class SpaceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'shortname', 'price', 'available', 'allocated', 'remaining', 'waiting')
+    list_display = ('name', 'shortname', 'price', 'reservable', 'available', 'allocated', 'remaining', 'waiting')
+    list_editable = ('reservable', 'available')
 
 
 admin.site.register(Space, SpaceAdmin)

@@ -11,5 +11,5 @@ urlpatterns = patterns('',
                        url(r'^manage/', include('artshow.manage_urls')),
                        url(r'^peeps/', include('peeps.urls')),
                        url(r'^accounts/', include('tinyreg.urls')),
-                       url(r'^$', 'artshow.views.home'),
+                       url(r'^$', 'artshow.views.home', name="home"),
 )

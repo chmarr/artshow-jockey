@@ -1,4 +1,5 @@
 {% extends "admin/base.html" %}
+{% load url from future %}
 {% load i18n %}
 
 {% block title %}{{ title }} | {{ SITE_NAME|default:"Art Show" }} Admin{% endblock %}
@@ -8,3 +9,16 @@
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
+
+{% block userlinks %}
+    {% url 'django-admindocs-docroot' as docsroot %}
+    {% if docsroot %}
+        <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
+    {% endif %}
+    {% url 'home' as home %}
+    {% if home %}
+        <a href="{{ home }}">{% trans 'Site Home' %}</a> /
+    {% endif %}
+    <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
+    <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
+{% endblock %}

@@ -16,8 +16,10 @@ del get_model
 
 
 def validate_space(value):
+    if value < 0:
+        raise ValidationError("Spaces must not be negative")
     if (Decimal(value) / Decimal("0.5")).remainder_near(1) != 0:
-        raise ValidationError ( "Spaces must be given in multiples of 0.5")
+        raise ValidationError("Spaces must be given in multiples of 0.5")
 
 
 class Space(models.Model):

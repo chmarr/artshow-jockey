@@ -2,26 +2,40 @@
 {% load url from future %}
 {% block title %}Artist Management{% endblock %}
 {% block breadcrumbs %}
-<ul class="breadcrumbs">
-  <li><a href="/">Home</a></li>
-  <li class="current">Manage Artists</li>
-</ul>
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li class="current">Manage Artists</li>
+    </ul>
 {% endblock %}
 {% block content %}
-{% if artshow_settings.ARTSHOW_SHUT_USER_EDITS %}
-<p><strong>On-line entry has closed. 
-If you need to make any changes or additions, please hand-write these changes onto a control form. 
-If you're editing details on an existing piece, just re-write the details onto the form, and we'll cross out the pre-printed version.
-We will still print bid sheets for you at the show.
-</strong></p>{% endif %}
-<p>Artists that you can see and manage:</p>
-<table>
-  <tr><th>Artist</th><th>Artist ID</th><th>Pieces Entered</th></tr>
-{% for artist in artists %}
-  <tr><td><a href="{% url 'artshow.manage.artist' artist.pk %}">{{ artist.artistname }}</a></td><td>{{ artist.artistid }}</td><td>{{ artist.piece_set.count }}</td></tr>
-{% empty %}
-  <tr><td colspan="3">Nothing configured to manage yet.</td></tr>
-{% endfor %}
-</table>
-<p>If you have any issues regarding these pages, please <a href="mailto:{{ artshow_settings.ARTSHOW_ADMIN_EMAIL }}">contact us</a>.</p>
+    {% if artshow_settings.ARTSHOW_SHUT_USER_EDITS %}
+        <p><strong>On-line entry has closed.
+            If you need to make any changes or additions, please hand-write these changes onto a control form.
+            If you're editing details on an existing piece, just re-write the details onto the form, and we'll cross out
+            the pre-printed version.
+            We will still print bid sheets for you at the show.
+        </strong></p>{% endif %}
+    <p>Artists that you can see and manage:</p>
+    <table>
+        <tr>
+            <th>Artist</th>
+            <th>Artist ID</th>
+            <th>Pieces Entered</th>
+        </tr>
+        {% for artist in artists %}
+            <tr>
+                <td><a href="{% url 'artshow.manage.artist' artist.pk %}">{{ artist.artistname }}</a></td>
+                <td>{{ artist.artistid }}</td>
+                <td>{{ artist.piece_set.count }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">Nothing configured to manage yet.</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <p>If you have any issues regarding these pages, please <a href="mailto:{{ artshow_settings.ARTSHOW_ADMIN_EMAIL }}">contact
+        us</a>.</p>
+    <p>If you want to create additional artist "identities", such as a separate name for mature audience work, please
+        contact us about that, too.</p>
 {% endblock %}

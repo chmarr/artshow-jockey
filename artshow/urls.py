@@ -41,4 +41,5 @@ urlpatterns = patterns('artshow',
                        url(r'^bidderreg/$', permission_required('artshow.is_artshow_staff')(bidderreg_wizard_view),
                            name="artshow-bidderreg-wizard"),
                        (r'^bidderreg/done/$', 'bidderreg.final'),
+                       (r'^bidder/$', 'views.bidder_results'),
                        )

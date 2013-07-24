@@ -3,10 +3,12 @@
 # See file COPYING for licence details
 from django.contrib import messages, auth
 from django.contrib.auth.models import User
-from django.forms import ModelChoiceField, forms
+from django.core.exceptions import ObjectDoesNotExist
+from django.forms import ModelChoiceField, forms, CharField
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import permission_required
-from artshow.models import Artist
+from django.views.decorators.csrf import csrf_exempt
+from artshow.models import Artist, BidderId
 
 
 def home(request):
@@ -61,3 +63,38 @@ def artist_self_access(request):
         form = SelectArtistForm()
 
     return render(request, "artshow/artist_self_access.html", {'form': form})
+
+
+class BidderResultsForm(forms.Form):
+    bidder_id = CharField(label="Bidder ID", required=True)
+    reg_id = CharField(label="Registration ID", required=True)
+
+    def clean(self):
+        cleaned_data = super(BidderResultsForm, self).clean()
+        if cleaned_data.get('bidder_id') and cleaned_data.get('reg_id'):
+            try:
+                bidderid = BidderId.objects.get(id=cleaned_data['bidder_id'])
+                bidder = bidderid.bidder
+                reg_id = bidder.person.reg_id
+                assert reg_id == cleaned_data['reg_id']
+            except (AssertionError, ObjectDoesNotExist):
+                raise forms.ValidationError("Bidder or Registration ID is invalid.")
+            cleaned_data['bidder'] = bidder
+        return cleaned_data
+
+
+@csrf_exempt
+def bidder_results(request):
+
+    # TODO set up gating controls for "bid information not ready" and "voice auction results not in"
+
+    bidder = None
+    if len(request.GET) > 0:
+        form = BidderResultsForm(request.GET)
+        if form.is_valid():
+            bidder = form.cleaned_data['bidder']
+    else:
+        form = BidderResultsForm()
+
+    return render(request, "artshow/bidder_results.html", {'form': form, 'bidder': bidder})
+

@@ -1,0 +1,32 @@
+{% extends "artshow/base_generic.html" %}
+{% block content %}
+    {% if bidder %}
+        <h3>Winning bids for {{ bidder }}</h3>
+        <table>
+            <thead>
+                <tr><th>Code</th><th>Title</th><th>Artist</th><th>Price</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+            {% for b in bidder.top_bids %}
+                <tr>
+                    <td>{{ b.piece.code }}</td>
+                    <td>{{ b.piece.name }}</td>
+                    <td>{{ b.piece.artist }}</td>
+                    <td>{{ b.amount }}</td>
+                    <td>{% if b.piece.voice_auction %}Voice Auction{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5">Sorry. No winning bids.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <p><a href="?">Make another query</a></p>
+    {% else %}
+        <p>Enter your Bidder ID and your Registration ID, and we'll tell you what you won.</p>
+        <form method="get">
+            {{ form.as_p }}
+            <input type="submit" value="Go!"/>
+        </form>
+    {% endif %}
+{% endblock %}
+

@@ -21,7 +21,9 @@ def index(request):
 def artists(request):
     query = request.GET.get('q','all')
     artists = Artist.objects.annotate(requested=Sum("allocation__requested"),
-                                      allocated=Sum("allocation__allocated")).order_by('artistid')
+                                      allocated=Sum("allocation__allocated"))
+    artists = list(artists)
+    artists.sort(key=lambda x: x.artistname().lower())
     return render(request, 'artshow/reports-artists.html', {'artists': artists, 'query': query})
 
 

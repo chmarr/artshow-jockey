@@ -134,9 +134,20 @@ def show_summary(request):
     total_invoice_payments = InvoicePayment.objects.aggregate(total=Sum('amount'))['total'] or Decimal(0)
 
     spaces = Space.objects.annotate(requested=Sum('allocation__requested'), allocated2=Sum('allocation__allocated'))
+    total_spaces = {'available': 0, 'requested': 0, 'allocated': 0, 'requested_perc': 0, 'allocated_perc': 0}
     for s in spaces:
-        s.requested_perc = s.requested/s.available*100 if s.requested is not None and s.available>0 else 0
-        s.allocated_perc = s.allocated2/s.available*100 if s.allocated2 is not None and s.available>0 else 0
+        total_spaces['available'] += s.available or 0
+        total_spaces['requested'] += s.requested or 0
+        total_spaces['allocated'] += s.allocated2 or 0
+        if s.available:
+            s.requested_perc = s.requested/s.available*100 if s.requested is not None and s.available > 0 else 0
+            s.allocated_perc = s.allocated2/s.available*100 if s.allocated2 is not None and s.available > 0 else 0
+        else:
+            s.requested_perc = 0
+            s.allocated_perc = 0
+    if total_spaces['available']:
+        total_spaces['requested_perc'] = total_spaces['requested'] / total_spaces['available'] * 100
+        total_spaces['allocated_perc'] = total_spaces['allocated'] / total_spaces['available'] * 100
 
     # all_invoices = Invoice.objects.aggregate ( Sum('tax_paid'), Sum('invoicepayment__amount') )
 
@@ -145,8 +156,8 @@ def show_summary(request):
                    'num_showing_artists': num_showing_artists, 'payment_types': payment_types,
                    'total_payments': total_payments, 'tax_paid': tax_paid, 'piece_charges': piece_charges,
                    'total_charges': total_charges, 'total_invoice_payments': total_invoice_payments,
-                   'invoice_payments': invoice_payments, 'spaces':spaces, 'num_artists':num_artists,
-                   'num_active_artists': num_active_artists})
+                   'invoice_payments': invoice_payments, 'spaces':spaces, 'total_spaces': total_spaces,
+                   'num_artists':num_artists, 'num_active_artists': num_active_artists})
 
 
 @permission_required('artshow.is_artshow_staff')

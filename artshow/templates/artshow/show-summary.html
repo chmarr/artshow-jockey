@@ -33,6 +33,12 @@
             <td>{{ s.allocated2 }} ({{ s.allocated_perc|floatformat:1 }}%)</td>
         </tr>
     {% endfor %}
+        <tr>
+            <td class="totalsrow">Total</td>
+            <td>{{ total_spaces.available }}</td>
+            <td>{{ total_spaces.requested }} ({{ total_spaces.requested_perc|floatformat:1 }}%)</td>
+            <td>{{ total_spaces.allocated }} ({{ total_spaces.allocated_perc|floatformat:1 }}%)</td>
+        </tr>
     </table>
     <br/>
 

@@ -331,7 +331,7 @@ def make_payment(request, artist_id):
                 payment.description = "Mail-in pending receipt"
             form.save()
             if via_mail:
-                return redirect(reverse("artshow.manage.payment_made_email", args=(artist_id,)))
+                return redirect(reverse("artshow.manage.payment_made_mail", args=(artist_id,)))
             else:
                 url = make_paypal_url(request, payment)
                 return redirect(url)
@@ -352,9 +352,9 @@ def make_payment(request, artist_id):
 
 
 @login_required
-def payment_made_email(request, artist_id):
+def payment_made_mail(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
-    return render(request, "artshow/payment_made_email.html", {"artist": artist})
+    return render(request, "artshow/payment_made_mail.html", {"artist": artist})
 
 
 @login_required

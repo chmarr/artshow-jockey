@@ -25,6 +25,7 @@ def validate_space(value):
 class Space(models.Model):
     name = models.CharField(max_length=20)
     shortname = models.CharField(max_length=8)
+    description = models.TextField(blank=True)
     available = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space])
     price = models.DecimalField(max_digits=4, decimal_places=2)
     reservable = models.BooleanField(default=True)

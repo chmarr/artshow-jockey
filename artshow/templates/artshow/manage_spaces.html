@@ -15,7 +15,7 @@
         {{ formset.management_form }}
         <table>
             <tr>
-                <th>Space</th>
+                <th colspan="2">Space</th>
                 <th>Cost per</th>
                 <th>Requested</th>
                 {% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}
@@ -30,6 +30,7 @@
                 {% endif %}
                 <tr>
                     <td>{{ form.space }}{{ form.initial.space }}</td>
+                    <td><span class="helptext">{{ form.initial.space.description }}</span></td>
                     <td class="money">${{ form.initial.space.price }}</td>
                     <td>{{ form.requested.errors }}{{ form.requested }}</td>
                     {% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}

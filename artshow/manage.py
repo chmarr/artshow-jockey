@@ -166,6 +166,7 @@ def requestspaceform_factory(artist):
     class RequestSpaceForm(forms.Form):
         space = ModelChoiceField(queryset=Space.objects.all(), widget=HiddenInput)
         requested = forms.DecimalField(validators=[validate_space])
+
         def clean_space(self):
             # We're going to use this to force a form to have initial data for this field.
             # so the template can go form.initial.space to get details on the space.
@@ -176,6 +177,16 @@ def requestspaceform_factory(artist):
                 space.artist_allocation = None
             self.initial['space'] = space
             return space
+
+        def clean_requested(self):
+            requested = self.cleaned_data['requested']
+            try:
+                validate_space_increments(requested, self.initial['space'].allow_half_spaces)
+            except ValidationError:
+                del self.cleaned_data['requested']
+                raise
+            return requested
+
     return RequestSpaceForm
 
 

@@ -18,17 +18,29 @@ del get_model
 def validate_space(value):
     if value < 0:
         raise ValidationError("Spaces must not be negative")
-    if (Decimal(value) / Decimal("0.5")).remainder_near(1) != 0:
-        raise ValidationError("Spaces must be given in multiples of 0.5")
+
+
+def validate_space_increments(value, allow_half_spaces):
+    remainder = value % 1
+    if remainder != 0 and (remainder != Decimal("0.5") or not allow_half_spaces):
+        if allow_half_spaces:
+            raise ValidationError("Spaces must be in whole, or half (0.5) increments")
+        else:
+            raise ValidationError("Spaces must be in whole increments")
 
 
 class Space(models.Model):
     name = models.CharField(max_length=20)
     shortname = models.CharField(max_length=8)
     description = models.TextField(blank=True)
+    allow_half_spaces = models. BooleanField(default=False)
     available = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space])
     price = models.DecimalField(max_digits=4, decimal_places=2)
     reservable = models.BooleanField(default=True)
+
+    def clean(self):
+        validate_space_increments(self.available, self.allow_half_spaces)
+
 
     def allocated(self):
         allocated = self.allocation_set.aggregate(sum=Sum('allocated'))['sum']
@@ -142,6 +154,10 @@ class Allocation(models.Model):
     space = models.ForeignKey(Space)
     requested = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space])
     allocated = models.DecimalField(max_digits=4, decimal_places=1, validators=[validate_space], default=0)
+
+    def clean(self):
+        validate_space_increments(self.requested, self.space.allow_half_spaces)
+        validate_space_increments(self.allocated, self.space.allow_half_spaces)
 
     def requested_charge(self):
         return self.requested * self.space.price

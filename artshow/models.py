@@ -116,7 +116,26 @@ class Artist (models.Model):
         return [x[0] for x in self.piece_set.exclude(status=Piece.StatusNotInShow).distinct().values_list("location")]
 
     def balance(self):
-        return self.payment_set.aggregate(balance=Sum('amount'))['balance']
+        return self.payment_set.aggregate(balance=Sum('amount'))['balance'] or 0
+
+    def deduction_remaining_with_details(self):
+        """Calculate space fee reduction remaining. Takes into account spaces reserved, space fees already applied"""
+        total_requested_cost = 0
+        for a in self.allocation_set.all():
+            total_requested_cost += a.space.price * a.requested
+        space_fee = PaymentType(id=settings.ARTSHOW_SPACE_FEE_PK)
+        # Deductions from accounts are always negative, so we re-negate it.
+        deduction_to_date = - (
+            self.payment_set.filter(payment_type=space_fee).aggregate(amount=Sum("amount"))["amount"] or 0)
+        deduction_remaining = max(total_requested_cost - deduction_to_date, 0)
+        return total_requested_cost, deduction_to_date, deduction_remaining
+
+    def payment_remaining_with_details(self):
+        """Calculate remaining payment expected, based on negative balance, plus any space reservations as yet
+        unaccounted for."""
+        total_requested_cost, deduction_to_date, deduction_remaining = self.deduction_remaining_with_details()
+        payment_remaining = max(deduction_remaining - self.balance(), 0)
+        return total_requested_cost, deduction_to_date, deduction_remaining, payment_remaining
 
     def __unicode__(self):
         return "%s (%s)" % (self.artistname(), self.artistid)

@@ -315,22 +315,9 @@ class PaymentForm(forms.ModelForm):
 @user_edits_allowable
 def make_payment(request, artist_id):
     artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
-    allocations = artist.allocation_set.order_by("id")
-    total_requested_cost = 0
-    for a in allocations:
-        total_requested_cost += a.space.price * a.requested
-    space_fee = PaymentType(id=settings.ARTSHOW_SPACE_FEE_PK)
     payment_pending = PaymentType(id=settings.ARTSHOW_PAYMENT_PENDING_PK)
-    # Deductions from accounts are always negative, so we re-negate it.
-    deduction_to_date = - (
-        artist.payment_set.filter(payment_type=space_fee).aggregate(amount=Sum("amount"))["amount"] or 0)
-    deduction_remaining = total_requested_cost - deduction_to_date
-    if deduction_remaining < 0:
-        deduction_remaining = 0
-    account_balance = artist.payment_set.aggregate(amount=Sum("amount"))["amount"] or 0
-    payment_remaining = deduction_remaining - account_balance
-    if payment_remaining < 0:
-        payment_remaining = 0
+    total_requested_cost, deduction_to_date, deduction_remaining, payment_remaining = \
+        artist.payment_remaining_with_details()
 
     payment = Payment(artist=artist, amount=payment_remaining, payment_type=payment_pending,
                       description="PayPal pending confirmation", date=now())
@@ -351,11 +338,11 @@ def make_payment(request, artist_id):
 
     context = {"form": form,
                "artist": artist,
-               "allocations": allocations,
+               "allocations": artist.allocation_set.order_by("id"),
                "total_requested_cost": total_requested_cost,
                "deduction_to_date": deduction_to_date,
                "deduction_remaining": deduction_remaining,
-               "account_balance": account_balance,
+               "account_balance": artist.balance(),
                "payment_remaining": payment_remaining
                }
 

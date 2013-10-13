@@ -12,14 +12,19 @@
     <table class="report">
         {% for a in artists %}
             <tr>
-                <th colspan=2
-                ">{{ a }}</tr>
+                <th colspan="2">{{ a }}</th></tr>
             <tbody>
             {% for p in a.payment_set.all %}
                 <tr>
                     <td>{{ p.description }}</td>
                     <td align="right">{{ p.amount|floatformat:2 }}</td>
                 </tr>{% endfor %}
+            {% if a.deduction_remaining %}
+                <tr>
+                    <td>Space fee deduction remaining</td>
+                    <td align="right">-{{ a.deduction_remaining|floatformat:2 }}</td>
+                </tr>
+            {% endif %}
             <tr>
                 <th>Balance</th>
                 <th align="right">{{ a.total|floatformat:2 }}</th>

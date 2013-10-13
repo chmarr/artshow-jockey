@@ -56,10 +56,16 @@ def panel_artist_report(request):
 
 @permission_required('artshow.is_artshow_staff')
 def artist_payment_report(request):
-    non_zero = request.GET.get('nonzero', '1') == '1'
+    non_zero = request.GET.get('nonzero', '0') == '1'
     artists = Artist.objects.annotate(total=Sum('payment__amount')).order_by("artistid")
+    # TODO clean this up if/when we change the way "pending fees" are included in accounting.
+    artists = list(artists)
+    for a in artists:
+        a.total = a.total or 0
+        a.total_requested_cost, a.deduction_to_date, a.deduction_remaining = a.deduction_remaining_with_details()
+        a.total -= a.deduction_remaining
     if non_zero:
-        artists = artists.exclude(total=0)
+        artists = [a for a in artists if a.total != 0]
     return render(request, 'artshow/artist-payment-report.html', {'artists': artists, 'non_zero':non_zero})
 
 

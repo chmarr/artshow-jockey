@@ -16,6 +16,7 @@
         <table>
             <tr>
                 <th colspan="2">Space</th>
+                <th>&half;s?</th>
                 <th>Cost per</th>
                 <th>Requested</th>
                 {% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}
@@ -31,6 +32,7 @@
                 <tr>
                     <td>{{ form.space }}{{ form.initial.space }}</td>
                     <td><span class="helptext">{{ form.initial.space.description }}</span></td>
+                    <td>{{ form.initial.space.allow_half_spaces|yesno }}</td>
                     <td class="money">${{ form.initial.space.price }}</td>
                     <td>{{ form.requested.errors }}{{ form.requested }}</td>
                     {% if artshow_settings.ARTSHOW_SHOW_ALLOCATED_SPACES %}
@@ -42,7 +44,7 @@
         <p><input type="submit" value="Save and Return"/></p>
     </form>
     <hr/>
-    <p>Half spaces may be reserved at half the listed price.</p>
+    <p><strong>&half;s?</strong>: If allowed, half spaces may be reserved at half the listed price.</p>
     <p>Use "Make Payment" on the previous screen to make a payment for spaces requested.</p>
 
 {% endblock %}

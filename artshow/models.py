@@ -257,9 +257,11 @@ class Piece (models.Model):
     StatusWon = 2
     StatusSold = 3
     StatusReturned = 4
+    StatusNotInShowLocked = 5
 
     STATUS_CHOICES = [
         (StatusNotInShow, u'Not In Show'),
+        (StatusNotInShowLocked, u'Not In Show, Locked'),
         (StatusInShow, u'In Show'),
         (StatusWon, u'Won'),
         (StatusSold, u'Sold'),
@@ -272,6 +274,9 @@ class Piece (models.Model):
 
     def top_bid(self):
         return self.bid_set.exclude(invalid=True).order_by('-amount')[0:1].get()
+
+    def is_artist_editable(self):
+        return self.status == Piece.StatusNotInShow
 
     def save(self, *args, **kwargs):
         self.code = "%s-%s" % (self.artist.artistid, self.pieceid)

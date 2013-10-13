@@ -69,7 +69,7 @@ def process_locations(data):
                         state = State.error_skipping
                         continue
                     piece.location = current_location
-                    if piece.status == Piece.StatusNotInShow:
+                    if piece.status in [Piece.StatusNotInShow, Piece.StatusNotInShowLocked]:
                         piece.status = Piece.StatusInShow
                     piece.save()
                 else:

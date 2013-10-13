@@ -21,6 +21,18 @@
 {{ formset.management_form }}
 <table>
   <tr><th>Piece ID</th><th>Name/Title</th><th>Media</th><th>Adult?</th><th>Not For Sale</th><th>Min Bid</th><th>Buy Now</th><th>Delete?</th></tr>
+{% for piece in locked_pieces %}
+  <tr>
+    <td>{{ piece.pieceid }}</td>
+    <td>{{ piece.name }}</td>
+    <td>{{ piece.media }}</td>
+    <td>{{ piece.adult|yesno }}</td>
+    <td>{{ piece.not_for_sale|yesno }}</td>
+    <td>{{ piece.min_bid }}</td>
+    <td>{{ piece.buy_now }}</td>
+    <td>Locked-In</td>
+  </tr>
+{% endfor %}
 {% for form in formset %}
 {% if form.non_field_errors %}
   <tr><td colspan="8">{{ form.non_field_errors }}</td></tr>
@@ -39,4 +51,13 @@
 </table>
 <p><input type="submit" value="Save" /></p>
 </form>
+{% if locked_pieces %}
+<hr/>
+<p><strong>Locked-In</strong> pieces cannot be edited as we have already printed the bid-sheets for them. If you
+wanted to:</p>
+<ul>
+    <li>make a change, duplicate the piece under a new piece ID, and show the piece under that ID.</li>
+    <li>delete it, simply don't show the piece. Our system handles "no-show" pieces just fine.</li>
+</ul>
+{% endif %}
 {% endblock %}

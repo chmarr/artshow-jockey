@@ -100,10 +100,13 @@ def pieces(request, artist_id):
         return render(request, "artshow/manage_error.html", {'artshow_settings': artshow_settings,
                                                              'error': error})
 
-    pieces = artist.piece_set.order_by("pieceid")
+    # TODO create a custom filter/exclude in the model rather than checking for a status here.
+    locked_pieces = artist.piece_set.exclude(status=Piece.StatusNotInShow).order_by("pieceid")
+    editable_pieces = artist.piece_set.filter(status=Piece.StatusNotInShow).order_by("pieceid")
 
+    # TODO things go badly if the status on a piece changes between the render, and the post
     if request.method == "POST":
-        formset = PieceFormSet(request.POST, queryset=pieces, instance=artist)
+        formset = PieceFormSet(request.POST, queryset=editable_pieces, instance=artist)
         delete_confirm_form = DeleteConfirmForm(request.POST)
         if formset.is_valid() and delete_confirm_form.is_valid():
             if not formset.deleted_forms or delete_confirm_form.cleaned_data['confirm_delete']:
@@ -111,12 +114,12 @@ def pieces(request, artist_id):
                 messages.info(request, "Changes to piece details have been saved")
                 return redirect('.')
     else:
-        formset = PieceFormSet(queryset=pieces, instance=artist)
+        formset = PieceFormSet(queryset=editable_pieces, instance=artist)
         delete_confirm_form = DeleteConfirmForm()
 
     return render(request, "artshow/manage_pieces.html",
                   {'artist': artist, 'formset': formset, 'delete_confirm_form': delete_confirm_form,
-                   'artshow_settings': artshow_settings})
+                   'locked_pieces':locked_pieces, 'artshow_settings': artshow_settings})
 
 
 def yesno(b):

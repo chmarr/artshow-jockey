@@ -1,8 +1,9 @@
 from optparse import make_option
-
 from django.core.management.base import BaseCommand, CommandError
-
 from artshow.mod11codes import make_check
+from django.conf import settings
+
+
 
 
 class Command(BaseCommand):
@@ -13,7 +14,8 @@ class Command(BaseCommand):
         make_option("--allow-x", action="store_true", default=False, help="allow X checkdigit"),
         make_option("--prefix", type="str", default="", help="prefix characters [%default]"),
         make_option("--suffix", type="str", default="", help="suffix characters [%default]"),
-        make_option("--offset", type="int", default=0, help="offset checkdigit [%default]"),
+        make_option("--offset", type="int", default=settings.ARTSHOW_BIDDERID_MOD11_OFFSET or 0,
+                    help="offset checkdigit [%default]"),
         make_option("--copies", type="int", default=1, help="copies [%default]"),
         make_option("--header", type="str", default=None, help="add header"),
     )

@@ -1,4 +1,5 @@
 {% extends "artshow/base_generic.html" %}
+{% load url from future %}
 {% block breadcrumbs %}
     <ul class="breadcrumbs">
         <li><a href="/">Home</a></li>
@@ -22,7 +23,7 @@
         </tr>
         {% for b in bidders %}
             <tr>
-                <td><a href="{% url artshow.cashier.cashier_bidder bidder_id=b.id %}">{{ b.name }}</a></td>
+                <td><a href="{% url "artshow.cashier.cashier_bidder" bidder_id=b.id %}">{{ b.name }}</a></td>
                 <td>{{ b.bidder_ids|join:", " }}</td>
             </tr>
         {% endfor %}

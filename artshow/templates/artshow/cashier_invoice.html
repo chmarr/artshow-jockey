@@ -1,4 +1,5 @@
 {% extends "artshow/base_generic.html" %}
+{% load url from future %}
 {% block title %}Invoice{% endblock %}
 {% block content %}
 <h3>Invoice</h3>
@@ -28,7 +29,7 @@
 </table>
 {% if invoice.item_and_tax_total != invoice.total_paid %}<p><strong>Oh crap; item total and payment total do not match!</strong></p>
 {% endif %}
-<form method="post" action="{% url artshow.cashier.print_invoice invoice.id %}">
+<form method="post" action="{% url "artshow.cashier.print_invoice" invoice.id %}">
 {% include "artshow/print-invoice.html" %}
 </form>
 {% if invoice.notes %}

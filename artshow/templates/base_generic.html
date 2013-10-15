@@ -1,3 +1,4 @@
+{% load url from future %}
 <html>
 <head>
    <link rel="stylesheet" href="{{ STATIC_URL }}style.css" />
@@ -8,11 +9,11 @@
    <div id="sidebar">
       {% block sidebar %}
       <ul>
-          <li><a href="{% url artshow.views.index %}">Artshow Home</a></li>
-          <li><a href="{% url artshow.reports.index %}">Reports</a></li>
+          <li><a href="{% url "artshow.views.index" %}">Artshow Home</a></li>
+          <li><a href="{% url "artshow.reports.index" %}">Reports</a></li>
           <li><a href="/admin/">Admin</a></li>
-          <li><a href="{% url artshow.views.dataentry %}">Data Entry</a></li>
-          <li><a href="{% url artshow.cashier.cashier %}">Cashier</a></li>
+          <li><a href="{% url "artshow.views.dataentry" %}">Data Entry</a></li>
+          <li><a href="{% url "artshow.cashier.cashier" %}">Cashier</a></li>
       </ul>
       {% endblock %}
    </div>

@@ -1,4 +1,5 @@
 {% extends "artist_generic.html" %}
+{% load url from future %}
 {% block title %}Artshow Setup{% endblock %}
 {% block content %}
 <p>Hello! Thank you for choosing to set up your pieces on-line.</p>
@@ -8,7 +9,7 @@
 <ul>
 {{ for a in artists }}
 <li>Artist {{ a.publicname }} has {{ a.pieces.count }} pieces entered.<br>
-<a href="{% url artshow.artist.pieces %}">Edit</a>.</li>
+<a href="{% url "artshow.artist.pieces" %}">Edit</a>.</li>
 {{ endfor }}
 </ul>
 {{ else }}

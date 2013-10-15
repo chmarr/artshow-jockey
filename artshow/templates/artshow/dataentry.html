@@ -1,14 +1,15 @@
 {% extends "artshow/base_generic.html" %}
+{% load url from future %}
 {% block title %}{{ section.title }}{% endblock %}
 {% block content %}
     <h1>Data Entry</h1>
     <ul>
-        <li><a href="{% url artshow.addbidder.bulk_add %}">Add Bidders</a></li>
-        <li><a href="{% url artshow.addbidder.bid_bulk_add %}">Add Bids</a></li>
+        <li><a href="{% url "artshow.addbidder.bulk_add" %}">Add Bidders</a></li>
+        <li><a href="{% url "artshow.addbidder.bid_bulk_add" %}">Add Bids</a></li>
         <li>Auction Ordering
             <ul>
-                <li><a href="{% url artshow.voice_auction.order_auction adult='y' %}">Adult</a></li>
-                <li><a href="{% url artshow.voice_auction.order_auction adult='n' %}">General</a></li>
+                <li><a href="{% url "artshow.voice_auction.order_auction" adult='y' %}">Adult</a></li>
+                <li><a href="{% url "artshow.voice_auction.order_auction" adult='n' %}">General</a></li>
             </ul>
         </li>
 

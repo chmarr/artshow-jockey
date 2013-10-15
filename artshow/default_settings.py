@@ -44,7 +44,6 @@ ARTSHOW_BLANK_CONTROL_FORM = "artshow/files/ControlForm.pdf"
 # The in-build form printing code uses this font to print piece barcodes.
 # Specify as a 2-tuple: ( "font name", "font path" )
 ARTSHOW_BARCODE_FONT = ('Free3of9', 'artshow/files/free3of9/FREE3OF9.TTF')
-ARTSHOW_SCANNER_DEVICE = "/dev/ttyUSB0"
 
 # device name of serial-connected scanner reader.
 # eg: "/dev/ttyUSB0"
@@ -76,3 +75,7 @@ ARTSHOW_PAYPAL_URL = "https://www.paypal.com/cgi-bin/webscr"
 ARTSHOW_PAYPAL_ACCOUNT = _UNCONFIGURED
 
 ARTSHOW_ARTIST_AGREEMENT_URL = _UNCONFIGURED
+
+# Change this if an offset has been applied to bidder ID MOD11 calculation.
+# Use "None" to disable check completely.
+ARTSHOW_BIDDERID_MOD11_OFFSET = 0

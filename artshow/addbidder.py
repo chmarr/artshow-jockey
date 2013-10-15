@@ -10,14 +10,17 @@ import mod11codes
 import re
 from django.forms.formsets import formset_factory
 from django.contrib.auth.decorators import permission_required
+from django.conf import settings
 
 BIDDERS_PER_PAGE = 10
 BIDS_PER_PAGE = 10
 
 
 def mod11check(value):
+    if settings.ARTSHOW_BIDDERID_MOD11_OFFSET is None:
+        return
     try:
-        mod11codes.check(value)
+        mod11codes.check(value, offset=settings.ARTSHOW_BIDDERID_MOD11_OFFSET)
     except (mod11codes.CheckDigitError, ValueError):
         raise ValidationError("Not a valid code")
 

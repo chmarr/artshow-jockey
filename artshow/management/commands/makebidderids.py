@@ -14,6 +14,8 @@ class Command(BaseCommand):
         make_option("--prefix", type="str", default="", help="prefix characters [%default]"),
         make_option("--suffix", type="str", default="", help="suffix characters [%default]"),
         make_option("--offset", type="int", default=0, help="offset checkdigit [%default]"),
+        make_option("--copies", type="int", default=1, help="copies [%default]"),
+        make_option("--header", type="str", default=None, help="add header"),
     )
 
     def handle(self, *args, **options):
@@ -35,11 +37,16 @@ class Command(BaseCommand):
         prefix = options['prefix']
         suffix = options['suffix']
         offset = options['offset']
+        copies = options['copies']
+        if options['header']:
+            print options['header']
         while num_codes > 0:
             code = "%0*d" % (digits, value)
             value += 1
             check = make_check(code,offset=offset)
             if check=="X" and not allow_x:
                 continue
-            print prefix + code + check + suffix
+            result = prefix + code + check + suffix
+            for i in range(copies):
+                print result
             num_codes -= 1

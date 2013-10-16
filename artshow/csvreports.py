@@ -128,9 +128,9 @@ def bidders(request):
 # noinspection PyUnusedLocal
 @permission_required('artshow.view_payment')
 def payments(request):
-    payments = Payment.objects.all().order_by('artist__artistid', 'date')
+    payments = Payment.objects.all().order_by('id')
 
-    field_names = ['artistid', 'name', 'artistname', 'date', 'type', 'description', 'amount']
+    field_names = ['paymentid', 'artistid', 'name', 'artistname', 'date', 'type', 'description', 'amount']
 
     field_names_d = {}
     for n in field_names:
@@ -143,7 +143,7 @@ def payments(request):
 
     for p in payments:
         d = dict(
-            artistid=p.artist.artistid, name=p.artist.name, artistname=p.artist.artistname(),
+            paymentid=p.id, artistid=p.artist.artistid, name=p.artist.name(), artistname=p.artist.artistname(),
             date=p.date, type=p.payment_type.name, description=p.description, amount=p.amount)
         c.writerow(d)
 

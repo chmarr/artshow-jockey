@@ -242,6 +242,8 @@ class Piece (models.Model):
     code = models.CharField(max_length=10, editable=False)
     name = models.CharField(max_length=100, verbose_name="title")
     media = models.CharField(max_length=100, blank=True)
+    other_artist = models.CharField(max_length=100, blank=True, help_text="Alternate artist name for this piece")
+    condition = models.CharField(max_length=100, blank=True, help_text="Condition of piece, if not \"perfect\".")
     location = models.CharField(max_length=8, blank=True)
     not_for_sale = models.BooleanField()
     adult = models.BooleanField()

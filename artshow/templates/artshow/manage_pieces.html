@@ -2,62 +2,87 @@
 {% load url from future %}
 {% block title %}Edit Pieces{% endblock %}
 {% block breadcrumbs %}
-<ul class="breadcrumbs">
-  <li><a href="/">Home</a></li>
-  <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
-  <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
-  <li class="current">Piece Details</li>
-</ul>
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.manage.index' %}">Manage Artists</a></li>
+        <li><a href="{% url 'artshow.manage.artist' artist_id=artist.artistid %}">{{ artist.artistname }}</a></li>
+        <li class="current">Piece Details</li>
+    </ul>
 {% endblock %}
 {% block content %}
-<p>Managing pieces for artist <strong>{{ artist.artistname }}</strong></p>
-<p>To enter more than 5 pieces, click "Save" and 5 more slots will appear.</p>
-<form method="post">{% csrf_token %}
-{% if formset.deleted_forms %}
-<div class="confirmdelete">
-{{ delete_confirm_form.as_p }}
-</div>
-{% endif %}
-{{ formset.management_form }}
-<table>
-  <tr><th>Piece ID</th><th>Name/Title</th><th>Media</th><th>Adult?</th><th>Not For Sale</th><th>Min Bid</th><th>Buy Now</th><th>Delete?</th></tr>
-{% for piece in locked_pieces %}
-  <tr>
-    <td>{{ piece.pieceid }}</td>
-    <td>{{ piece.name }}</td>
-    <td>{{ piece.media }}</td>
-    <td>{{ piece.adult|yesno }}</td>
-    <td>{{ piece.not_for_sale|yesno }}</td>
-    <td>{{ piece.min_bid }}</td>
-    <td>{{ piece.buy_now }}</td>
-    <td>Locked-In</td>
-  </tr>
-{% endfor %}
-{% for form in formset %}
-{% if form.non_field_errors %}
-  <tr><td colspan="8">{{ form.non_field_errors }}</td></tr>
-{% endif %}
-  <tr>{{ form.id.errors }}{{ form.id }}{{ form.artist.errors }}{{ form.artist }}
-    <td>{{ form.pieceid.errors }}{{ form.pieceid }}</td>
-    <td>{{ form.name.errors }}{{ form.name }}</td>
-    <td>{{ form.media.errors }}{{ form.media }}</td>
-    <td>{{ form.adult.errors }}{{ form.adult }}</td>
-    <td>{{ form.not_for_sale.errors }}{{ form.not_for_sale }}</td>
-    <td>{{ form.min_bid.errors }}{{ form.min_bid }}</td>
-    <td>{{ form.buy_now.errors }}{{ form.buy_now }}</td>
-    <td>{{ form.DELETE }}</td>
-  </tr>
-{% endfor %}
-</table>
-<p><input type="submit" value="Save" /></p>
-</form>
-{% if locked_pieces %}
-<hr/>
-<p><strong>Locked-In</strong> pieces cannot be edited as we have already printed the bid-sheets for them. If you
-wanted to:</p>
-<ul>
-    <li>make a change, duplicate the piece under a new piece ID, and show the piece under that ID.</li>
-    <li>delete it, simply don't show the piece. Our system handles "no-show" pieces just fine.</li>
-</ul>
-{% endif %}
+    <p>Managing pieces for artist <strong>{{ artist.artistname }}</strong></p>
+    <p>To enter more than 5 pieces, click "Save" and 5 more slots will appear.</p>
+    <form method="post">{% csrf_token %}
+        {% if formset.deleted_forms %}
+            <div class="confirmdelete">
+                {{ delete_confirm_form.as_p }}
+            </div>
+        {% endif %}
+        {{ formset.management_form }}
+        <table>
+            <tr>
+                <th>Piece ID</th>
+                <th>Name/Title</th>
+                <th>Media</th>
+                <th>Adult?</th>
+                <th>Not For Sale</th>
+                <th>Min Bid</th>
+                <th>Buy Now</th>
+                <th>Delete?</th>
+            </tr>
+            {% for piece in locked_pieces %}
+                <tr>
+                    <td>{{ piece.pieceid }}</td>
+                    <td>{{ piece.name }}</td>
+                    <td>{{ piece.media }}</td>
+                    <td>{{ piece.adult|yesno }}</td>
+                    <td>{{ piece.not_for_sale|yesno }}</td>
+                    <td>{{ piece.min_bid }}</td>
+                    <td>{{ piece.buy_now }}</td>
+                    <td>Locked-In</td>
+                </tr>
+                {% if piece.other_artist %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="6">Artist: {{ piece.other_artist }}</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                {% endif %}
+                {% if piece.condition %}
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="6">Condition: {{ piece.condition }}</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            {% for form in formset %}
+                {% if form.non_field_errors %}
+                    <tr>
+                        <td colspan="8">{{ form.non_field_errors }}</td>
+                    </tr>
+                {% endif %}
+                <tr>{{ form.id.errors }}{{ form.id }}{{ form.artist.errors }}{{ form.artist }}
+                    <td>{{ form.pieceid.errors }}{{ form.pieceid }}</td>
+                    <td>{{ form.name.errors }}{{ form.name }}</td>
+                    <td>{{ form.media.errors }}{{ form.media }}</td>
+                    <td>{{ form.adult.errors }}{{ form.adult }}</td>
+                    <td>{{ form.not_for_sale.errors }}{{ form.not_for_sale }}</td>
+                    <td>{{ form.min_bid.errors }}{{ form.min_bid }}</td>
+                    <td>{{ form.buy_now.errors }}{{ form.buy_now }}</td>
+                    <td>{{ form.DELETE }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <p><input type="submit" value="Save"/></p>
+    </form>
+    {% if locked_pieces %}
+        <hr/>
+        <p><strong>Locked-In</strong> pieces cannot be edited as we have already printed the bid-sheets for them. If you
+            wanted to:</p>
+        <ul>
+            <li>make a change, duplicate the piece under a new piece ID, and show the piece under that ID.</li>
+            <li>delete it, simply don't show the piece. Our system handles "no-show" pieces just fine.</li>
+        </ul>
+    {% endif %}
 {% endblock %}

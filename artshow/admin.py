@@ -492,7 +492,8 @@ class PieceAdmin(admin.ModelAdmin):
     # raw_id_fields = ( 'invoice', )
     # TODO put 'invoiceitem' back into the list. Waiting on bug #16433
     fields = (
-        'artist', 'pieceid', 'name', 'media', 'location', 'not_for_sale', 'adult', 'min_bid', 'buy_now',
+        'artist', 'pieceid', 'name', 'media', 'other_artist', 'condition', 'location', 'not_for_sale',
+        'adult', 'min_bid', 'buy_now',
         'voice_auction', 'bidsheet_scanned', 'status', 'top_bid_detail', 'invoice_item_detail', 'updated', 'order')
     raw_id_fields = ('artist', )
     readonly_fields = ('top_bid_detail', 'invoice_item_detail', 'updated')

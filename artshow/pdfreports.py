@@ -3,11 +3,13 @@
 # See file COPYING for licence details
 
 from django.db.models import Min
+from django.shortcuts import get_object_or_404
+from reportlab.lib.pagesizes import LETTER
 from artshow.models import *
 from django.http import HttpResponse
 from django.contrib.auth.decorators import permission_required
 
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
@@ -144,5 +146,123 @@ def bid_entry(request, pieces):
     story = [table]
     doc.build(story)
 
+    return response
+
+
+_quantization_value = Decimal(10)**-settings.ARTSHOW_MONEY_PRECISION
+
+
+def format_money(value):
+    return unicode(value.quantize(_quantization_value))
+
+
+def invoice_to_pdf(invoice, outf):
+    doc = SimpleDocTemplate(outf, pagesize=LETTER,
+                            leftMargin=0.75*inch, rightMargin=0.75*inch,
+                            topMargin=0.75*inch, bottomMargin=0.75*inch)
+
+    normal_style = ParagraphStyle("normal", fontName="Helvetica")
+    piece_condition_style = ParagraphStyle("piececondition", normal_style, fontSize=normal_style.fontSize-2,
+                                           leading=normal_style.leading-2)
+    piece_details_style = ParagraphStyle("pieceseller", piece_condition_style)
+
+    invoice_info_data = [
+        ["Invoice", settings.ARTSHOW_INVOICE_PREFIX + str(invoice.id)],
+        ["Page", Paragraph('<para align="right"><seq id="pageno" /></para>', normal_style)],
+        ["Date", invoice.paid_date.strftime("%b %d, %Y")],
+        ["Reg ID", invoice.payer.person.reg_id],
+        ["Bidder IDs", Paragraph("<para align=right><b>" + escape(" ".join(invoice.payer.bidder_ids())) + "</b></para>",
+                                 normal_style)],
+    ]
+    invoice_info_style = [
+        #("GRID", (0,0), (-1,-1), 0.1, colors.black),
+        ("LEFTPADDING", (0,0),(-1,-1), 3),
+        ("RIGHTPADDING", (0,0),(-1,-1), 3),
+        ("TOPPADDING", (0,0),(-1,-1), 0),
+        ("BOTTOMPADDING", (0,0),(-1,-1), 0),
+        ("ALIGN",(0,0),(-1,-1),"RIGHT"),
+        ("VALIGN",(0,0),(-1,-1),"TOP"),
+        ("FONT",(1,0),(1,0),"Helvetica-Bold"),
+        ("FONT",(1,4),(1,4),"Helvetica-Bold"),
+    ]
+    invoice_info_table = Table(invoice_info_data, colWidths=[0.75*inch, 1.5*inch], style=invoice_info_style)
+
+    header_data = [
+        [settings.ARTSHOW_SHOW_NAME + " - " + settings.ARTSHOW_SHOW_YEAR, invoice_info_table],
+        ["Invoice for:\n    " + invoice.payer.name()],
+    ]
+
+    header_table_style = [
+        ("VALIGN", (0,0), (-1,-1), "TOP"),
+        ("GRID", (0,0), (-1,-1), 0.1, colors.black),
+        ("SPAN", (1,0), (1,-1)),
+        ("LEFTPADDING", (1,0),(1,0), 0),
+        ("RIGHTPADDING", (1,0),(1,0), 0),
+        ("TOPPADDING", (1,0),(1,0), 3),
+        ("BOTTOMPADDING", (1,0),(1,0), 3),
+    ]
+
+    header_table = Table(header_data, colWidths=[4.75*inch, 2.25*inch], style=header_table_style)
+    story = [header_table, Spacer(inch, 0.25*inch)]
+
+    body_data = [["Code","Description","Amount ("+settings.ARTSHOW_MONEY_CURRENCY+")"]]
+
+    for item in invoice.invoiceitem_set.order_by("piece__artist__artistid","piece__pieceid"):
+        piece = item.piece
+        paragraphs = [Paragraph("<i>"+ escape(piece.name) + "</i> by " + escape(piece.artistname()), normal_style)]
+        details_body_parts = [escape(piece.media)]
+        if piece.condition:
+            details_body_parts.append(escape(piece.condition))
+        if piece.other_artist:
+            details_body_parts.append(escape("sold by " + piece.artist.artistname()))
+        paragraphs.append(Paragraph(u" \u2014 ".join(details_body_parts), piece_details_style))
+        body_data.append([item.piece.code, paragraphs, format_money(item.price)])
+
+    if invoice.tax_paid:
+        subtotal_row = len(body_data)
+        body_data.append(["", "Subtotal", format_money(invoice.item_total())])
+        body_data.append(["", settings.ARTSHOW_TAX_DESCRIPTION, format_money(invoice.tax_paid)])
+    else:
+        subtotal_row = None
+
+    total_row = len(body_data)
+    body_data.append(["", "Total Due", format_money(invoice.item_and_tax_total())])
+
+    body_data.append(["","",""])
+
+    for payment in invoice.invoicepayment_set.all():
+        body_data.append(["", payment.get_payment_method_display(), format_money(payment.amount)])
+
+    body_data.append(["", "Total Paid", unicode(invoice.total_paid())])
+
+    body_table_style = [
+        ("FONTSIZE", (0,0), (-1,0), normal_style.fontSize-4),
+        ("FONT", (0,0), (-1,0), "Helvetica-Bold"),
+        ("LEADING", (0,0), (-1,0), normal_style.leading-4),
+        ("VALIGN", (0,0), (-1,-1), "TOP"),
+        ("ALIGN", (2,0), (2,-1), "RIGHT"),
+        ("ALIGN", (1, total_row), (1,-1), "RIGHT"),
+        ("FONT", (2, total_row), (2,total_row), "Helvetica-Bold"),
+        ("FONT", (2, -1), (2,-1), "Helvetica-Bold"),
+        ("LINEABOVE", (0, total_row), (-1, total_row), 0.5, colors.black),
+        ("LINEABOVE", (0, -1), (-1, -1), 0.5, colors.black),
+    ]
+
+    if subtotal_row is not None:
+        body_table_style.append(("ALIGN", (1, subtotal_row), (1,subtotal_row+1), "RIGHT"))
+        body_table_style.append(("LINEABOVE", (0, subtotal_row), (-1, subtotal_row), 0.5, colors.black))
+
+    body_table = Table(body_data, colWidths=[0.75*inch, 5.0*inch, 1.25*inch], style=body_table_style)
+    story.append(body_table)
+
+    doc.build(story)
+
+
+
+@permission_required('artshow.is_artshow_staff')
+def pdf_invoice(request, invoice_id):
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+    response = HttpResponse(mimetype="application/pdf")
+    invoice_to_pdf(invoice, response)
     return response
 

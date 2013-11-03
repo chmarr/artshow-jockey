@@ -61,6 +61,7 @@ ARTSHOW_SHUT_USER_EDITS = False
 ARTSHOW_PRINT_COMMAND = _DISABLED
 ARTSHOW_AUTOPRINT_INVOICE = ["CUSTOMER COPY", "MERCHANT COPY", "PICK LIST"]
 ARTSHOW_MONEY_PRECISION = 2
+ARTSHOW_MONEY_CURRENCY = "USD"
 
 # Set this if something has gone wrong, and registration IDs should no longer
 # be checked for uniqueness

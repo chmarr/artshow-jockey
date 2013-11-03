@@ -272,7 +272,7 @@ class Piece (models.Model):
     status = models.IntegerField(choices=STATUS_CHOICES, default=StatusNotInShow)
 
     def artistname(self):
-        return self.artist.artistname()
+        return self.other_artist or self.artist.artistname()
 
     def top_bid(self):
         return self.bid_set.exclude(invalid=True).order_by('-amount')[0:1].get()
@@ -450,7 +450,7 @@ class Invoice (models.Model):
         return self.invoiceitem_set.aggregate(sum=Sum('price'))['sum'] or Decimal('0.0')
 
     def item_and_tax_total(self):
-        return self.item_total() + self.tax_paid
+        return self.item_total() + (self.tax_paid or 0)
 
     paid_date = models.DateTimeField(blank=True, null=True)
     created_by = models.ForeignKey(User)

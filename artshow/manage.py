@@ -67,7 +67,7 @@ def artist(request, artist_id):
 class PieceForm(forms.ModelForm):
     class Meta:
         model = Piece
-        fields = ('pieceid', 'name', 'media', 'not_for_sale', 'adult', 'min_bid', 'buy_now')
+        fields = ('pieceid', 'name', 'media', 'other_artist', 'condition', 'not_for_sale', 'adult', 'min_bid', 'buy_now')
         widgets = {
             'pieceid': forms.TextInput(attrs={'size': 4}),
             'name': forms.TextInput(attrs={'size': 40}),

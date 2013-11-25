@@ -158,6 +158,50 @@ def format_money(value):
     return unicode(value.quantize(_quantization_value))
 
 
+def draw_invoice_header(canvas, doc, invoice, purpose):
+    normal_style = ParagraphStyle("normal", fontName="Helvetica")
+    frame = Frame(0.75 * inch, doc.pagesize[1] - 1.75 * inch,
+                  doc.pagesize[0] - 1.5 * inch, 1 * inch,
+                  leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
+    invoice_info_data = [
+        ["Invoice", settings.ARTSHOW_INVOICE_PREFIX + str(invoice.id)],
+        ["Page", Paragraph('<para align="right"><seq id="pageno" /></para>', normal_style)],
+        ["Date", invoice.paid_date.strftime("%b %d, %Y")],
+        ["Reg ID", invoice.payer.person.reg_id],
+        ["Bidder IDs",
+         Paragraph("<para align=right><b>" + escape(" ".join(invoice.payer.bidder_ids())) + "</b></para>",
+                   normal_style)],
+    ]
+    invoice_info_style = [
+        #("GRID", (0,0), (-1,-1), 0.1, colors.black),
+        ("LEFTPADDING", (0, 0), (-1, -1), 3),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("FONT", (1, 0), (1, 0), "Helvetica-Bold"),
+        ("FONT", (1, 4), (1, 4), "Helvetica-Bold"),
+    ]
+    invoice_info_table = Table(invoice_info_data, colWidths=[0.75 * inch, 1.5 * inch], style=invoice_info_style)
+    header_data = [
+        [settings.ARTSHOW_SHOW_NAME + " - " + settings.ARTSHOW_SHOW_YEAR, invoice_info_table],
+        [purpose + "\n    " + invoice.payer.name()],
+    ]
+    header_table_style = [
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("GRID", (0, 0), (-1, -1), 0.1, colors.black),
+        ("SPAN", (1, 0), (1, -1)),
+        ("LEFTPADDING", (1, 0), (1, 0), 0),
+        ("RIGHTPADDING", (1, 0), (1, 0), 0),
+        ("TOPPADDING", (1, 0), (1, 0), 3),
+        ("BOTTOMPADDING", (1, 0), (1, 0), 3),
+    ]
+    header_table = Table(header_data, colWidths=[4.75 * inch, 2.25 * inch], style=header_table_style)
+    header_story = [header_table, Spacer(inch, 0.25 * inch)]
+    frame.addFromList(header_story, canvas)
+
+
 def invoice_to_pdf(invoice, outf):
     normal_style = ParagraphStyle("normal", fontName="Helvetica")
     piece_condition_style = ParagraphStyle("piececondition", normal_style, fontSize=normal_style.fontSize - 2,
@@ -165,46 +209,7 @@ def invoice_to_pdf(invoice, outf):
     piece_details_style = ParagraphStyle("pieceseller", piece_condition_style)
 
     def invoice_header(canvas, doc):
-        frame = Frame(0.75 * inch, doc.pagesize[1] - 1.75 * inch,
-                      doc.pagesize[0] - 1.5 * inch, 1 * inch,
-                      leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
-        invoice_info_data = [
-            ["Invoice", settings.ARTSHOW_INVOICE_PREFIX + str(invoice.id)],
-            ["Page", Paragraph('<para align="right"><seq id="pageno" /></para>', normal_style)],
-            ["Date", invoice.paid_date.strftime("%b %d, %Y")],
-            ["Reg ID", invoice.payer.person.reg_id],
-            ["Bidder IDs",
-             Paragraph("<para align=right><b>" + escape(" ".join(invoice.payer.bidder_ids())) + "</b></para>",
-                       normal_style)],
-        ]
-        invoice_info_style = [
-            #("GRID", (0,0), (-1,-1), 0.1, colors.black),
-            ("LEFTPADDING", (0, 0), (-1, -1), 3),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 3),
-            ("TOPPADDING", (0, 0), (-1, -1), 0),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("FONT", (1, 0), (1, 0), "Helvetica-Bold"),
-            ("FONT", (1, 4), (1, 4), "Helvetica-Bold"),
-        ]
-        invoice_info_table = Table(invoice_info_data, colWidths=[0.75 * inch, 1.5 * inch], style=invoice_info_style)
-        header_data = [
-            [settings.ARTSHOW_SHOW_NAME + " - " + settings.ARTSHOW_SHOW_YEAR, invoice_info_table],
-            ["Invoice for:\n    " + invoice.payer.name()],
-        ]
-        header_table_style = [
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("GRID", (0, 0), (-1, -1), 0.1, colors.black),
-            ("SPAN", (1, 0), (1, -1)),
-            ("LEFTPADDING", (1, 0), (1, 0), 0),
-            ("RIGHTPADDING", (1, 0), (1, 0), 0),
-            ("TOPPADDING", (1, 0), (1, 0), 3),
-            ("BOTTOMPADDING", (1, 0), (1, 0), 3),
-        ]
-        header_table = Table(header_data, colWidths=[4.75 * inch, 2.25 * inch], style=header_table_style)
-        header_story = [header_table, Spacer(inch, 0.25 * inch)]
-        frame.addFromList(header_story, canvas)
+        draw_invoice_header(canvas, doc, invoice, "Invoice for:")
 
     doc = SimpleDocTemplate(outf, pagesize=LETTER,
                             leftMargin=0.75 * inch, rightMargin=0.75 * inch,
@@ -219,7 +224,7 @@ def invoice_to_pdf(invoice, outf):
     for item in invoice.invoiceitem_set.order_by("piece__artist__artistid", "piece__pieceid"):
         num_items += 1
         piece = item.piece
-        paragraphs = [Paragraph("<i>" + escape(piece.name) + "</i> by " + escape(piece.artistname()), normal_style)]
+        paragraphs = [Paragraph("<i>" + escape(piece.name) + u"</i> \u2014 by " + escape(piece.artistname()), normal_style)]
         details_body_parts = [escape(piece.media)]
         if piece.condition:
             details_body_parts.append(escape(piece.condition))
@@ -254,13 +259,14 @@ def invoice_to_pdf(invoice, outf):
         ("ALIGN", (1, total_row), (1, -1), "RIGHT"),
         ("FONT", (2, total_row), (2, total_row), "Helvetica-Bold"),
         ("FONT", (2, -1), (2, -1), "Helvetica-Bold"),
-        ("LINEABOVE", (0, total_row), (-1, total_row), 0.5, colors.black),
-        ("LINEABOVE", (0, -1), (-1, -1), 0.5, colors.black),
+        ("LINEBELOW", (0,0), (-1, -1), 0.1, colors.black),
+        ("LINEABOVE", (0, total_row), (-1, total_row), 0.75, colors.black),
+        ("LINEABOVE", (0, -1), (-1, -1), 0.75, colors.black),
     ]
 
     if subtotal_row is not None:
         body_table_style.append(("ALIGN", (1, subtotal_row), (1, subtotal_row + 1), "RIGHT"))
-        body_table_style.append(("LINEABOVE", (0, subtotal_row), (-1, subtotal_row), 0.5, colors.black))
+        body_table_style.append(("LINEABOVE", (0, subtotal_row), (-1, subtotal_row), 0.75, colors.black))
 
     body_table = Table(body_data, colWidths=[0.75 * inch, 5.0 * inch, 1.25 * inch], style=body_table_style,
                        repeatRows=1)
@@ -288,46 +294,7 @@ def picklist_to_pdf(invoice, outf):
     piece_details_style = ParagraphStyle("pieceseller", piece_condition_style)
 
     def invoice_header(canvas, doc):
-        frame = Frame(0.75 * inch, doc.pagesize[1] - 1.75 * inch,
-                      doc.pagesize[0] - 1.5 * inch, 1 * inch,
-                      leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
-        invoice_info_data = [
-            ["Invoice", settings.ARTSHOW_INVOICE_PREFIX + str(invoice.id)],
-            ["Page", Paragraph('<para align="right"><seq id="pageno" /></para>', normal_style)],
-            ["Date", invoice.paid_date.strftime("%b %d, %Y")],
-            ["Reg ID", invoice.payer.person.reg_id],
-            ["Bidder IDs",
-             Paragraph("<para align=right><b>" + escape(" ".join(invoice.payer.bidder_ids())) + "</b></para>",
-                       normal_style)],
-        ]
-        invoice_info_style = [
-            #("GRID", (0,0), (-1,-1), 0.1, colors.black),
-            ("LEFTPADDING", (0, 0), (-1, -1), 3),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 3),
-            ("TOPPADDING", (0, 0), (-1, -1), 0),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("FONT", (1, 0), (1, 0), "Helvetica-Bold"),
-            ("FONT", (1, 4), (1, 4), "Helvetica-Bold"),
-        ]
-        invoice_info_table = Table(invoice_info_data, colWidths=[0.75 * inch, 1.5 * inch], style=invoice_info_style)
-        header_data = [
-            [settings.ARTSHOW_SHOW_NAME + " - " + settings.ARTSHOW_SHOW_YEAR, invoice_info_table],
-            ["Pick-List for:\n    " + invoice.payer.name()],
-        ]
-        header_table_style = [
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("GRID", (0, 0), (-1, -1), 0.1, colors.black),
-            ("SPAN", (1, 0), (1, -1)),
-            ("LEFTPADDING", (1, 0), (1, 0), 0),
-            ("RIGHTPADDING", (1, 0), (1, 0), 0),
-            ("TOPPADDING", (1, 0), (1, 0), 3),
-            ("BOTTOMPADDING", (1, 0), (1, 0), 3),
-        ]
-        header_table = Table(header_data, colWidths=[4.75 * inch, 2.25 * inch], style=header_table_style)
-        header_story = [header_table, Spacer(inch, 0.25 * inch)]
-        frame.addFromList(header_story, canvas)
+        draw_invoice_header(canvas, doc, invoice, "Pick-List for:")
 
     doc = SimpleDocTemplate(outf, pagesize=LETTER,
                             leftMargin=0.75 * inch, rightMargin=0.75 * inch,
@@ -345,7 +312,7 @@ def picklist_to_pdf(invoice, outf):
     for item in invoice.invoiceitem_set.order_by("piece__location", "piece__artist__artistid", "piece__pieceid"):
         num_items += 1
         piece = item.piece
-        paragraphs = [Paragraph("<i>" + escape(piece.name) + "</i> by " + escape(piece.artistname()), normal_style)]
+        paragraphs = [Paragraph("<i>" + escape(piece.name) + u"</i> \u2014 by " + escape(piece.artistname()), normal_style)]
         details_body_parts = [escape(piece.media)]
         if piece.condition:
             details_body_parts.append(escape(piece.condition))

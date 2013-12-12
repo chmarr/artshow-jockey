@@ -3,7 +3,7 @@
 # See file COPYING for licence details
 
 from django.shortcuts import render
-from django.db.models import Sum, Min
+from django.db.models import Sum, Min, F
 from django.http import HttpResponse
 from django import forms
 from django.core.context_processors import csrf
@@ -19,7 +19,7 @@ def index(request):
 
 @permission_required('artshow.is_artshow_staff')
 def artists(request):
-    query = request.GET.get('q','all')
+    query = request.GET.get('q', 'all')
     artists = Artist.objects.annotate(requested=Sum("allocation__requested"),
                                       allocated=Sum("allocation__allocated"))
     artists = list(artists)
@@ -66,7 +66,7 @@ def artist_payment_report(request):
         a.total -= a.deduction_remaining
     if non_zero:
         artists = [a for a in artists if a.total != 0]
-    return render(request, 'artshow/artist-payment-report.html', {'artists': artists, 'non_zero':non_zero})
+    return render(request, 'artshow/artist-payment-report.html', {'artists': artists, 'non_zero': non_zero})
 
 
 @permission_required('artshow.is_artshow_staff')
@@ -146,8 +146,8 @@ def show_summary(request):
         total_spaces['requested'] += s.requested or 0
         total_spaces['allocated'] += s.allocated2 or 0
         if s.available:
-            s.requested_perc = s.requested/s.available*100 if s.requested is not None and s.available > 0 else 0
-            s.allocated_perc = s.allocated2/s.available*100 if s.allocated2 is not None and s.available > 0 else 0
+            s.requested_perc = s.requested / s.available * 100 if s.requested is not None and s.available > 0 else 0
+            s.allocated_perc = s.allocated2 / s.available * 100 if s.allocated2 is not None and s.available > 0 else 0
         else:
             s.requested_perc = 0
             s.allocated_perc = 0
@@ -162,14 +162,27 @@ def show_summary(request):
                    'num_showing_artists': num_showing_artists, 'payment_types': payment_types,
                    'total_payments': total_payments, 'tax_paid': tax_paid, 'piece_charges': piece_charges,
                    'total_charges': total_charges, 'total_invoice_payments': total_invoice_payments,
-                   'invoice_payments': invoice_payments, 'spaces':spaces, 'total_spaces': total_spaces,
-                   'num_artists':num_artists, 'num_active_artists': num_active_artists})
+                   'invoice_payments': invoice_payments, 'spaces': spaces, 'total_spaces': total_spaces,
+                   'num_artists': num_artists, 'num_active_artists': num_active_artists})
+
+
+@permission_required('artshow.is_artshow_staff')
+def allocations_waiting(request):
+    short_allocations = Allocation.objects.filter(allocated__lt=F('requested')).order_by('space', 'artist')
+    over_allocations = Allocation.objects.filter(allocated__gt=F('requested')).order_by('space', 'artist')
+
+    sections = [
+        ('Short Allocations', short_allocations),
+        ('Over Allocations', over_allocations),
+    ]
+
+    return render(request, 'artshow/allocations_waiting.html', {'sections': sections})
 
 
 @permission_required('artshow.is_artshow_staff')
 def voice_auction(request):
     adult = request.GET.get('adult', '')
-    if adult not in ['y','n']:
+    if adult not in ['y', 'n']:
         adult = ''
 
     pieces = Piece.objects.exclude(status=Piece.StatusNotInShow).filter(voice_auction=True).order_by("order", "artist",

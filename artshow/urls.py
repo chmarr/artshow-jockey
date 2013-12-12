@@ -25,6 +25,7 @@ urlpatterns = patterns('artshow',
                        (r'^reports/show-summary/$', 'reports.show_summary'),
                        (r'^reports/voice-auction/$', 'reports.voice_auction'),
                        (r'^reports/sales-percentiles/$', 'reports.sales_percentiles'),
+                       (r'^reports/allocations-waiting/$', 'reports.allocations_waiting'),
                        (r'^cashier/$', 'cashier.cashier'),
                        (r'^cashier/bidder/(?P<bidder_id>\d+)/$', 'cashier.cashier_bidder'),
                        (r'^cashier/invoice/(?P<invoice_id>\d+)/$', 'cashier.cashier_invoice'),
@@ -44,4 +45,4 @@ urlpatterns = patterns('artshow',
                            name="artshow-bidderreg-wizard"),
                        (r'^bidderreg/done/$', 'bidderreg.final'),
                        (r'^bidder/$', 'views.bidder_results'),
-                       )
+)

@@ -1,0 +1,32 @@
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.reports.index' %}">Reports</a></li>
+        <li class="current">Allocations Waiting</li>
+    </ul>
+{% endblock %}
+{% block content %}
+    {% for section_name, allocations in sections %}
+        <h2>{{ section_name }}</h2>
+        {% regroup allocations by space as allocations_in_space %}
+        {% for space in allocations_in_space %}
+            <h3>{{ space.grouper }}</h3>
+            <table class="report">
+                <tr>
+                    <th>Artist</th>
+                    <th>Requsted</th>
+                    <th>Allocated</th>
+                </tr>
+                {% for a in space.list %}
+                    <tr>
+                        <td><a href="{% url 'admin:artshow_artist_change' a.artist.artistid %}">{{ a.artist }}</a></td>
+                        <td>{{ a.requested }}</td>
+                        <td>{{ a.allocated }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}

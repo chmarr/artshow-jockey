@@ -483,18 +483,23 @@ class PieceAdmin(admin.ModelAdmin):
             return obj.buy_now
 
     buy_now_x.short_description = "buy now"
-    list_filter = ('adult', 'not_for_sale', 'voice_auction', 'status', 'bidsheet_scanned')
+    list_filter = ('adult', 'not_for_sale', 'voice_auction', 'status', 'bid_sheet_printing', 'control_form_printing',
+                   'bidsheet_scanned')
     search_fields = ('=code', '=artist__artistid', 'name', '=location', 'artist__person__name', 'artist__publicname')
     list_display = (
         'code', 'clickable_artist', 'name', 'adult', 'min_bid_x', 'buy_now_x', 'location', 'voice_auction', 'status',
-        'top_bid', 'updated')
+        'top_bid')
     inlines = [BidInline]
     # raw_id_fields = ( 'invoice', )
     # TODO put 'invoiceitem' back into the list. Waiting on bug #16433
     fields = (
-        'artist', 'pieceid', 'name', 'media', 'other_artist', 'condition', 'location', 'not_for_sale',
-        'adult', 'min_bid', 'buy_now',
-        'voice_auction', 'bidsheet_scanned', 'status', 'top_bid_detail', 'invoice_item_detail', 'updated', 'order')
+        'artist', 'pieceid', 'name', 'media', 'other_artist', 'condition',
+        ('not_for_sale', 'adult', 'min_bid', 'buy_now'),
+        ('status', 'location'),
+        ('voice_auction', 'order'),
+        'top_bid_detail', 'invoice_item_detail', 'updated',
+        ('bid_sheet_printing', 'control_form_printing', 'bidsheet_scanned'),
+    )
     raw_id_fields = ('artist', )
     readonly_fields = ('top_bid_detail', 'invoice_item_detail', 'updated')
     actions = ('clear_scanned_flag', 'set_scanned_flag', 'clear_won_status', 'apply_won_status',

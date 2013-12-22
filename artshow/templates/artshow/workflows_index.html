@@ -1,0 +1,14 @@
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
+{% block title %}Workflows{% endblock %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li class="current">Workflows</li>
+    </ul>
+{% endblock %}
+{% block content %}
+    <ul>
+        <li><a href="{% url "artshow.workflows.printing" %}">Bid Sheet and Control Form Printing</a></li>
+    </ul>
+{% endblock %}

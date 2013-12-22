@@ -1,0 +1,37 @@
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
+{% block title %}Printing Workflow{% endblock %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url "artshow.workflows.index" %}">Workflows</a></li>
+        <li class="current">Printing Workflow</li>
+    </ul>
+{% endblock %}
+{% block content %}
+    <h3>Marking Pieces Ready to be Printed</h3>
+    <p>Pieces "In Show" (possibly Locked) but bid sheet not marked for printing: <b>{{ num_pieces_bid_sheet_unprinted }}</b></p>
+    <p>Pieces "In Show" (possibly Locked) but control form not marked for printing: <b>{{ num_pieces_control_form_unprinted }}</b></p>
+    <form method="post">{% csrf_token %}
+        <input type="submit" name="lock_pieces" value="Lock Pieces and Ready for Printing" />
+    </form>
+    <h3>Printing</h3>
+
+    <p>Bid Sheets to be Printed: <b>{{ num_bid_sheets_to_be_printed }}</b></p>
+    <form method="post">{% csrf_token %}
+        <input type="submit" name="print_bid_sheets" value="Print Bid Sheets" />
+        <input type="submit" name="bid_sheets_done" value="Bid Sheets Done" />
+    </form>
+
+    <p>Control Forms (by piece) to be Printed: <b>{{ num_control_forms_to_be_printed }}</b></p>
+    <form method="post">{% csrf_token %}
+        <input type="submit" name="print_control_forms" value="Print Control Forms" />
+        <input type="submit" name="control_forms_done" value="Control Forms Done" />
+    </form>
+
+    <h3>Priting Complete</h3>
+
+    <p>Bid Sheets Printed: <b>{{ num_bid_sheets_printed }}</b></p>
+    <p>Control Forms (by piece) Printed: <b>{{ num_control_forms_printed }}</b></p>
+
+{% endblock %}

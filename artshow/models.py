@@ -271,6 +271,18 @@ class Piece (models.Model):
     ]
     status = models.IntegerField(choices=STATUS_CHOICES, default=StatusNotInShow)
 
+    PrintingNotPrinted = 0
+    PrintingToBePrinted = 1
+    PrintingPrinted = 2
+    PRINTING_CHOICES = [
+        (PrintingNotPrinted, u'Not Printed'),
+        (PrintingToBePrinted, u'To Be Printed'),
+        (PrintingPrinted, u'Printed'),
+    ]
+
+    bid_sheet_printing = models.IntegerField(choices=PRINTING_CHOICES, default=PrintingNotPrinted)
+    control_form_printing = models.IntegerField(choices=PRINTING_CHOICES, default=PrintingNotPrinted)
+
     def artistname(self):
         return self.other_artist or self.artist.artistname()
 

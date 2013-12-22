@@ -1,8 +1,13 @@
 {% extends "artshow/base_generic.html" %}
 {% load url from future %}
-{% block title %}{{ section.title }}{% endblock %}
+{% block title %}Data Entry{% endblock %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li class="current">Data Entry</li>
+    </ul>
+{% endblock %}
 {% block content %}
-    <h1>Data Entry</h1>
     <ul>
         <li><a href="{% url "artshow.addbidder.bulk_add" %}">Add Bidders</a></li>
         <li><a href="{% url "artshow.addbidder.bid_bulk_add" %}">Add Bids</a></li>

@@ -2,6 +2,7 @@
 <ul>
     {% if is_artshow_staff %}
         <li><a href="{% url 'artshow.reports.index' %}">Reports</a></li>
+        <li><a href="{% url 'artshow.workflows.index' %}">Workflows</a></li>
         <li><a href="{% url 'artshow.views.dataentry' %}">Data Entry</a></li>
     {% endif %}
     {% if has_add_invoice %}

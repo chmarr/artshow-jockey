@@ -3,8 +3,10 @@
 # See file COPYING for licence details
 
 from django.conf.urls import patterns, url
-from artshow.bidderreg import bidderreg_wizard_view
 from django.contrib.auth.decorators import permission_required
+
+from artshow.bidderreg import bidderreg_wizard_view
+
 
 urlpatterns = patterns('artshow',
                        (r'^$', 'views.index'),
@@ -45,4 +47,6 @@ urlpatterns = patterns('artshow',
                            name="artshow-bidderreg-wizard"),
                        (r'^bidderreg/done/$', 'bidderreg.final'),
                        (r'^bidder/$', 'views.bidder_results'),
+                       (r'^workflows/$', 'workflows.index'),
+                       (r'^workflows/printing/$', 'workflows.printing'),
 )

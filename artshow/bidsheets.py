@@ -25,5 +25,9 @@ def generate_control_forms(output, artists):
     preprint.control_forms(pieces, output)
 
 
+def generate_control_forms_for_pieces(output, pieces):
+    preprint.control_forms(pieces, output)
+
+
 def generate_piece_stickers(output, pieces):
     preprint.piece_stickers(pieces, output)

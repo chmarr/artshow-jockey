@@ -93,7 +93,7 @@ def show_summary(request):
         all_stats.pieces_entered += 1
         section_stats.pieces_entered += 1
         # TODO we might need to cover other cases here
-        if p.status != p.StatusNotInShow:
+        if p.status not in [Piece.StatusNotInShow, Piece.StatusNotInShowLocked]:
             all_stats.pieces_showing += 1
             section_stats.pieces_showing += 1
         try:

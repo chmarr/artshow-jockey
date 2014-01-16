@@ -3,6 +3,7 @@
 # See file COPYING for licence details
 
 import csv
+import unicodewriter
 from django.http import HttpResponse
 from django.contrib.auth.decorators import permission_required
 from artshow.models import *
@@ -32,7 +33,7 @@ def artists(request):
 
     response = HttpResponse(mimetype="text/csv")
     response['Content-Disposition'] = "attachment; filename=artists.csv"
-    c = csv.DictWriter(response, field_names)
+    c = unicodewriter.UnicodeDictWriter(response, field_names)
     c.writerow(field_names_d)
 
     for a in artists:

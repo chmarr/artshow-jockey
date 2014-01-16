@@ -53,6 +53,10 @@ class PersonForm(forms.ModelForm):
 
 
 def main(request):
+    if settings.ARTSHOW_SHUT_USER_EDITS:
+        return render(request, "artshow/registration_closed.html")
+
+
     if request.method == "POST":
         artist_form = ArtistRegisterForm(request.POST)
         person_form = PersonForm(request.POST)

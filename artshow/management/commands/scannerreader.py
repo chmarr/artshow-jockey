@@ -4,6 +4,7 @@ import select
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.utils.timezone import now
 
 from artshow.models import BatchScan
 
@@ -19,7 +20,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         device = options['device']
-        f = open(device)
+        # TODO find out why buffering=0 (no buffering) is required.
+        f = open(device, buffering=0)
 
         while True:
             data = []
@@ -40,6 +42,6 @@ class Command(BaseCommand):
             print "timed out"
             print "\a"
             data_str = "\n".join(data) + "\n"
-            batchscan = BatchScan(data=data_str, date_scanned=datetime.datetime.now())
+            batchscan = BatchScan(data=data_str, date_scanned=now())
             batchscan.save()
             print str(batchscan), "saved"

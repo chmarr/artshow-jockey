@@ -1,6 +1,8 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010, 2011 Chris Cogdon
 # See file COPYING for licence details
+from StringIO import StringIO
+import subprocess
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseBadRequest
 from artshow.models import Bidder, Piece, InvoicePayment, InvoiceItem, Invoice
@@ -14,10 +16,12 @@ from decimal import Decimal
 import logging
 import datetime
 import invoicegen
+import pdfreports
 logger = logging.getLogger(__name__)
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 import json
+from default_settings import _DISABLED as SETTING_DISABLED
 
 
 class BidderSearchForm (forms.Form):
@@ -174,9 +178,50 @@ class PrintInvoiceForm (forms.Form):
     picklist = forms.BooleanField(label="Pick List", required=False)
 
 
+# def do_print_invoices(request, invoice_id, copy_names):
+#     try:
+#         invoicegen.print_invoices([invoice_id], copy_names, to_printer=True)
+#     except invoicegen.PrintingError, x:
+#         messages.error(request, "Printing failed. Please ask administrator to consult error log")
+#         logger.error("Printing failed with exception: %s", x)
+#     else:
+#         messages.info(request, "Invoice %s has been sent to the printer" % invoice_id)
+
+
+def do_print_invoices2(invoice, copy_names):
+
+    sbuf = StringIO()
+
+    for copy_name in copy_names:
+        try:
+            if copy_name == "PICK LIST":
+                pdfreports.picklist_to_pdf(invoice, sbuf)
+            else:
+                pdfreports.invoice_to_pdf(invoice, sbuf)
+        except Exception, x:
+            logger.error("Could not generate invoice: %s", x)
+            raise invoicegen.PrintingError ("Could not generate invoice: %s" % x)
+
+    if not sbuf.getvalue():
+        logger.error("nothing to generate")
+    else:
+        if settings.ARTSHOW_PRINT_COMMAND is SETTING_DISABLED:
+            logger.error("Cannot print invoice. ARTSHOW_PRINT_COMMAND is DISABLED")
+            raise invoicegen.PrintingError("Printing is DISABLED in configuration")
+        p = subprocess.Popen(settings.ARTSHOW_PRINT_COMMAND, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+                             stdin=subprocess.PIPE, shell=True)
+        output, error = p.communicate(sbuf.getvalue())
+        if output:
+            logger.debug("printing command returned: %s", output)
+        if error:
+            logger.error("printing command returned error: %s", error)
+            raise invoicegen.PrintingError(error)
+
+
 def do_print_invoices(request, invoice_id, copy_names):
+    invoice = Invoice.objects.get(id=invoice_id)
     try:
-        invoicegen.print_invoices([invoice_id], copy_names, to_printer=True)
+        do_print_invoices2(invoice, copy_names)
     except invoicegen.PrintingError, x:
         messages.error(request, "Printing failed. Please ask administrator to consult error log")
         logger.error("Printing failed with exception: %s", x)

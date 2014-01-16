@@ -68,7 +68,7 @@ def pieces(request):
 
     response = HttpResponse(mimetype="text/csv")
     response['Content-Disposition'] = "attachment; filename=pieces.csv"
-    c = csv.DictWriter(response, field_names)
+    c = unicodewriter.UnicodeDictWriter(response, field_names)
     c.writerow(field_names_d)
 
     for p in pieces:
@@ -106,7 +106,7 @@ def bidders(request):
 
     response = HttpResponse(mimetype="text/csv")
     response['Content-Disposition'] = "attachment; filename=bidders.csv"
-    c = csv.DictWriter(response, field_names)
+    c = unicodewriter.UnicodeDictWriter(response, field_names)
     c.writerow(field_names_d)
 
     for b in bidders:
@@ -139,7 +139,7 @@ def payments(request):
 
     response = HttpResponse(mimetype="text/csv")
     response['Content-Disposition'] = "attachment; filename=payments.csv"
-    c = csv.DictWriter(response, field_names)
+    c = unicodewriter.UnicodeDictWriter(response, field_names)
     c.writerow(field_names_d)
 
     for p in payments:
@@ -164,7 +164,7 @@ def cheques(request):
 
     response = HttpResponse(mimetype="text/csv")
     response['Content-Disposition'] = "attachment; filename=cheques.csv"
-    c = csv.DictWriter(response, field_names)
+    c = unicodewriter.UnicodeDictWriter(response, field_names)
     c.writerow(field_names_d)
 
     for q in cheques:

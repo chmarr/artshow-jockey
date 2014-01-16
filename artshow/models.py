@@ -165,6 +165,7 @@ class Artist (models.Model):
         permissions = (
             ('view_artist', 'Can view Piece details outside of Admin system.'),
             ('is_artshow_staff', 'Can do generic art-show functions.'),
+            ('is_artshow_kiosk', 'Can do kiosk functions.'),
         )
 
 

@@ -19,3 +19,7 @@ def mailing_labels(artists, output):
 def piece_stickers(pieces, output):
     # TODO implement code
     raise NotImplementedError
+
+
+def bidder_agreement(bidder, output):
+    raise NotImplementedError

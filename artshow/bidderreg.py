@@ -1,9 +1,18 @@
+from StringIO import StringIO
+import subprocess
 from django import forms
 from django.contrib.auth.decorators import permission_required
 from django.contrib.formtools.wizard.views import CookieWizardView
 from django.shortcuts import render, redirect
 from django.conf import settings
 from artshow.models import Person, Bidder, BidderId
+import logging
+logger = logging.getLogger(__name__)
+from default_settings import _DISABLED as SETTING_DISABLED
+
+
+preprint = __import__(settings.ARTSHOW_PREPRINT_MODULE, globals(), locals(),
+                      ['bidder_agreement'])
 
 
 class BidderRegistrationForm0(forms.Form):
@@ -49,8 +58,22 @@ class BidderRegistrationForm2(forms.Form):
 
 
 # noinspection PyUnusedLocal
-def do_print_bidder_registration_form(person):
-    pass
+def do_print_bidder_registration_form(bidder):
+
+    sbuf = StringIO()
+    preprint.bidder_agreement(bidder, sbuf)
+
+    if settings.ARTSHOW_PRINT_COMMAND is SETTING_DISABLED:
+        logger.error("Cannot print agreement. ARTSHOW_PRINT_COMMAND is DISABLED")
+        raise Exception("Printing is DISABLED in configuration")
+    p = subprocess.Popen(settings.ARTSHOW_PRINT_COMMAND, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+                         stdin=subprocess.PIPE, shell=True)
+    output, error = p.communicate(sbuf.getvalue())
+    if output:
+        logger.debug("printing command returned: %s", output)
+    if error:
+        logger.error("printing command returned error: %s", error)
+        raise Exception(error)
 
 
 class BidderRegistrationWizard(CookieWizardView):
@@ -86,11 +109,10 @@ class BidderRegistrationWizard(CookieWizardView):
         p.save()
         b.person = p
         b.save()
-        do_print_bidder_registration_form(p)
+        do_print_bidder_registration_form(b)
         return redirect(final)
 
-# TODO. Create a better permission for this
-@permission_required('artshow.is_artshow_staff')
+@permission_required('artshow.is_artshow_kiosk')
 def final(request):
     return render(request, "artshow/bidderreg_final.html")
 

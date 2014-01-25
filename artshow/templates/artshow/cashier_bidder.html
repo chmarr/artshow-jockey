@@ -106,8 +106,8 @@
     				var amount=new BigNumber ( row.find("[name$=-amount]").val(), precision, BigNumber.ROUND_FLOOR );
     				var notes=row.find("[name$=-notes]").val();
     				var type=row.find("[name$=-payment_method]").val();
-    				row.find(".paymenttypetext").text ( paymenttypes[type] );
-    				row.find(".paymentnotestext").text ( notes );
+                    row.find(".paymenttypetext").text(payment_types[type]);
+                    row.find(".paymentnotestext").text ( notes );
     				row.find(".paymentamount").text ( amount.toString( true ) );
     			});
     			var acc = get_total_tendered ();

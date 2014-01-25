@@ -48,7 +48,7 @@ def artist_panel_report(request):
 
 @permission_required('artshow.is_artshow_staff')
 def panel_artist_report(request):
-    locations = Piece.objects.exclude(location="").values("location").distinct()
+    locations = Piece.objects.exclude(location="").values("location").distinct().order_by('location')
     for l in locations:
         l['artists'] = Artist.objects.filter(piece__location=l['location']).distinct()
     return render(request, "artshow/panel-artist-report.html", {'locations': locations})

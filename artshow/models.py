@@ -113,7 +113,8 @@ class Artist (models.Model):
         return self.allocation_set.aggregate(req=Sum('requested'))['req'] > 0
 
     def used_locations(self):
-        return [x[0] for x in self.piece_set.exclude(status=Piece.StatusNotInShow).distinct().values_list("location")]
+        return [x[0] for x in self.piece_set.exclude(status__in=[Piece.StatusNotInShow, Piece.StatusNotInShowLocked])
+        .distinct().values_list("location")]
 
     def balance(self):
         return self.payment_set.aggregate(balance=Sum('amount'))['balance'] or 0

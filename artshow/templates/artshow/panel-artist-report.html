@@ -17,7 +17,8 @@
         {% for l in locations %}
             <tr>
                 <td>{{ l.location }}</td>
-                <td>{% for a in l.artists %}{{ a }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td>
+                <td>{% for a in l.artists %}{{ a }} ({{ a.num_pieces }} piece{{ a.num_pieces|pluralize }})
+                    {% if not forloop.last %}<br>{% endif %}{% endfor %}</td>
             </tr>
         {% endfor %}
     </table>

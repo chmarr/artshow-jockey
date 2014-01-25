@@ -3,7 +3,7 @@
 # See file COPYING for licence details
 
 from django.shortcuts import render
-from django.db.models import Sum, Min, F
+from django.db.models import Sum, Min, F, Count
 from django.http import HttpResponse
 from django import forms
 from django.core.context_processors import csrf
@@ -50,7 +50,9 @@ def artist_panel_report(request):
 def panel_artist_report(request):
     locations = Piece.objects.exclude(location="").values("location").distinct().order_by('location')
     for l in locations:
-        l['artists'] = Artist.objects.filter(piece__location=l['location']).distinct()
+        l['artists'] = Artist.objects.filter(piece__location=l['location']) \
+            .annotate(num_pieces=Count("artistid")) \
+            .order_by("artistid")
     return render(request, "artshow/panel-artist-report.html", {'locations': locations})
 
 

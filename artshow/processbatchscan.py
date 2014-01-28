@@ -283,7 +283,7 @@ def process_batchscan(id):
         log_str = "%s\nAlready Processed" % now
         batchscan.processing_log = log_str
         batchscan.save()
-    elif batchscan.batchtype not in [1, 2]:
+    elif batchscan.batchtype not in [1, 2, 3]:
         log_str = "%s\nUnknown batchtype" % now
         batchscan.processing_log = log_str
         batchscan.save()

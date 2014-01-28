@@ -190,17 +190,22 @@ class PrintInvoiceForm (forms.Form):
 
 def do_print_invoices2(invoice, copy_names):
 
+    for copy_name in copy_names:
+        do_print_invoices3(invoice, copy_name)
+
+
+def do_print_invoices3(invoice, copy_name)
+
     sbuf = StringIO()
 
-    for copy_name in copy_names:
-        try:
-            if copy_name == "PICK LIST":
-                pdfreports.picklist_to_pdf(invoice, sbuf)
-            else:
-                pdfreports.invoice_to_pdf(invoice, sbuf)
-        except Exception, x:
-            logger.error("Could not generate invoice: %s", x)
-            raise invoicegen.PrintingError ("Could not generate invoice: %s" % x)
+    try:
+        if copy_name == "PICK LIST":
+            pdfreports.picklist_to_pdf(invoice, sbuf)
+        else:
+            pdfreports.invoice_to_pdf(invoice, sbuf)
+    except Exception, x:
+        logger.error("Could not generate invoice: %s", x)
+        raise invoicegen.PrintingError ("Could not generate invoice: %s" % x)
 
     if not sbuf.getvalue():
         logger.error("nothing to generate")

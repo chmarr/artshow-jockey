@@ -194,7 +194,7 @@ def do_print_invoices2(invoice, copy_names):
         do_print_invoices3(invoice, copy_name)
 
 
-def do_print_invoices3(invoice, copy_name)
+def do_print_invoices3(invoice, copy_name):
 
     sbuf = StringIO()
 

@@ -662,7 +662,7 @@ class ChequePaymentAdmin(admin.ModelAdmin):
     def print_cheques(self, request, cheqs):
         import cheques
 
-        response = HttpResponse(mimetype="text/plain")
+        response = HttpResponse(content_type="text/plain")
         for c in cheqs:
             cheques.cheque_to_text(c, response)
         return response

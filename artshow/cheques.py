@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from .conf import settings
 
-import num2word
+from num2words import num2words
 from .email1 import wrap
 
 
@@ -53,7 +53,7 @@ def cheque_to_text(cheque, f):
     cheque_dollars = int(cheque_amount)
     cheque_cents = int((cheque_amount - cheque_dollars) * 100 + Decimal("0.5"))
 
-    cheque_words = "** " + num2word.n2w.to_cardinal(cheque_dollars) + " dollars and %d cents" % cheque_cents + " **"
+    cheque_words = "** " + num2words(cheque_dollars) + " dollars and %d cents" % cheque_cents + " **"
     cheque_words = cheque_words.upper()
 
     person = cheque.artist.person

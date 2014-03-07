@@ -12,33 +12,12 @@ from .conf import settings
 from logging import getLogger
 from django.views.decorators.csrf import csrf_exempt
 from .models import Payment
+import django.utils.tzinfo
 
 paypal_logger = getLogger("paypal")
 
-
-class PSTZone(datetime.tzinfo):
-    """Fixed offset for Pacific Standard Time. -0800"""
-    def utcoffset(self, dt):
-        return datetime.timedelta(hours=-8)
-    def tzname(self, date_time):
-        return "PST"
-    def dst(self, dt):
-        return datetime.timedelta(0)
-
-pstzone = PSTZone()
-
-
-class PDTZone(datetime.tzinfo):
-    """Fixed offset for Pacific Daylight Time, -0700"""
-    def utcoffset(self, date_time):
-        return datetime.timedelta(hours=-7)
-    def tzname(self, dt):
-        return "PDT"
-    def dst(self, dt):
-        return datetime.timedelta(hours=1)
-
-pdtzone = PDTZone()
-
+pstzone = django.utils.tzinfo.FixedOffset(-480)
+pdtzone = django.utils.tzinfo.FixedOffset(-420)
 
 rfc822_date_re = re.compile(r"(\d+:\d+:\d+ \w+ \d+, \d+) (\w+)")
 

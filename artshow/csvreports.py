@@ -2,11 +2,10 @@
 # Copyright (C) 2009-2012 Chris Cogdon
 # See file COPYING for licence details
 
-import csv
-import unicodewriter
+from . import unicodewriter
 from django.http import HttpResponse
 from django.contrib.auth.decorators import permission_required
-from artshow.models import *
+from .models import *
 
 
 @permission_required('artshow.view_artist')

@@ -1,6 +1,6 @@
 # TODO Make the announcement package configurable
 from django.contrib.auth.decorators import login_required
-from artshow.utils import artshow_settings
+from .utils import artshow_settings
 from tinyannounce.models import Announcement
 from django.shortcuts import render, redirect, get_object_or_404
 

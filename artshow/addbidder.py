@@ -3,10 +3,10 @@
 # See file COPYING for licence details
 
 from django.shortcuts import render, redirect
-from artshow.models import Bidder, BidderId, Person, Piece
+from .models import Bidder, BidderId, Person, Piece
 from django import forms
 from django.core.exceptions import ValidationError
-import mod11codes
+from . import mod11codes
 import re
 from django.forms.formsets import formset_factory
 from django.contrib.auth.decorators import permission_required

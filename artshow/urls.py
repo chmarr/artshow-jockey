@@ -5,7 +5,7 @@
 from django.conf.urls import patterns, url
 from django.contrib.auth.decorators import permission_required
 
-from artshow.bidderreg import bidderreg_wizard_view
+from .bidderreg import bidderreg_wizard_view
 
 
 urlpatterns = patterns('artshow',

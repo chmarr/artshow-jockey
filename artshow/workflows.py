@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
-from artshow.models import Piece
+from .models import Piece
 
 
 @permission_required('artshow.is_artshow_staff')

@@ -10,7 +10,7 @@ from django.utils.http import urlencode
 from .conf import settings
 from logging import getLogger
 from django.views.decorators.csrf import csrf_exempt
-from artshow.models import Payment
+from .models import Payment
 
 paypal_logger = getLogger("paypal")
 

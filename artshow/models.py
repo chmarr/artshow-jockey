@@ -9,7 +9,7 @@ __all__ = ["Allocation", "Artist", "ArtistAccess", "ArtistManager", "BatchScan",
 from django.db import models
 from django.db.models import Sum
 from django.core.exceptions import ValidationError
-import mod11codes
+from . import mod11codes
 from django.contrib.auth.models import User
 from decimal import Decimal
 from .conf import settings

@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 from django.views.generic import DetailView
-from models import Person
+from .models import Person
 
 urlpatterns = patterns('peeps',
                        url(

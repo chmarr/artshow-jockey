@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from artshow.models import *
+from ...models import *
 
 
 class Command(BaseCommand):

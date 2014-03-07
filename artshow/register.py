@@ -1,11 +1,11 @@
 from django import forms
 from .conf import settings
 from django.db.models import Q
-from artshow.models import Person, Artist, ArtistAccess
+from .models import Person, Artist, ArtistAccess
 from django.contrib.auth.models import User
 from django.shortcuts import render
-from artshow.utils import create_user_from_email, send_password_reset_email
-from artshow.forms import ArtistRegisterForm, LongerTextInput
+from .utils import create_user_from_email, send_password_reset_email
+from .forms import ArtistRegisterForm, LongerTextInput
 
 
 class AgreementForm(forms.Form):

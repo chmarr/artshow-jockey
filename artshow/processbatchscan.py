@@ -3,7 +3,7 @@
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
 
-from models import BatchScan, Piece, Bid, BidderId
+from .models import BatchScan, Piece, Bid, BidderId
 import datetime
 import re
 from django.db.models.query import transaction

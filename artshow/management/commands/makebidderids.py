@@ -1,7 +1,7 @@
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
-from artshow.mod11codes import make_check
-from django.conf import settings
+from ...mod11codes import make_check
+from ...conf import settings
 
 
 

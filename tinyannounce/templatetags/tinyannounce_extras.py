@@ -1,6 +1,6 @@
 from django import template
-from tinyannounce.models import Announcement
-from tinyannounce.views import get_announcement_counts
+from ..models import Announcement
+from ..views import get_announcement_counts
 
 register = template.Library()
 

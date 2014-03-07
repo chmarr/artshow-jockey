@@ -8,7 +8,7 @@ from django.forms import ModelChoiceField, forms, CharField
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import permission_required
 from django.views.decorators.csrf import csrf_exempt
-from artshow.models import Artist, BidderId
+from .models import Artist, BidderId
 
 
 def home(request):

@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from .conf import settings
-from models import Piece
+from .models import Piece
 
 preprint = __import__(settings.ARTSHOW_PREPRINT_MODULE, globals(), locals(),
                       ['bid_sheets', 'control_forms', 'piece_stickers', 'mailing_labels'])

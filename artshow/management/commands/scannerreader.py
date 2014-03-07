@@ -1,12 +1,11 @@
 from optparse import make_option
-import datetime
 import select
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.utils.timezone import now
 
-from artshow.models import BatchScan
+from ...models import BatchScan
 
 
 class Command(BaseCommand):

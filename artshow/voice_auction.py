@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 
-from artshow.models import Piece, Bid, BidderId
+from .models import Piece, Bid, BidderId
 
 
 logger = getLogger(__name__)

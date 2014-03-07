@@ -8,7 +8,7 @@ from decimal import Decimal
 from .conf import settings
 
 import num2word
-from email1 import wrap
+from .email1 import wrap
 
 
 class PRINT_GRID:

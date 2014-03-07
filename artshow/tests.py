@@ -1,7 +1,7 @@
 from django.test import TestCase
-from artshow.utils import artshow_settings
+from .utils import artshow_settings
 from .conf import settings
-from artshow import mod11codes
+from . import mod11codes
 
 
 class AttributeFilterTest (TestCase):

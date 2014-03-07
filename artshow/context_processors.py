@@ -1,4 +1,4 @@
-from artshow.utils import artshow_settings as _artshow_settings
+from .utils import artshow_settings as _artshow_settings
 
 # noinspection PyUnusedLocal
 def artshow_settings ( request ):

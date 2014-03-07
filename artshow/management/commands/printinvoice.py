@@ -2,7 +2,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from artshow.invoicegen import print_invoices
+from ...invoicegen import print_invoices
 
 
 class Command(BaseCommand):

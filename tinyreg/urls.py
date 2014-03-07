@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, url
-from tinyreg.forms import CaptchaPasswordResetForm
+from .forms import CaptchaPasswordResetForm
 
 urlpatterns = patterns('',
                        url(r'login/$', 'django.contrib.auth.views.login', {'template_name': 'accounts/login.html'},

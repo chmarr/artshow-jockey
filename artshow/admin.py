@@ -1,15 +1,15 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
-from models import *
+from .models import *
 from django.contrib import admin, messages
 from django.core import urlresolvers
 from django.contrib.admin import helpers
 from django.shortcuts import render
 from django.utils.html import escape
 from django import forms
-import email1
-import processbatchscan
+from . import email1
+from . import processbatchscan
 from django.core.mail import send_mail
 import smtplib
 import datetime

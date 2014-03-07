@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.formtools.wizard.views import CookieWizardView
 from django.shortcuts import render, redirect
 from .conf import settings
-from artshow.models import Person, Bidder, BidderId
+from .models import Person, Bidder, BidderId
 import logging
 logger = logging.getLogger(__name__)
 from .conf import _DISABLED as SETTING_DISABLED

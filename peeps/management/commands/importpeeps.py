@@ -5,7 +5,7 @@ import re
 
 from django.core.management.base import BaseCommand
 
-from peeps.models import Person
+from ...models import Person
 
 
 class UnicodeCsvReader(object):

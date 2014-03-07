@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.shortcuts import render
 from django.db.models import Sum, Min, F, Count
 from django.contrib.auth.decorators import permission_required
-from artshow.models import *
+from .models import *
 
 
 @permission_required('artshow.is_artshow_staff')

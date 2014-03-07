@@ -5,7 +5,7 @@ from StringIO import StringIO
 import subprocess
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseBadRequest
-from artshow.models import Bidder, Piece, InvoicePayment, InvoiceItem, Invoice
+from .models import Bidder, Piece, InvoicePayment, InvoiceItem, Invoice
 from django import forms
 from django.db.models import Q
 from django.forms import ModelForm
@@ -15,8 +15,8 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 import logging
 import datetime
-import invoicegen
-import pdfreports
+from . import invoicegen
+from . import pdfreports
 logger = logging.getLogger(__name__)
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required

@@ -4,8 +4,8 @@
 # See file COPYING for licence details
 
 from django.template import Template, Context
-from artshow.utils import artshow_settings
-from artshow.models import Piece
+from .utils import artshow_settings
+from .models import Piece
 
 default_wrap_cols = 79
 

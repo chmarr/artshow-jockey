@@ -1,5 +1,0 @@
-- Create a generate reports permission
-- Create a progress show (apply won status, etc) permission
-- Make bidder numbers more flexible, and allow entry of initial letters, and adjust mod11 check to suit
-- use pdf gen to create invoices - keep text output version around.
-- printing an invoice currently generates two messages

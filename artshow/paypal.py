@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.dispatch import Signal, receiver
 from django.http import HttpResponse
 from django.utils.http import urlencode
+import re
 from .conf import settings
 from logging import getLogger
 from django.views.decorators.csrf import csrf_exempt
@@ -15,10 +16,61 @@ from .models import Payment
 paypal_logger = getLogger("paypal")
 
 
+class PSTZone(datetime.tzinfo):
+    """Fixed offset for Pacific Standard Time. -0800"""
+    def utcoffset(self, dt):
+        return datetime.timedelta(hours=-8)
+    def tzname(self, date_time):
+        return "PST"
+    def dst(self, dt):
+        return datetime.timedelta(0)
+
+pstzone = PSTZone()
+
+
+class PDTZone(datetime.tzinfo):
+    """Fixed offset for Pacific Daylight Time, -0700"""
+    def utcoffset(self, date_time):
+        return datetime.timedelta(hours=-7)
+    def tzname(self, dt):
+        return "PDT"
+    def dst(self, dt):
+        return datetime.timedelta(hours=1)
+
+pdtzone = PDTZone()
+
+
+rfc822_date_re = re.compile(r"(\d+:\d+:\d+ \w+ \d+, \d+) (\w+)")
+
+def convert_date(datestr):
+
+    # PayPal uses dates in RFC822 format: HH:MM:SS Mmm DD, YYYY PST/PDT
+    # We can't use %Z to match the timezone information as this ONLY works
+    # if the local computer is in a PST/PDT timezone. (see strptime(3))
+
+    mo = rfc822_date_re.match(datestr)
+    if not mo:
+        raise ValueError("%s is not a valid RFC822 date" % datestr)
+    datepart = mo.group(1)
+    tzpart = mo.group(2)
+    if tzpart == "PST":
+        tzinfo = pstzone
+    elif tzpart == "PDT":
+        tzinfo = pdtzone
+    else:
+        raise ValueError("Only PST or PDT is accepted for PayPal dates. Received %s" % tzpart)
+
+    d = datetime.datetime.strptime(datepart, "%H:%M:%S %b %d, %Y")
+    d = d.replace(tzinfo=tzinfo)
+    return d
+
+
+
 # Example URL
 # https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=sales%40internetwonders.com&undefined_quantity=0&
 # item_name=Art+Show+Payment&item_number=12345-123124134&amount=23&shipping=0&no_shipping=1&return=internetwonders.com&
 # cancel_return=internetwonders.com&currency_code=USD&bn=PP%2dBuyNowBF&cn=&charset=UTF%2d8
+
 
 def make_paypal_url(request, payment):
 
@@ -81,10 +133,9 @@ def process_ipn(sender, **kwargs):
         amount_gross = params['mc_gross'][0]
         amount_gross = Decimal(amount_gross)
         payer_email = params['payer_email'][0]
-        payment_date = params['payment_date'][0]
+        payment_date_str = params['payment_date'][0]
 
-        # PayPal uses dates in this format: HH:MM:SS Mmm DD, YYYY PDT
-        payment_date = datetime.datetime.strptime(payment_date, "%H:%M:%S %b %d, %Y PDT")
+        payment_date = convert_date(payment_date_str)
 
         if payment_status != "Completed":
             raise IPNProcessingError("payment status is %s != Completed" % payment_status)

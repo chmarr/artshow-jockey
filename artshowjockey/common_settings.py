@@ -73,9 +73,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-# SECRET_KEY must be specified in local_settings.py. A intentionally short one is listed here.
-# to prevent a deprecation warning from Django.
-# SECRET_KEY = "0000"
+# SECRET_KEY must be specified in local_settings.py.
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (

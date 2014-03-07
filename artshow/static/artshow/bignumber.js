@@ -129,8 +129,7 @@ with({$: BigNumber, o: BigNumber.prototype}){
 		for(d = this._f, p = this.precision + d, n = b[p]; b.length > d && !b[b.length -1]; b.pop());
 		x = (this._s ? "-" : "") + (p - d ? "0." + this._zeroes([], p - d - 1).join("") : "") + 1;
 		if(b.length > p){
-			//noinspection JSBitwiseOperatorUsage
-            n && (r == $.DOWN ? false : r == $.UP ? true : r == $.CEIL ? !this._s
+			n && (r == $.DOWN ? false : r == $.UP ? true : r == $.CEIL ? !this._s
 			: r == $.FLOOR ? this._s : r == $.HALF_UP ? n >= 5 : r == $.HALF_DOWN ? n > 5
 			: r == $.HALF_EVEN ? n >= 5 && b[p - 1] & 1 : false) && this.add(x);
 			b.splice(p, b.length - p);

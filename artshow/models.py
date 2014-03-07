@@ -96,7 +96,7 @@ class Artist (models.Model):
         return self.person.name
     publicname = models.CharField(max_length=100, blank=True, verbose_name="public name")
     website = models.URLField(max_length=200, blank=True)
-    mailin = models.BooleanField()
+    mailin = models.BooleanField(default=False)
     mailback_instructions = models.TextField(blank=True)
     attending = models.BooleanField(default=True, help_text="is artist attending convention?")
     agents = models.ManyToManyField(settings.ARTSHOW_PERSON_CLASS, related_name="agent_for", blank=True)
@@ -251,8 +251,8 @@ class Piece (models.Model):
     other_artist = models.CharField(max_length=100, blank=True, help_text="Alternate artist name for this piece")
     condition = models.CharField(max_length=100, blank=True, help_text="Condition of piece, if not \"perfect\".")
     location = models.CharField(max_length=8, blank=True)
-    not_for_sale = models.BooleanField()
-    adult = models.BooleanField()
+    not_for_sale = models.BooleanField(default=False)
+    adult = models.BooleanField(default=False)
     min_bid = models.DecimalField(max_digits=5, decimal_places=0, blank=True, null=True)
     buy_now = models.DecimalField(max_digits=5, decimal_places=0, blank=True, null=True)
     voice_auction = models.BooleanField(default=False)
@@ -337,7 +337,7 @@ class Product (models.Model):
     productid = models.IntegerField()
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=8, blank=True)
-    adult = models.BooleanField()
+    adult = models.BooleanField(default=False)
     price = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     def artistname(self):
@@ -519,7 +519,7 @@ class BatchScan (models.Model):
     batchtype = models.IntegerField(choices=BATCHTYPES, default=0)
     data = models.TextField()
     date_scanned = models.DateTimeField()
-    processed = models.BooleanField()
+    processed = models.BooleanField(default=False)
     processing_log = models.TextField(blank=True)
 
     def __unicode__(self):

@@ -19,17 +19,17 @@ paypal_logger = getLogger("paypal")
 pstzone = django.utils.tzinfo.FixedOffset(-480)
 pdtzone = django.utils.tzinfo.FixedOffset(-420)
 
-rfc822_date_re = re.compile(r"(\d+:\d+:\d+ \w+ \d+, \d+) (\w+)")
+paypal_date_re = re.compile(r"(\d+:\d+:\d+ \w+ \d+, \d+) (\w+)")
 
 def convert_date(datestr):
 
-    # PayPal uses dates in RFC822 format: HH:MM:SS Mmm DD, YYYY PST/PDT
+    # PayPal uses dates in the format: HH:MM:SS Mmm DD, YYYY PST/PDT
     # We can't use %Z to match the timezone information as this ONLY works
     # if the local computer is in a PST/PDT timezone. (see strptime(3))
 
-    mo = rfc822_date_re.match(datestr)
+    mo = paypal_date_re.match(datestr)
     if not mo:
-        raise ValueError("%s is not a valid RFC822 date" % datestr)
+        raise ValueError("%s is not a recognisable date" % datestr)
     datepart = mo.group(1)
     tzpart = mo.group(2)
     if tzpart == "PST":

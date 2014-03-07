@@ -49,3 +49,5 @@ class PayPalTests (TestCase):
         self.assertEqual(paypal.convert_date("10:10:10 Jun 10, 2000 PDT"),
                          datetime.datetime(2000,06,10,10,10,10,tzinfo=paypal.pdtzone))
         self.assertEqual((paypal.convert_date("10:10:10 Jun 10, 2000 PDT") - datetime.datetime(1970,1,1,tzinfo=timezone.utc)).total_seconds(), 960657010 )
+        self.assertRaises(ValueError, paypal.convert_date, "Thu Mar  6 23:27:40 PST 2014")
+        self.assertRaises(ValueError, paypal.convert_date, "10:10:10 Jun 10, 2000 GMT")

@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from django.conf import settings
+from .conf import settings
 from models import Piece
 
 preprint = __import__(settings.ARTSHOW_PREPRINT_MODULE, globals(), locals(),

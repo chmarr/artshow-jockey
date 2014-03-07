@@ -1,6 +1,6 @@
 from django.test import TestCase
 from artshow.utils import artshow_settings
-from django.conf import settings
+from .conf import settings
 from artshow import mod11codes
 
 

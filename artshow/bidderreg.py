@@ -4,11 +4,11 @@ from django import forms
 from django.contrib.auth.decorators import permission_required
 from django.contrib.formtools.wizard.views import CookieWizardView
 from django.shortcuts import render, redirect
-from django.conf import settings
+from .conf import settings
 from artshow.models import Person, Bidder, BidderId
 import logging
 logger = logging.getLogger(__name__)
-from default_settings import _DISABLED as SETTING_DISABLED
+from .conf import _DISABLED as SETTING_DISABLED
 
 
 preprint = __import__(settings.ARTSHOW_PREPRINT_MODULE, globals(), locals(),

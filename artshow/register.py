@@ -1,5 +1,5 @@
 from django import forms
-from django.conf import settings
+from .conf import settings
 from django.db.models import Q
 from artshow.models import Person, Artist, ArtistAccess
 from django.contrib.auth.models import User

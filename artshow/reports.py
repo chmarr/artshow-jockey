@@ -1,14 +1,10 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
-
+from decimal import Decimal
 from django.shortcuts import render
 from django.db.models import Sum, Min, F, Count
-from django.http import HttpResponse
-from django import forms
-from django.core.context_processors import csrf
 from django.contrib.auth.decorators import permission_required
-
 from artshow.models import *
 
 

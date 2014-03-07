@@ -5,7 +5,7 @@
 
 from decimal import Decimal
 
-from django.conf import settings
+from .conf import settings
 
 import num2word
 from email1 import wrap

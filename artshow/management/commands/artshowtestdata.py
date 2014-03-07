@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models.loading import get_model
-from django.conf import settings
-
+from ...conf import settings
 from artshow.models import *
 
 

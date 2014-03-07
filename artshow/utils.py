@@ -3,7 +3,7 @@ import csv
 import codecs
 import cStringIO
 
-from django.conf import settings
+from .conf import settings
 from django.contrib.auth.models import User
 from django.template import Context
 from django.template.loader import get_template

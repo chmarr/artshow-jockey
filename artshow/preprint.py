@@ -1,5 +1,3 @@
-from django.conf import settings
-
 
 def control_forms(pieces, output):
     # TODO implement code

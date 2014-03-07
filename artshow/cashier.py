@@ -10,7 +10,7 @@ from django import forms
 from django.db.models import Q
 from django.forms import ModelForm
 from django.forms.models import modelformset_factory, BaseModelFormSet
-from django.conf import settings
+from .conf import settings
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 import logging
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 import json
-from default_settings import _DISABLED as SETTING_DISABLED
+from .conf import _DISABLED as SETTING_DISABLED
 
 
 class BidderSearchForm (forms.Form):

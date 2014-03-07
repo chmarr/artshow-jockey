@@ -10,7 +10,7 @@ import mod11codes
 import re
 from django.forms.formsets import formset_factory
 from django.contrib.auth.decorators import permission_required
-from django.conf import settings
+from .conf import settings
 
 BIDDERS_PER_PAGE = 10
 BIDS_PER_PAGE = 10

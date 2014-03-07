@@ -1,5 +1,4 @@
 from artshowjockey.common_settings import *
-from artshow.default_settings import *
 
 # This is, probably, the minimum set of settings attributes that
 # should be specified for your installation.

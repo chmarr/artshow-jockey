@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.dispatch import Signal, receiver
 from django.http import HttpResponse
 from django.utils.http import urlencode
-from django.conf import settings
+from .conf import settings
 from logging import getLogger
 from django.views.decorators.csrf import csrf_exempt
 from artshow.models import Payment

@@ -6,8 +6,8 @@
 from models import Invoice
 import sys
 import subprocess
-from django.conf import settings
-from default_settings import _DISABLED as SETTING_DISABLED
+from .conf import settings
+from .conf import _DISABLED as SETTING_DISABLED
 from StringIO import StringIO
 import re
 from logging import getLogger

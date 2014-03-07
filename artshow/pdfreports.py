@@ -3,6 +3,7 @@
 # See file COPYING for licence details
 
 from cgi import escape
+from decimal import Decimal
 
 from django.db.models import Min
 from django.shortcuts import get_object_or_404
@@ -14,8 +15,8 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, Spacer, Fram
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
-
 from artshow.models import *
+from .conf import settings
 
 
 MAX_PIECES_PER_PAGE = 30

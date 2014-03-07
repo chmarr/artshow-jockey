@@ -2,13 +2,17 @@
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
 
+__all__ = ["Allocation", "Artist", "ArtistAccess", "ArtistManager", "BatchScan", "Bid", "Bidder", "BidderId",
+           "Checkoff", "ChequePayment", "EmailSignature", "EmailTemplate", "Event", "Invoice", "InvoiceItem",
+           "InvoicePayment", "Payment", "PaymentType", "Piece", "Person", "Product", "Space", "Task"]
+
 from django.db import models
 from django.db.models import Sum
 from django.core.exceptions import ValidationError
 import mod11codes
 from django.contrib.auth.models import User
 from decimal import Decimal
-from django.conf import settings
+from .conf import settings
 
 from django.db.models.loading import get_model
 Person = get_model(*settings.ARTSHOW_PERSON_CLASS.split('.', 1))

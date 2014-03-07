@@ -8,7 +8,7 @@ from pdfrw.buildxobj import pagexobj
 from pdfrw.toreportlab import makerl
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from django.conf import settings
+from .conf import settings
 
 
 pdfmetrics.registerFont(TTFont(*settings.ARTSHOW_BARCODE_FONT))

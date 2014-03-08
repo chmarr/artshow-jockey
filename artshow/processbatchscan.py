@@ -39,7 +39,7 @@ class StateL:
     error_skipping = 99
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def process_locations(data):
     errors = []
     state = StateL.start
@@ -99,7 +99,7 @@ class State:
     error_skipping = 99
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def process_bids(data, final_scan=False):
     errors = []
     state = State.start

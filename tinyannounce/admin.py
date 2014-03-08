@@ -1,4 +1,4 @@
-from django.contrib import admin, messages
+from django.contrib import admin
 from tinyannounce.models import *
 
 class AnnouncementSeenInline(admin.TabularInline):

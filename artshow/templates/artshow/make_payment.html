@@ -19,7 +19,7 @@
         will be made according to the Artist Agreement.</p>
     <p>To pay via PayPal, enter the desired payment and press "Pay via Paypal". You will be taken to the PayPal site
         to complete payment, and returned here afterwards.</p>
-    <p>To pay via a mailed-in payment, enter the desired payment amount and press "Pay via Mail".</p></o>
+    <p>To pay via a mailed-in payment, enter the desired payment amount and press "Pay via Mail".</p>
     <p>Suggested payment: ${{ payment_remaining|floatformat:2 }}</p>
     <form method="post">{% csrf_token %}
         {{ form.non_field_errors }}

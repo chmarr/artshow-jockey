@@ -55,12 +55,13 @@ def printing(request):
             messages.info(request, "%d pieces marked as control form printed" % pieces_marked)
             return redirect('.')
 
-    context = {}
-    context['num_pieces_bid_sheet_unprinted'] = bid_sheets_query.count()
-    context['num_pieces_control_form_unprinted'] = control_forms_query.count()
-    context['num_bid_sheets_to_be_printed'] = bid_sheets_to_print_query.count()
-    context['num_control_forms_to_be_printed'] = control_forms_to_print_query.count()
-    context['num_bid_sheets_printed'] = Piece.objects.filter(bid_sheet_printing=Piece.PrintingPrinted).count()
-    context['num_control_forms_printed'] = Piece.objects.filter(control_form_printing=Piece.PrintingPrinted).count()
+    context = {
+        'num_pieces_bid_sheet_unprinted': bid_sheets_query.count(),
+        'num_pieces_control_form_unprinted': control_forms_query.count(),
+        'num_bid_sheets_to_be_printed': bid_sheets_to_print_query.count(),
+        'num_control_forms_to_be_printed': control_forms_to_print_query.count(),
+        'num_bid_sheets_printed': Piece.objects.filter(bid_sheet_printing=Piece.PrintingPrinted).count(),
+        'num_control_forms_printed': Piece.objects.filter(control_form_printing=Piece.PrintingPrinted).count(),
+    }
 
     return render(request, 'artshow/workflows_printing.html', context)

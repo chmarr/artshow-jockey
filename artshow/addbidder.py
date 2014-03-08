@@ -150,7 +150,7 @@ def bid_bulk_add(request):
         if optionsform.is_valid() and formset.is_valid():
             stage = optionsform.cleaned_data['stage']
             for form in formset:
-                ## xTODO something
+                ## TODO something
                 pass
             return redirect('.')
     else:

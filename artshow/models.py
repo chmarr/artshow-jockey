@@ -158,14 +158,14 @@ class Artist (models.Model):
     def viewable_by(self, user):
         return self.artistaccess_set.filter(user=user).exists()
 
-    def save(self):
+    def save(self, **kwargs):
         if self.artistid is None:
             try:
                 highest_idd_artist = Artist.objects.order_by('-artistid')[0]
                 self.artistid = highest_idd_artist.artistid + 1
             except IndexError:
                 self.artistid = 1
-        super(Artist,self).save()
+        super(Artist,self).save(**kwargs)
 
     class Meta:
         permissions = (

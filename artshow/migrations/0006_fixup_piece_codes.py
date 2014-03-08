@@ -7,14 +7,14 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-		for piece in orm.Piece.objects.all ():
-			piece.code = "%s-%s" % ( piece.artist.artistid, piece.pieceid )
-			piece.save ()
+        for piece in orm.Piece.objects.all():
+            piece.code = "%s-%s" % ( piece.artist.artistid, piece.pieceid )
+            piece.save()
 
     def backwards(self, orm):
-		for piece in orm.Piece.objects.all ():
-			piece.code = "X"
-			piece.save ()
+        for piece in orm.Piece.objects.all():
+            piece.code = "X"
+            piece.save()
 
     models = {
         'artshow.allocation': {

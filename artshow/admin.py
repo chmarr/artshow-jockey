@@ -18,7 +18,11 @@ from django.http import HttpResponse
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
-from django.db.models import Max
+from django.db.models import Max, Sum
+from django.conf import settings
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class ArtistAccessInline(admin.TabularInline):
@@ -381,7 +385,7 @@ class SpaceAdmin(admin.ModelAdmin):
 admin.site.register(Space, SpaceAdmin)
 
 
-class BidInline(admin.TabularInline):
+class PieceBidInline(admin.TabularInline):
     model = Bid
     raw_id_fields = ('bidder', )
     extra = 1
@@ -489,7 +493,7 @@ class PieceAdmin(admin.ModelAdmin):
     list_display = (
         'code', 'clickable_artist', 'name', 'adult', 'min_bid_x', 'buy_now_x', 'location', 'voice_auction', 'status',
         'top_bid')
-    inlines = [BidInline]
+    inlines = [PieceBidInline]
     # raw_id_fields = ( 'invoice', )
     # TODO put 'invoiceitem' back into the list. Waiting on bug #16433
     fields = (
@@ -515,7 +519,7 @@ class BidderIdInline(admin.TabularInline):
     model = BidderId
 
 
-class BidInline(admin.TabularInline):
+class BidderBidInline(admin.TabularInline):
     model = Bid
     fields = ('piece', 'amount', 'buy_now_bid', 'invalid')
     raw_id_fields = ('piece', )
@@ -549,7 +553,7 @@ class BidderAdmin(AjaxSelectAdmin):
     list_display = ('person_name', 'person_reg_id', 'bidder_ids', 'person_clickable_email')
     search_fields = ('person__name', 'person__reg_id', 'bidderid__id')
     fields = ["person", "at_con_contact", "notes"]
-    inlines = [BidderIdInline, BidInline]
+    inlines = [BidderIdInline, BidderBidInline]
 
 
 admin.site.register(Bidder, BidderAdmin)

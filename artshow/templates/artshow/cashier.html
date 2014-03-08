@@ -15,7 +15,6 @@
     {% if bidders %}
         <hr>
         <p>Verify the bidder's identification, and click on the appropriate bidder below, or search again.</p>
-        <ul>
         <table>
         <tr>
             <th>Name</th>
@@ -27,6 +26,7 @@
                 <td>{{ b.bidder_ids|join:", " }}</td>
             </tr>
         {% endfor %}
+        </table>
     {% elif search_executed %}
         <p>Nothing was found. Please check the spelling and try again.</p>
     {% endif %}

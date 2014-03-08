@@ -1,4 +1,7 @@
+from decimal import Decimal
+from django.core.exceptions import ValidationError
 from django.core.signing import Signer, BadSignature
+from django.db.models import Sum
 from django.forms import IntegerField, HiddenInput, ModelChoiceField
 from django.forms.formsets import formset_factory
 from django.shortcuts import render, redirect, get_object_or_404
@@ -16,6 +19,7 @@ from . import utils
 from . import bidsheets
 from .paypal import make_paypal_url, ipn_received
 import re
+from django.conf import settings
 
 
 EXTRA_PIECES = 5
@@ -23,7 +27,7 @@ EXTRA_PIECES = 5
 
 def user_edits_allowable(view_func):
     def decorator(request, *args, **kwargs):
-        if artshow_settings.ARTSHOW_SHUT_USER_EDITS:
+        if settings.ARTSHOW_SHUT_USER_EDITS:
             error = "The Art Show Administration has disallowed edits for the time being."
             return render(request, "artshow/manage_error.html", {'artshow_settings': artshow_settings,
                                                                  'error': error})
@@ -47,11 +51,11 @@ def artist(request, artist_id):
     allocations = artist.allocation_set.order_by("space__id")
 
     can_edit = artist.editable_by(request.user)
-    can_edit_personal_details = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and \
+    can_edit_personal_details = not settings.ARTSHOW_SHUT_USER_EDITS and \
                                 (request.user.email == artist.person.email)
-    can_edit_artist_details = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and can_edit
-    can_edit_piece_details = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and can_edit
-    can_edit_space_reservations = not artshow_settings.ARTSHOW_SHUT_USER_EDITS and can_edit
+    can_edit_artist_details = not settings.ARTSHOW_SHUT_USER_EDITS and can_edit
+    can_edit_piece_details = not settings.ARTSHOW_SHUT_USER_EDITS and can_edit
+    can_edit_space_reservations = not settings.ARTSHOW_SHUT_USER_EDITS and can_edit
 
     return render(request, "artshow/manage_artist.html",
                   {'artist': artist, 'pieces': pieces, 'allocations': allocations,

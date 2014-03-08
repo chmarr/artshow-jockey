@@ -4,7 +4,8 @@
 
 __all__ = ["Allocation", "Artist", "ArtistAccess", "ArtistManager", "BatchScan", "Bid", "Bidder", "BidderId",
            "Checkoff", "ChequePayment", "EmailSignature", "EmailTemplate", "Event", "Invoice", "InvoiceItem",
-           "InvoicePayment", "Payment", "PaymentType", "Piece", "Person", "Product", "Space", "Task"]
+           "InvoicePayment", "Payment", "PaymentType", "Piece", "Person", "Product", "Space", "Task",
+           "validate_space", "validate_space_increments"]
 
 from django.db import models
 from django.db.models import Sum

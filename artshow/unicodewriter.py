@@ -20,7 +20,7 @@ class UnicodeWriter(object):
     fp.close()
     """
 
-    def __init__(self, f, dialect=csv.excel_tab, encoding="utf-16", **kwds):
+    def __init__(self, f, dialect=csv.excel, encoding="utf-16", **kwds):
         # Redirect output to a queue
         self.queue = StringIO.StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
@@ -50,6 +50,8 @@ class UnicodeDictWriter(UnicodeWriter):
     A CSV writer that produces Excel-compatibly CSV files from unicode data.
     Uses UTF-16 and tabs as delimeters - it turns out this is the only way to
     get unicode data in to Excel using CSV.
+
+    Modification: switched to csv.excel as the default dialect -- chriscog
     
     Usage example:
     
@@ -67,7 +69,7 @@ class UnicodeDictWriter(UnicodeWriter):
     Initially derived from http://docs.python.org/lib/csv-examples.html
     """
 
-    def __init__(self, f, fields, dialect=csv.excel_tab,
+    def __init__(self, f, fields, dialect=csv.excel,
                  encoding="utf-16", **kwds):
         super(UnicodeDictWriter, self).__init__(f, dialect, encoding, **kwds)
         self.fields = fields

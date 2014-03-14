@@ -16,6 +16,7 @@ from reportlab.lib.units import inch
 from reportlab.lib import colors
 
 from artshow.models import *
+from artshow.utils import format_money
 
 
 MAX_PIECES_PER_PAGE = 30
@@ -96,16 +97,14 @@ def winning_bidders(request):
 
 @permission_required('artshow.is_artshow_staff')
 def bid_entry_by_artist(request):
-
-#	pieces = Piece.objects.filter ( status=Piece.StatusInShow ).order_by ( 'artist__artistid', 'pieceid' )
+    #	pieces = Piece.objects.filter ( status=Piece.StatusInShow ).order_by ( 'artist__artistid', 'pieceid' )
     pieces = Piece.objects.all().order_by('artist__artistid', 'pieceid')
     return bid_entry(request, pieces)
 
 
 @permission_required('artshow.is_artshow_staff')
 def bid_entry_by_location(request):
-
-#	pieces = Piece.objects.filter ( status=Piece.StatusInShow ).order_by ( 'location', 'artist__artistid', 'pieceid' )
+    #	pieces = Piece.objects.filter ( status=Piece.StatusInShow ).order_by ( 'location', 'artist__artistid', 'pieceid' )
     pieces = Piece.objects.all().order_by('location', 'artist__artistid', 'pieceid')
     return bid_entry(request, pieces)
 
@@ -149,13 +148,6 @@ def bid_entry(request, pieces):
     doc.build(story)
 
     return response
-
-
-_quantization_value = Decimal(10) ** -settings.ARTSHOW_MONEY_PRECISION
-
-
-def format_money(value):
-    return unicode(value.quantize(_quantization_value))
 
 
 def draw_invoice_header(canvas, doc, invoice, purpose):
@@ -224,7 +216,8 @@ def invoice_to_pdf(invoice, outf):
     for item in invoice.invoiceitem_set.order_by("piece__artist__artistid", "piece__pieceid"):
         num_items += 1
         piece = item.piece
-        paragraphs = [Paragraph("<i>" + escape(piece.name) + u"</i> \u2014 by " + escape(piece.artistname()), normal_style)]
+        paragraphs = [
+            Paragraph("<i>" + escape(piece.name) + u"</i> \u2014 by " + escape(piece.artistname()), normal_style)]
         details_body_parts = [escape(piece.media)]
         if piece.condition:
             details_body_parts.append(escape(piece.condition))
@@ -259,7 +252,7 @@ def invoice_to_pdf(invoice, outf):
         ("ALIGN", (1, total_row), (1, -1), "RIGHT"),
         ("FONT", (2, total_row), (2, total_row), "Helvetica-Bold"),
         ("FONT", (2, -1), (2, -1), "Helvetica-Bold"),
-        ("LINEBELOW", (0,0), (-1, -1), 0.1, colors.black),
+        ("LINEBELOW", (0, 0), (-1, -1), 0.1, colors.black),
         ("LINEABOVE", (0, total_row), (-1, total_row), 0.75, colors.black),
         ("LINEABOVE", (0, -1), (-1, -1), 0.75, colors.black),
     ]
@@ -305,14 +298,15 @@ def picklist_to_pdf(invoice, outf):
 
     body_data = [
         ["Loc.", "Code", u"\u2714", "Description", "Amount", u"\u2714"],
-        [Paragraph('<para align="right">Confirm Bidder ID on each sheet</para>', normal_style),"","","","",u"[ ]"],
+        [Paragraph('<para align="right">Confirm Bidder ID on each sheet</para>', normal_style), "", "", "", "", u"[ ]"],
     ]
 
     num_items = 0
     for item in invoice.invoiceitem_set.order_by("piece__location", "piece__artist__artistid", "piece__pieceid"):
         num_items += 1
         piece = item.piece
-        paragraphs = [Paragraph("<i>" + escape(piece.name) + u"</i> \u2014 by " + escape(piece.artistname()), normal_style)]
+        paragraphs = [
+            Paragraph("<i>" + escape(piece.name) + u"</i> \u2014 by " + escape(piece.artistname()), normal_style)]
         details_body_parts = [escape(piece.media)]
         if piece.condition:
             details_body_parts.append(escape(piece.condition))
@@ -320,7 +314,7 @@ def picklist_to_pdf(invoice, outf):
             details_body_parts.append(escape("sold by " + piece.artist.artistname()))
         paragraphs.append(Paragraph(u" \u2014 ".join(details_body_parts), piece_details_style))
         body_data.append([piece.location, piece.code, u"[ ]", paragraphs,
-                          Paragraph("<para align=\"right\"><b>"+escape(str(item.price))+"</b></para>",
+                          Paragraph("<para align=\"right\"><b>" + escape(str(item.price)) + "</b></para>",
                                     normal_style),
                           u"[ ]"])
 
@@ -334,9 +328,9 @@ def picklist_to_pdf(invoice, outf):
         ("LEADING", (0, 0), (-1, 0), normal_style.leading - 4),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("ALIGN", (4, 0), (4, -1), "RIGHT"),
-        ("SPAN",(0,1),(4,1)),
-        ("SPAN",(0,num_items+2),(4,num_items+2)),
-        ("LINEBELOW", (0,0), (-1, -1), 0.1, colors.black),
+        ("SPAN", (0, 1), (4, 1)),
+        ("SPAN", (0, num_items + 2), (4, num_items + 2)),
+        ("LINEBELOW", (0, 0), (-1, -1), 0.1, colors.black),
         #("GRID", (0,0), (-1,-1), 0.1, colors.black),
     ]
 
@@ -344,14 +338,14 @@ def picklist_to_pdf(invoice, outf):
                        style=body_table_style,
                        repeatRows=1)
     story.append(body_table)
-    story.append(Spacer(0.25*inch, 0.25*inch))
+    story.append(Spacer(0.25 * inch, 0.25 * inch))
 
     signature_block = KeepTogether([
         Paragraph(escape("I, %s, or a duly authorized agent, acknowledge receiving the above "
-                                      "%d items." % (invoice.payer.name(), num_items)), normal_style),
-        Spacer(0.25*inch, 0.25*inch),
+                         "%d items." % (invoice.payer.name(), num_items)), normal_style),
+        Spacer(0.25 * inch, 0.25 * inch),
         Paragraph("Signature _______________________________________________", normal_style),
-        Spacer(0.25*inch, 0.25*inch),
+        Spacer(0.25 * inch, 0.25 * inch),
         Paragraph("Agent Name _______________________________________________", normal_style),
     ])
     story.append(signature_block)

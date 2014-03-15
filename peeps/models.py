@@ -2,8 +2,8 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-
 class Person (models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, default=None, blank=True, null=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=100)
     address1 = models.CharField(max_length=100, blank=True, verbose_name="address")
     address2 = models.CharField(max_length=100, blank=True, verbose_name="address line 2")

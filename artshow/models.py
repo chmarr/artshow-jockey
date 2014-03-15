@@ -5,7 +5,7 @@
 __all__ = ["Allocation", "Artist", "ArtistAccess", "ArtistManager", "BatchScan", "Bid", "Bidder", "BidderId",
            "Checkoff", "ChequePayment", "EmailSignature", "EmailTemplate", "Event", "Invoice", "InvoiceItem",
            "InvoicePayment", "Payment", "PaymentType", "Piece", "Person", "Product", "Space", "Task",
-           "validate_space", "validate_space_increments"]
+           "Agent", "validate_space", "validate_space_increments"]
 
 from django.db import models
 from django.db.models import Sum
@@ -552,3 +552,16 @@ class ArtistAccess (models.Model):
     user = models.ForeignKey(User)
     artist = models.ForeignKey(Artist)
     can_edit = models.BooleanField(default=False)
+
+
+class Agent(models.Model):
+    person = models.ForeignKey(Person, related_name="agenting")
+    artist = models.ForeignKey(Artist, related_name="agent2")
+    can_edit_spaces = models.BooleanField(default=False, help_text="Person is allowed to reserve or cancel spaces")
+    can_edit_pieces = models.BooleanField(default=False,
+                                          help_text="Person is allowed to add, delete or change piece details")
+    can_deliver_pieces = models.BooleanField(default=False, help_text="Person is allowed to deliver pieces to the show")
+    can_retrieve_pieces = models.BooleanField(default=False,
+                                              help_text="Person is allowed to retrieve pieces from the show")
+    can_arbitrate = models.BooleanField(default=False,
+                                        help_text="Person is allowed to make executive decisions regarding pieces")

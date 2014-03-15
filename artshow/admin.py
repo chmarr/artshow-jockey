@@ -25,6 +25,12 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+class AgentInline(admin.TabularInline):
+    model = Agent
+    extra = 0
+    raw_id_fields = ('person', )
+
+
 class ArtistAccessInline(admin.TabularInline):
     model = ArtistAccess
     extra = 0
@@ -118,7 +124,7 @@ class ArtistAdmin(AjaxSelectAdmin):
     search_fields = ('person__name', 'publicname', 'person__email', 'notes', 'artistid')
     fields = ['artistid', 'person', 'publicname', 'website', ('reservationdate', 'attending'),
               ('mailin', 'mailback_instructions'), 'agents', 'notes', 'checkoffs', 'payment_to']
-    inlines = [ArtistAccessInline, AllocationInline, PieceInline, PaymentInline]
+    inlines = [ArtistAccessInline, AgentInline, AllocationInline, PieceInline, PaymentInline]
 
     def requested_spaces(self, artist):
         return ", ".join("%s:%s" % (al.space.shortname, al.requested) for al in artist.allocation_set.all())

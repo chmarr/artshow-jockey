@@ -3,6 +3,7 @@ import csv
 import codecs
 import cStringIO
 from django.contrib.auth import get_user_model
+from decimal import Decimal
 
 from .conf import settings
 from django.template import Context
@@ -113,3 +114,10 @@ def send_password_reset_email(artist, user, subject=None, template=None):
     body = template.render(Context(c))
     body = wrap(body, default_wrap_cols)
     send_mail(subject, body, settings.ARTSHOW_EMAIL_SENDER, [user.email], fail_silently=False)
+
+
+_quantization_value = Decimal(10) ** -settings.ARTSHOW_MONEY_PRECISION
+
+
+def format_money(value):
+    return unicode(value.quantize(_quantization_value))

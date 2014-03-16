@@ -3,6 +3,7 @@
 # See file COPYING for licence details
 
 from . import unicodewriter
+from artshow.utils import format_money
 from django.http import HttpResponse
 from django.contrib.auth.decorators import permission_required
 from .models import *
@@ -83,7 +84,7 @@ def pieces(request):
                  voice_auction=p.voice_auction and "Yes" or "No",
                  bidder_name=top_bid and top_bid.bidder.name or "",
                  bidder_ids=top_bid and (", ".join(top_bid.bidder.bidder_ids()) or ""),
-                 )
+        )
         c.writerow(d)
 
     return response
@@ -169,7 +170,7 @@ def cheques(request):
     for q in cheques:
         d = dict(
             artistid=q.artist.artistid, name=q.artist.name(), artistname=q.artist.artistname(),
-            payee=q.payee, date=q.date, number=q.number, amount=-q.amount)
+            payee=q.payee, date=q.date, number=q.number, amount=format_money(-q.amount))
         c.writerow(d)
 
     return response

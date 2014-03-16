@@ -144,6 +144,9 @@ class BidAddOptionsForm (forms.Form):
 
 @permission_required('artshow.add_bid')
 def bid_bulk_add(request):
+
+    raise NotImplementedError
+
     if request.method == "POST":
         formset = BidAddFormSet(request.POST, prefix="bids")
         optionsform = BidAddOptionsForm(request.POST, prefix="options")

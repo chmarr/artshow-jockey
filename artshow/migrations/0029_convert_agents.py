@@ -1,30 +1,40 @@
 # -*- coding: utf-8 -*-
+from ..conf import settings
+from django.db.models import FieldDoesNotExist
 from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
-from django.conf import settings
+from django.contrib.auth import get_user_model
 from warnings import warn
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        # This migration only applies if we're using the included peeps.Person as our Person class.
-        if settings.ARTSHOW_PERSON_CLASS != "peeps.Person":
-            return
-
-        for a in orm.Artist.objects.all():
-            valid_accesses = a.artistaccess_set.filter(user__email=a.person.email, can_edit=True)
-            if len(valid_accesses) == 0:
-                warn("Artist id %s does not have a candidate ArtistAccess attached to it" % a.artistid)
-                break
-            if len(valid_accesses) > 1:
-                warn("Artist id %s has more than one candidate ArtistAccess. Using the first one" % a.artistid)
-            a.person.user = valid_accesses[0].user
-            a.save()
+        for artist in orm.Artist.objects.all():
+            for agent in artist.agents.all():
+                if artist.person == agent:
+                    continue
+                try:
+                    agent2 = orm.Agent.objects.get(person=agent, artist=artist)
+                except orm.Agent.DoesNotExist:
+                    agent2 = orm.Agent(person=agent, artist=artist)
+                agent2.can_deliver_pieces = True
+                agent2.can_retrieve_pieces = True
+                agent2.save()
+            artist.agents.clear()
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        # TODO. This does not delete the created Agent objects. Just sets the two fields to False
+        # This might cause a condition when a reverse,forward,reverse is executed: a ArtistAccess.can_edit=False
+        # is left behind.
+        # Also, this doesnt re-create an artist self-agenting. This is a dumb condition anyway.
+        for agent2 in orm.Agent.objects.all():
+            if agent2.can_deliver_pieces and agent2.can_retrieve_pieces:
+                agent2.artist.agents.add(agent2.person)
+                agent2.can_deliver_pieces = False
+                agent2.can_retrieve_pieces = False
+                agent2.save()
 
     models = {
         u'artshow.agent': {

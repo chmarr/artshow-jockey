@@ -62,7 +62,7 @@
         </tr>
         <tr>
             <th>Agents</th>
-            <td>{% for a in artist.agents.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}
+            <td>{% for a in artist.agent_set.all %}{{ a.person }}{% if not forloop.last %}, {% endif %}{% empty %}
                 None{% endfor %}</td>
         </tr>
         <tr>

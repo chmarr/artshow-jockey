@@ -1,83 +1,51 @@
 # -*- coding: utf-8 -*-
-from ..conf import settings
-from django.db.models import FieldDoesNotExist
 from south.utils import datetime_utils as datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
-from django.contrib.auth import get_user_model
-from warnings import warn
 
-class Migration(DataMigration):
+
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        Person = orm[settings.ARTSHOW_PERSON_CLASS]
-        try:
-            person_user_model = Person._meta.get_field('user').rel.to
-        except (FieldDoesNotExist, AttributeError):
-            person_user_model = None
-        user_model = get_user_model()
-        print person_user_model._meta.app_label, user_model._meta.app_label, person_user_model._meta.model_name, user_model._meta.model_name
-        if person_user_model is not None and \
-                        person_user_model._meta.app_label == user_model._meta.app_label and \
-                        person_user_model._meta.model_name == user_model._meta.model_name:
-            for access in orm.ArtistAccess.objects.all():
-                print "access id", access.id, "user id", access.user.id, "access.artist.person.user id", access.artist.person.user.id
-                user = user_model.objects.get(id=access.user.id)
-                if user == access.artist.person.user:
-                    break
-                try:
-                    print "looking for person wuth userid", user.id
-                    person = Person.objects.get(user=user)
-                    print "found"
-                except Person.DoesNotExist:
-                    print "not found"
-                    # print "access.user", user
-                    # print type(user)
-                    # print dir(user)
-                    person = Person(name=user.get_full_name(), email=user.email)
-                    person.save()
-                try:
-                    agent2 = orm.Agent.objects.get(person=person, artist=access.artist)
-                except orm.Agent.DoesNotExist:
-                    agent2 = orm.Agent(person=person, artist=access.artist)
-                agent2.can_edit_spaces = True
-                agent2.can_edit_pieces = True
-                agent2.save()
-        else:
-            warn("Person model in use does not have a user field, or the user field is not the user model. "
-                 "Skipping conversion of ArtistAccess.")
+        # Deleting model 'ArtistAccess'
+        db.delete_table(u'artshow_artistaccess')
 
-        for artist in orm.Artist.objects.all():
-            for agent in artist.agents.all():
-                print agent
-                if artist.person == agent:
-                    print "breaking"
-                    break
-                try:
-                    agent2 = orm.Agent.objects.get(person=agent, artist=artist)
-                except orm.Agent.DoesNotExist:
-                    agent2 = orm.Agent(person=agent, artist=artist)
-                agent2.can_deliver_pieces = True
-                agent2.can_retrieve_pieces = True
-                agent2.save()
-                print "saved", agent2
+        # Removing M2M table for field agents on 'Artist'
+        db.delete_table(db.shorten_name(u'artshow_artist_agents'))
 
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        # Adding model 'ArtistAccess'
+        db.create_table(u'artshow_artistaccess', (
+            ('can_edit', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('artist', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['artshow.Artist'])),
+        ))
+        db.send_create_signal(u'artshow', ['ArtistAccess'])
+
+        # Adding M2M table for field agents on 'Artist'
+        m2m_table_name = db.shorten_name(u'artshow_artist_agents')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('artist', models.ForeignKey(orm[u'artshow.artist'], null=False)),
+            ('person', models.ForeignKey(orm[u'peeps.person'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['artist_id', 'person_id'])
+
 
     models = {
         u'artshow.agent': {
             'Meta': {'object_name': 'Agent'},
-            'artist': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'agent2'", 'to': u"orm['artshow.Artist']"}),
+            'artist': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['artshow.Artist']"}),
             'can_arbitrate': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'can_deliver_pieces': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'can_edit_pieces': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'can_edit_spaces': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'can_retrieve_pieces': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'person': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'agenting'", 'to': u"orm['peeps.Person']"})
+            'person': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'agent_for'", 'to': u"orm['peeps.Person']"})
         },
         u'artshow.allocation': {
             'Meta': {'unique_together': "(('artist', 'space'),)", 'object_name': 'Allocation'},
@@ -89,7 +57,6 @@ class Migration(DataMigration):
         },
         u'artshow.artist': {
             'Meta': {'object_name': 'Artist'},
-            'agents': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'agent_for'", 'blank': 'True', 'to': u"orm['peeps.Person']"}),
             'artistid': ('django.db.models.fields.IntegerField', [], {'primary_key': 'True'}),
             'attending': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'checkoffs': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['artshow.Checkoff']", 'symmetrical': 'False', 'blank': 'True'}),
@@ -102,13 +69,6 @@ class Migration(DataMigration):
             'reservationdate': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'spaces': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['artshow.Space']", 'through': u"orm['artshow.Allocation']", 'symmetrical': 'False'}),
             'website': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'})
-        },
-        u'artshow.artistaccess': {
-            'Meta': {'object_name': 'ArtistAccess'},
-            'artist': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['artshow.Artist']"}),
-            'can_edit': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
         },
         u'artshow.batchscan': {
             'Meta': {'object_name': 'BatchScan'},
@@ -319,4 +279,3 @@ class Migration(DataMigration):
     }
 
     complete_apps = ['artshow']
-    symmetrical = True

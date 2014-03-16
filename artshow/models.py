@@ -2,13 +2,13 @@
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
 
-__all__ = ["Allocation", "Artist", "ArtistAccess", "ArtistManager", "BatchScan", "Bid", "Bidder", "BidderId",
+__all__ = ["Allocation", "Artist", "ArtistManager", "BatchScan", "Bid", "Bidder", "BidderId",
            "Checkoff", "ChequePayment", "EmailSignature", "EmailTemplate", "Event", "Invoice", "InvoiceItem",
            "InvoicePayment", "Payment", "PaymentType", "Piece", "Person", "Product", "Space", "Task",
            "Agent", "validate_space", "validate_space_increments"]
 
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.core.exceptions import ValidationError
 from . import mod11codes
 from django.contrib.auth.models import User
@@ -77,13 +77,15 @@ class Checkoff (models.Model):
 
 
 class ArtistManager (models.Manager):
-    def editable_by(self, user):
-        accessors = ArtistAccess.objects.filter(user=user, can_edit=True)
-        return self.get_query_set().filter(artistaccess__in=accessors)
+    def grants_access_to(self, user, **kwargs):
+        accessors = Agent.objects.filter(person__user=user, **kwargs)
+        # TODO. find out if "distinct" is really needed here
+        return self.get_query_set().filter(Q(agent__in=accessors) | Q(person__user=user)).distinct()
 
     def viewable_by(self, user):
-        accessors = ArtistAccess.objects.filter(user=user)
-        return self.get_query_set().filter(artistaccess__in=accessors)
+        accessors = Agent.objects.filter(person__user=user)
+        # TODO. find out if "distinct" is really needed here
+        return self.get_query_set().filter(Q(agent__in=accessors) | Q(person__user=user)).distinct()
 
 
 class Artist (models.Model):
@@ -100,7 +102,6 @@ class Artist (models.Model):
     mailin = models.BooleanField(default=False)
     mailback_instructions = models.TextField(blank=True)
     attending = models.BooleanField(default=True, help_text="is artist attending convention?")
-    agents = models.ManyToManyField(settings.ARTSHOW_PERSON_CLASS, related_name="agent_for", blank=True)
     reservationdate = models.DateField(blank=True, null=True)
     notes = models.TextField(blank=True)
     spaces = models.ManyToManyField(Space, through="Allocation")
@@ -152,11 +153,11 @@ class Artist (models.Model):
         else:
             return self.person.name
 
-    def editable_by(self, user):
-        return self.artistaccess_set.filter(user=user, can_edit=True).exists()
+    def grants_access_to(self, user, **kwargs):
+        return self.person.user == user or self.agent_set.filter(person__user=user, **kwargs).exists()
 
     def viewable_by(self, user):
-        return self.artistaccess_set.filter(user=user).exists()
+        return self.person.user == user or self.agent_set.filter(person__user=user).exists()
 
     def save(self, **kwargs):
         if self.artistid is None:
@@ -548,15 +549,9 @@ class Task (models.Model):
         return self.summary
 
 
-class ArtistAccess (models.Model):
-    user = models.ForeignKey(User)
-    artist = models.ForeignKey(Artist)
-    can_edit = models.BooleanField(default=False)
-
-
 class Agent(models.Model):
-    person = models.ForeignKey(Person, related_name="agenting")
-    artist = models.ForeignKey(Artist, related_name="agent2")
+    person = models.ForeignKey(Person, related_name="agent_for")
+    artist = models.ForeignKey(Artist)
     can_edit_spaces = models.BooleanField(default=False, help_text="Person is allowed to reserve or cancel spaces")
     can_edit_pieces = models.BooleanField(default=False,
                                           help_text="Person is allowed to add, delete or change piece details")

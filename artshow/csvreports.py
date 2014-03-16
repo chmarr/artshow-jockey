@@ -41,7 +41,7 @@ def artists(request):
                  postcode=a.person.postcode, country=a.person.country, phone=a.person.phone, email=a.person.email,
                  regid=a.person.reg_id, artistname=a.artistname(),
                  website=a.website, mailin=a.mailin and "Yes" or "No",
-                 agent=", ".join([p.name for p in a.agents.all()]),
+                 agent=", ".join([ag.person.name for ag in a.agent_set.all()]),
                  reservationdate=str(a.reservationdate))
         for alloc in a.allocation_set.all():
             d['req-' + alloc.space.shortname] = str(alloc.requested)

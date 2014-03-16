@@ -1,12 +1,13 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from .conf import settings
 from django.db.models import Q
-from .models import Person, Artist, ArtistAccess
-from django.contrib.auth.models import User
+from .models import Person, Artist
 from django.shortcuts import render
 from .utils import create_user_from_email, send_password_reset_email
 from .forms import ArtistRegisterForm, LongerTextInput
 
+User = get_user_model()
 
 class AgreementForm(forms.Form):
     electronic_signature = \
@@ -56,7 +57,6 @@ def main(request):
     if settings.ARTSHOW_SHUT_USER_EDITS:
         return render(request, "artshow/registration_closed.html")
 
-
     if request.method == "POST":
         artist_form = ArtistRegisterForm(request.POST)
         person_form = PersonForm(request.POST)
@@ -71,11 +71,13 @@ def main(request):
             except ValueError, x:
                 return render(request, "artshow/manage_register_error.html",
                               {"error": str(x)})
-            person = person_form.save()
+            person = person_form.save(commit=False)
+            person.user = user
+            person.save()
+
             artist = Artist(person=person, publicname=artist_form.cleaned_data.get('artist_name',''))
             artist.save()
-            artist_access = ArtistAccess(artist=artist, user=user, can_edit=True)
-            artist_access.save()
+
             send_password_reset_email(artist, user)
             return render(request, "artshow/manage_register_success.html",
                 {"new_user":user, "person":person, "artist":artist})

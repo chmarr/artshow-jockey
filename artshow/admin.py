@@ -16,8 +16,8 @@ import datetime
 import decimal
 from django.http import HttpResponse
 from ajax_select import make_ajax_form
-from ajax_select.admin import AjaxSelectAdmin
-from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectField
+from ajax_select.admin import AjaxSelectAdmin, AjaxSelectAdminTabularInline
+from ajax_select.fields import AutoCompleteSelectField
 from django.db.models import Max, Sum
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -25,16 +25,18 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class AgentInline(admin.TabularInline):
+class AgentForm(forms.ModelForm):
+    person = AutoCompleteSelectField('person', required=True)
+
+
+class AgentInline(AjaxSelectAdminTabularInline):
+    # TODO Ajax selects only works on forms visible at ready time.
+    # Need to trigger 'init-autocomplete' each time "Add Another" is pressed.
+    form = make_ajax_form(Agent,
+                          {'person':'person'},
+                          show_help_text=True)
     model = Agent
-    extra = 0
-    raw_id_fields = ('person', )
-
-
-class ArtistAccessInline(admin.TabularInline):
-    model = ArtistAccess
-    extra = 0
-    raw_id_fields = ('user', )
+    extra = 1
 
 
 class AllocationInlineForm(forms.ModelForm):
@@ -112,7 +114,6 @@ class ArtistForm(forms.ModelForm):
     class Meta:
         model = Artist
     person = AutoCompleteSelectField('person', required=True)
-    agents = AutoCompleteSelectMultipleField('person', required=False)
     payment_to = AutoCompleteSelectField('person', required=False)
 
 
@@ -123,8 +124,8 @@ class ArtistAdmin(AjaxSelectAdmin):
     list_filter = ('mailin', 'person__country', 'checkoffs')
     search_fields = ('person__name', 'publicname', 'person__email', 'notes', 'artistid')
     fields = ['artistid', 'person', 'publicname', 'website', ('reservationdate', 'attending'),
-              ('mailin', 'mailback_instructions'), 'agents', 'notes', 'checkoffs', 'payment_to']
-    inlines = [ArtistAccessInline, AgentInline, AllocationInline, PieceInline, PaymentInline]
+              ('mailin', 'mailback_instructions'), 'notes', 'checkoffs', 'payment_to']
+    inlines = [AgentInline, AllocationInline, PieceInline, PaymentInline]
 
     def requested_spaces(self, artist):
         return ", ".join("%s:%s" % (al.space.shortname, al.requested) for al in artist.allocation_set.all())
@@ -313,52 +314,43 @@ class ArtistAdmin(AjaxSelectAdmin):
                 selected_template = EmailTemplate.objects.get(pk=template_id)
             else:
                 selected_template = None
+            # TODO this will not work if Person doesn't have a 'user' field that is the user model.
             for artist in artists:
-                email = artist.person.email
-                if not email:
+                if artist.person.user:
+                    messages.warning(request, "Artist %s already has a login user %s" % (artist, artist.person.user))
+                    continue
+
+                artist_email = artist.person.email
+                if not artist_email:
                     messages.warning(request, "Artist %s does not have an email address." % artist)
+                    continue
+
+                try:
+                    User.objects.get(username=artist_email)
+                except User.DoesNotExist:
+                    pass
                 else:
-                    new_user_created = False
+                    messages.warning(request,
+                                     "Artist %s has email address %s, "
+                                     "but there is already a user with that address as a login." % (
+                                     artist, artist_email))
+                    continue
+
+                user = User(username=artist_email, email=artist_email, first_name=artist.person.name, password='')
+                user.set_unusable_password()
+                user.save()
+                artist.person.user = user
+                artist.person.save()
+                messages.info(request, "Artist %s has a login created" % artist)
+
+                if selected_template:
                     try:
-                        user = User.objects.get(username=email)
-                    except User.DoesNotExist:
-                        user = User(username=email, email=email, first_name=artist.person.name, password='')
-                        user.set_unusable_password()
-                        user.save()
-                        new_user_created = True
-                    new_access_created = False
-                    try:
-                        access = ArtistAccess.objects.get(artist=artist, user=user)
-                    except ArtistAccess.DoesNotExist:
-                        access = ArtistAccess(artist=artist, user=user, can_edit=True)
-                        access.save()
-                        new_access_created = True
-                    can_edit_adjusted = False
-                    if not access.can_edit:
-                        access.can_edit = True
-                        access.save()
-                        can_edit_adjusted = True
-                    s = []
-                    if new_user_created:
-                        s.append("User %s created." % email)
-                    else:
-                        s.append("User %s already exists." % email)
-                    if new_access_created:
-                        s.append("Given access rights to artist %s." % artist)
-                    else:
-                        s.append("Already has access rights to artist %s." % artist)
-                    if can_edit_adjusted:
-                        s.append("Rights upgraded to 'can_edit'.")
-                    s = " ".join(s)
-                    messages.info(request, s)
-                    if selected_template:
-                        try:
-                            send_password_reset_email(artist, user, selected_template.subject,
-                                                      selected_template.template)
-                            self.message_user(request, "Mail to %s succeeded." % email)
-                        except smtplib.SMTPException, x:
-                            # Note: ModelAdmin message_user only supports sending info-level messages.
-                            messages.error(request, "Mail to %s failed: %s" % (email, x))
+                        send_password_reset_email(artist, user, selected_template.subject,
+                                                  selected_template.template)
+                        self.message_user(request, "Mail to %s succeeded." % artist_email)
+                    except smtplib.SMTPException, x:
+                        # Note: ModelAdmin message_user only supports sending info-level messages.
+                        messages.error(request, "Mail to %s failed: %s" % (artist_email, x))
             return None
         templates = EmailTemplate.objects.all()
         context = {

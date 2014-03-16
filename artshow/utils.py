@@ -2,12 +2,14 @@ import re
 import csv
 import codecs
 import cStringIO
+from django.contrib.auth import get_user_model
 
 from .conf import settings
-from django.contrib.auth.models import User
 from django.template import Context
 from django.template.loader import get_template
 from django.core.mail import send_mail
+
+User = get_user_model()
 
 
 class AttributeFilter(object):

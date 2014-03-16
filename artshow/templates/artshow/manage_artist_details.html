@@ -16,7 +16,7 @@
   {{ form.as_table }}
     <tr>
         <th>Agents</th>
-        <td>{% for a in artist.agents.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}
+        <td>{% for a in artist.agent_set.all %}{{ a.person }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}
             <br/><span class="helptext">To add or change agents, please contact Art Show Management</span></td>
     </tr>
     <tr>

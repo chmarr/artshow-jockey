@@ -50,12 +50,13 @@ def artist(request, artist_id):
     payments_total = payments.aggregate(payments_total=Sum('amount'))['payments_total'] or Decimal(0)
     allocations = artist.allocation_set.order_by("space__id")
 
-    can_edit = artist.editable_by(request.user)
     can_edit_personal_details = not settings.ARTSHOW_SHUT_USER_EDITS and \
-                                (request.user.email == artist.person.email)
-    can_edit_artist_details = not settings.ARTSHOW_SHUT_USER_EDITS and can_edit
-    can_edit_piece_details = not settings.ARTSHOW_SHUT_USER_EDITS and can_edit
-    can_edit_space_reservations = not settings.ARTSHOW_SHUT_USER_EDITS and can_edit
+                                (request.user == artist.person.user)
+    can_edit_artist_details = can_edit_personal_details
+    can_edit_piece_details = not settings.ARTSHOW_SHUT_USER_EDITS and \
+                             artist.grants_access_to(request.user, can_edit_pieces=True)
+    can_edit_space_reservations = not settings.ARTSHOW_SHUT_USER_EDITS and \
+                                  artist.grants_access_to(request.user, can_edit_spaces=True)
 
     return render(request, "artshow/manage_artist.html",
                   {'artist': artist, 'pieces': pieces, 'allocations': allocations,
@@ -98,7 +99,7 @@ class DeleteConfirmForm(forms.Form):
 def pieces(request, artist_id):
     artist = get_object_or_404(Artist.objects.viewable_by(request.user), pk=artist_id)
 
-    if not artist.editable_by(request.user):
+    if not artist.grants_access_to(request.user, can_edit_pieces=True):
         error = "You do not have permissions to edit pieces for this artist."
         return render(request, "artshow/manage_error.html", {'artshow_settings': artshow_settings,
                                                              'error': error})
@@ -199,7 +200,8 @@ def requestspaceform_factory(artist):
 @login_required
 @user_edits_allowable
 def spaces(request, artist_id):
-    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    artist = get_object_or_404(Artist.objects.grants_access_to(request.user, can_edit_spaces=True), pk=artist_id)
+
     RequestSpaceForm = requestspaceform_factory(artist)
     RequestSpaceFormSet = formset_factory(RequestSpaceForm, extra=0)
 
@@ -260,7 +262,7 @@ class ArtistModelForm(forms.ModelForm):
 @login_required
 @user_edits_allowable
 def artist_details(request, artist_id):
-    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    artist = get_object_or_404(Artist.objects.filter(person__user=request.user), pk=artist_id)
 
     if request.method == "POST":
         form = ArtistModelForm(request.POST, instance=artist)
@@ -284,12 +286,8 @@ class PersonModelForm(forms.ModelForm):
 @login_required
 @user_edits_allowable
 def person_details(request, artist_id):
-    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    artist = get_object_or_404(Artist.objects.filter(person__user=request.user), pk=artist_id)
     person = artist.person
-    if person.email != request.user.email:
-        error = "You do not have permission to edit this person's details. Please make this request by " \
-                "submitting to the Art Show Administration."
-        return render(request, "artshow/manage_error.html", {"artshow_settings": artshow_settings, "error": error})
 
     if request.method == "POST":
         form = PersonModelForm(request.POST, instance=person)
@@ -320,7 +318,7 @@ class PaymentForm(forms.ModelForm):
 @login_required
 @user_edits_allowable
 def make_payment(request, artist_id):
-    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    artist = get_object_or_404(Artist.objects.viewable_by(request.user), pk=artist_id)
     payment_pending = PaymentType(id=settings.ARTSHOW_PAYMENT_PENDING_PK)
     total_requested_cost, deduction_to_date, deduction_remaining, payment_remaining = \
         artist.payment_remaining_with_details()
@@ -357,14 +355,14 @@ def make_payment(request, artist_id):
 
 @login_required
 def payment_made_mail(request, artist_id):
-    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    artist = get_object_or_404(Artist.objects.viewable_by(request.user), pk=artist_id)
     return render(request, "artshow/payment_made_mail.html", {"artist": artist})
 
 
 @login_required
 @csrf_exempt
 def payment_made_paypal(request, artist_id):
-    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    artist = get_object_or_404(Artist.objects.viewable_by(request.user), pk=artist_id)
     payment = None
     if request.method == "POST":
         ipn_received.send(None, query=request.body)
@@ -382,7 +380,7 @@ def payment_made_paypal(request, artist_id):
 @login_required
 @csrf_exempt
 def payment_cancelled_paypal(request, artist_id):
-    artist = get_object_or_404(Artist.objects.editable_by(request.user), pk=artist_id)
+    artist = get_object_or_404(Artist.objects.viewable_by(request.user), pk=artist_id)
     signer = Signer()
     payment_found_and_deleted = False
     try:

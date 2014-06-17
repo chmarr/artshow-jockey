@@ -41,7 +41,7 @@ class PersonForm(forms.ModelForm):
 
     class Meta:
         model = Person
-        exclude = ("reg_id", "comment")
+        exclude = ("user", "reg_id", "comment")
 
     def clean_email_confirm(self):
         email_confirm = self.cleaned_data['email_confirm']

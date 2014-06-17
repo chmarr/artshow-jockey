@@ -4,6 +4,8 @@ import codecs
 import cStringIO
 from django.contrib.auth import get_user_model
 from decimal import Decimal
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from .conf import settings
 from django.template import Context
@@ -90,7 +92,6 @@ def create_user_from_email(email):
 
 
 def send_password_reset_email(artist, user, subject=None, template=None):
-    from django.utils.http import int_to_base36
     from django.contrib.auth.tokens import default_token_generator
     from artshow.email1 import wrap, default_wrap_cols
 
@@ -106,7 +107,7 @@ def send_password_reset_email(artist, user, subject=None, template=None):
     c = {
         'artist': artist,
         'user': user,
-        'uid': int_to_base36(user.id),
+        'uid': urlsafe_base64_encode(force_bytes(user.id)),
         'token': default_token_generator.make_token(user),
         'artshow_settings': artshow_settings
     }

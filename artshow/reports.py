@@ -67,8 +67,8 @@ def artist_payment_report(request):
     return render(request, 'artshow/artist-payment-report.html', {'artists': artists, 'non_zero': non_zero})
 
 
-@permission_required('artshow.is_artshow_staff')
-def show_summary(request):
+def get_summary_statistics():
+
     pieces = Piece.objects.all()
 
     class Stats:
@@ -155,13 +155,23 @@ def show_summary(request):
 
     # all_invoices = Invoice.objects.aggregate ( Sum('tax_paid'), Sum('invoicepayment__amount') )
 
-    return render(request, 'artshow/show-summary.html',
-                  {'all_stats': all_stats, 'general_stats': general_stats, 'adult_stats': adult_stats,
-                   'num_showing_artists': num_showing_artists, 'payment_types': payment_types,
-                   'total_payments': total_payments, 'tax_paid': tax_paid, 'piece_charges': piece_charges,
-                   'total_charges': total_charges, 'total_invoice_payments': total_invoice_payments,
-                   'invoice_payments': invoice_payments, 'spaces': spaces, 'total_spaces': total_spaces,
-                   'num_artists': num_artists, 'num_active_artists': num_active_artists})
+    return {'all_stats': all_stats, 'general_stats': general_stats, 'adult_stats': adult_stats,
+            'num_showing_artists': num_showing_artists, 'payment_types': payment_types,
+            'total_payments': total_payments, 'tax_paid': tax_paid, 'piece_charges': piece_charges,
+            'total_charges': total_charges, 'total_invoice_payments': total_invoice_payments,
+            'invoice_payments': invoice_payments, 'spaces': spaces, 'total_spaces': total_spaces,
+            'num_artists': num_artists, 'num_active_artists': num_active_artists}
+
+@permission_required('artshow.is_artshow_staff')
+def show_summary(request):
+
+    statistics = get_summary_statistics()
+    format = request.GET.get("format")
+
+    if format == "json":
+        pass
+    else:
+        return render(request, 'artshow/show-summary.html', statistics)
 
 
 @permission_required('artshow.is_artshow_staff')

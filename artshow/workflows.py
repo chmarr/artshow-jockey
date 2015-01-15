@@ -17,8 +17,8 @@ def printing(request):
                                             bid_sheet_printing=Piece.PrintingNotPrinted)
     control_forms_query = Piece.objects.filter(status__in=(Piece.StatusNotInShow, Piece.StatusNotInShowLocked),
                                                control_form_printing=Piece.PrintingNotPrinted)
-    bid_sheets_to_print_query = Piece.objects.filter(bid_sheet_printing=Piece.PrintingToBePrinted)
-    control_forms_to_print_query = Piece.objects.filter(control_form_printing=Piece.PrintingToBePrinted)
+    bid_sheets_to_print_query = Piece.objects.filter(bid_sheet_printing=Piece.PrintingToBePrinted).order_by('artist__artistid', 'pieceid')
+    control_forms_to_print_query = Piece.objects.filter(control_form_printing=Piece.PrintingToBePrinted).order_by('artist__artistid', 'pieceid')
 
     if request.method == "POST":
         if request.POST.get("lock_pieces"):

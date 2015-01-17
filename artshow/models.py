@@ -517,6 +517,7 @@ class BatchScan (models.Model):
         (1, u"Locations"),
         (2, u"Intermediate Bids"),
         (3, u"Final Bids"),
+        (4, u"Bidder ID Allocation"),
     ]
     batchtype = models.IntegerField(choices=BATCHTYPES, default=0)
     data = models.TextField()

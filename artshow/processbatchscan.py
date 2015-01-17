@@ -3,7 +3,7 @@
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
 
-from .models import BatchScan, Piece, Bid, BidderId
+from .models import BatchScan, Piece, Bid, BidderId, Person, Bidder
 import datetime
 import re
 from django.db.models.query import transaction
@@ -31,6 +31,8 @@ no_bids_scan_re = re.compile(r'NB$')
 auction_sale_scan_re = re.compile(r'NAS$')
 auction_complete_scan_re = re.compile(r'NAC$')
 not_for_sale_scan_re = re.compile(r'NFS$')
+
+person_scan_re = re.compile(r'P(\d+)$')
 
 
 class StateL:
@@ -276,6 +278,61 @@ def process_bids(data, final_scan=False):
         raise BatchProcessingError("found errors in processing", errors)
 
 
+class StateCB:
+    start = 1
+    read_person = 2
+
+@transaction.atomic
+def process_create_bidderids(data):
+    errors = []
+    state = StateCB.start
+    lines = 0
+    current_person = None
+    for l in data.splitlines():
+        lines += 1
+        l = l.strip()
+        if l == "":
+            continue
+
+        mo = person_scan_re.match(l)
+        if mo:
+            if state != StateCB.start:
+                errors.append("line %d: was expecting bidder ID, found %s" % (lines, l))
+                continue
+            try:
+                person = Person.objects.get(id=int(mo.group(1)))
+            except Person.DoesNotExist:
+                errors.append("line %d: person %s not found" % (lines, mo.group(1)))
+                continue
+            current_person = person
+            state = StateCB.read_person
+            continue
+
+        mo = bidder_scan_re.match(l)
+        if mo:
+            if state != StateCB.read_person:
+                errors.append("line %d: found bidder id, was not expecting it: %s" % (lines, l))
+                continue
+            bidderid_str = mo.group(1)
+            try:
+                BidderId.objects.get(id=bidderid_str)
+                errors.append("line %d: bidder id already exists: %s" % (lines, l))
+                continue
+            except BidderId.DoesNotExist:
+                pass
+            bidder, created = Bidder.objects.get_or_create(person=current_person)
+            bidderid = BidderId(id=bidderid_str, bidder=bidder)
+            bidderid.save()
+            state = StateCB.start
+            continue
+
+    if state != StateL.start:
+        errors.append("END: block incomplete")
+
+    if errors:
+        raise BatchProcessingError("found errors in processing", errors)
+
+
 def process_batchscan(id):
     batchscan = BatchScan.objects.get(id=id)
     now = datetime.datetime.now()
@@ -283,7 +340,7 @@ def process_batchscan(id):
         log_str = "%s\nAlready Processed" % now
         batchscan.processing_log = log_str
         batchscan.save()
-    elif batchscan.batchtype not in [1, 2, 3]:
+    elif batchscan.batchtype not in [1, 2, 3, 4]:
         log_str = "%s\nUnknown batchtype" % now
         batchscan.processing_log = log_str
         batchscan.save()
@@ -293,6 +350,8 @@ def process_batchscan(id):
                 process_locations(batchscan.data)
             elif batchscan.batchtype in [2, 3]:
                 process_bids(batchscan.data, final_scan=(batchscan.batchtype == 3))
+            elif batchscan.batchtype == 4:
+                process_create_bidderids(batchscan.data)
         except BatchProcessingError, x:
             log_str = "\n".join([str(now), str(x)] + x.errorlist)
             batchscan.processing_log = log_str

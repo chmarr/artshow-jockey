@@ -2,6 +2,7 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
+from django.conf import settings
 
 from .models import BatchScan, Piece, Bid, BidderId, Person, Bidder
 import datetime
@@ -18,10 +19,12 @@ class BatchProcessingError(Exception):
     def __str__(self):
         return "%s: %d errors listed" % (self.detail, len(self.errorlist))
 
-
-location_scan_re = re.compile(r'[PL](\w\d+)$')
+if settings.ARTSHOW_STRIP_LOCATION_ID_CHECKCHAR:
+    location_scan_re = re.compile(r'[PL](\w\d+).$')
+else:
+    location_scan_re = re.compile(r'[PL](\w\d+)$')
 piece_scan_re = re.compile(r'A(\d+)P(\d+)$')
-end_location_scan_re = re.compile(r'[PL]END$')
+end_location_scan_re = re.compile(r'[PL]END.?$')
 
 bidder_scan_re = re.compile(r'B(\d+)$')
 price_scan_re = re.compile(r'(\d+)$')

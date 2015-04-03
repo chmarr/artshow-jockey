@@ -86,3 +86,7 @@ class ArtshowAppConf(AppConf):
     # Change this if an offset has been applied to bidder ID MOD11 calculation.
     # Use "None" to disable check completely.
     BIDDERID_MOD11_OFFSET = 0
+
+    # Assume all location ID barcodes have a trailing check-character, and ignore it.
+    # Very specific-case setting. Consider it deprecated.
+    STRIP_LOCATION_ID_CHECKCHAR = False

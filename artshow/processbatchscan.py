@@ -26,7 +26,7 @@ else:
 piece_scan_re = re.compile(r'A(\d+)P(\d+)$')
 end_location_scan_re = re.compile(r'[PL]END.?$')
 
-bidder_scan_re = re.compile(r'B(\d+)$')
+bidder_scan_re = re.compile(r'(?:00|B)(\d+)$')
 price_scan_re = re.compile(r'(\d+)$')
 normal_sale_scan_re = re.compile(r'NS$')
 buy_now_scan_re = re.compile(r'NBN$')

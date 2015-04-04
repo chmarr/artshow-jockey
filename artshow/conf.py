@@ -90,3 +90,7 @@ class ArtshowAppConf(AppConf):
     # Assume all location ID barcodes have a trailing check-character, and ignore it.
     # Very specific-case setting. Consider it deprecated.
     STRIP_LOCATION_ID_CHECKCHAR = False
+
+    # If "Artist Self Access" is used, and the Artist/Person does not have a user attached
+    # create one based on the artist's email address, or "artist-N" if no email.
+    CREATE_USER_ON_SELF_ACCESS = False

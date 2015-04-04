@@ -1,6 +1,7 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
+from django.conf import settings
 from django.contrib import messages, auth
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -8,6 +9,7 @@ from django.forms import ModelChoiceField, forms, CharField
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import permission_required
 from django.views.decorators.csrf import csrf_exempt
+from artshow.utils import create_user_from_email
 from .models import Artist, BidderId
 
 
@@ -48,9 +50,34 @@ def artist_self_access(request):
         if form.is_valid():
             artist = form.cleaned_data['artist']
             user = artist.person.user
+            if user is None and settings.ARTSHOW_CREATE_USER_ON_SELF_ACCESS:
+                if artist.person.email:
+                    try:
+                        user = create_user_from_email(artist.person.email)
+                        user.save()
+                        artist.person.user = user
+                        artist.person.save()
+                        messages.info(request, "Automatically created username %s" % user.username)
+                    except StandardError as exc:
+                        user = None
+                        messages.error(request, "Could not create User based on email address: %s" % exc)
+
+            if user is None and settings.ARTSHOW_CREATE_USER_ON_SELF_ACCESS:
+                username = "person-%d" % artist.person.id
+                try:
+                    user = User(username=username)
+                    user.save()
+                    artist.person.user = user
+                    artist.person.save()
+                    messages.info(request, "Automatically created username %s" % user.username)
+                except StandardError as exc:
+                    user = None
+                    messages.error(request, "Could not create User based on simple template: %s" % exc)
+
             if user is None:
                 messages.error(request, "The selected artist does not have a login created.")
-            else:
+
+            if user is not None:
                 # TODO. Find a way to attach the correct backend for the artist.
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 auth.login(request, user)

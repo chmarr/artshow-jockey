@@ -1,11 +1,14 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
+import logging
+from django.contrib import messages
+from django.db.transaction import atomic
 
 from django.shortcuts import render, redirect
-from .models import Bidder, BidderId, Person, Piece
+from .models import Bidder, BidderId, Person, Piece, Bid
 from django import forms
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from . import mod11codes
 import re
 from django.forms.formsets import formset_factory
@@ -14,6 +17,8 @@ from .conf import settings
 
 BIDDERS_PER_PAGE = 10
 BIDS_PER_PAGE = 10
+
+logger = logging.getLogger(__name__)
 
 
 def mod11check(value):
@@ -94,6 +99,8 @@ class BidAddForm (forms.Form):
 
     def clean_bidder(self):
         bidder_code = self.cleaned_data['bidder']
+        if not bidder_code:
+            return None
         try:
             bidder = Bidder.objects.get(bidderid__id=bidder_code)
         except Bidder.DoesNotExist:
@@ -145,17 +152,49 @@ class BidAddOptionsForm (forms.Form):
 @permission_required('artshow.add_bid')
 def bid_bulk_add(request):
 
-    raise NotImplementedError
+    # raise NotImplementedError
+
+    # TODO : If piece is scanned as No bids, ensure there really are no bids
+    # TODO : If piece is scanned "not for sale", ensure it really is not for sale
+    # TODO : If bid entry is identical to an existing bid, and its the highest, simply allow it. (this
+    # Should be easy to do, using get_or_create)
 
     if request.method == "POST":
         formset = BidAddFormSet(request.POST, prefix="bids")
         optionsform = BidAddOptionsForm(request.POST, prefix="options")
         if optionsform.is_valid() and formset.is_valid():
-            stage = optionsform.cleaned_data['stage']
-            for form in formset:
-                ## TODO something
+            try:
+                with atomic():
+                    stage = optionsform.cleaned_data['stage']
+                    for form in formset:
+                        type = form.cleaned_data.get('type')
+                        if type is None or type == 'clear':
+                            continue
+                        piece = form.cleaned_data['piece']
+                        bidder = form.cleaned_data.get('bidder',None)
+                        amount = form.cleaned_data.get('amount',None)
+                        if type in ['normal', 'buynow', 'auction']:
+                            bid = Bid(bidder=bidder, amount=amount, piece=piece, buy_now_bid=type=='buynow')
+                            try:
+                                bid.validate()
+                            except ValidationError as exc:
+                                logger.warning("bid validation error: %r", exc)
+                                form.errors.setdefault(NON_FIELD_ERRORS,form.error_class()).append("Bid is invalid: %s" % exc)
+                                continue
+                            bid.save()
+                            if stage == 'final' or (stage == 'close' and type != 'auction'):
+                                piece.status = Piece.StatusWon
+                        if type == 'auction':
+                            piece.voice_auction = True
+                        if stage in ['close', 'final']:
+                            piece.bidsheet_scanned = True
+                        piece.save()
+                    if formset.total_error_count() > 0:
+                        raise ValidationError("form has errors, nothing should be saved.")
+                    messages.info(request, "Bids Saved.")
+                    return redirect('.')
+            except ValidationError:
                 pass
-            return redirect('.')
     else:
         formset = BidAddFormSet(prefix="bids")
         optionsform = BidAddOptionsForm(prefix="options")

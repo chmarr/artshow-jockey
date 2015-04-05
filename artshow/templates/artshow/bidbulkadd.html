@@ -13,6 +13,9 @@
 <table>
 <tr><th>Piece Code</th><th>Bidder Code</th><th>Type</th><th>Amount</th></tr>
 {% for form in formset %}
+{% if form.non_field_errors %}
+<tr><td colspan="4">{{ form.non_field_errors }}</td></tr>
+{% endif %}
 <tr>
   <td>{{ form.piece.errors }}{{ form.piece }}</td>
   <td>{{ form.bidder.errors }}{{ form.bidder }}</td>

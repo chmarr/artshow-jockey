@@ -21,6 +21,9 @@ from ajax_select.fields import AutoCompleteSelectField
 from django.db.models import Max, Sum
 from django.conf import settings
 from django.contrib.auth import get_user_model
+import logging
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -257,7 +260,8 @@ class ArtistAdmin(AjaxSelectAdmin):
             total_pieces = 0
             pieces_with_bids = 0
             for piece in a.piece_set.all():
-                if piece.status != Piece.StatusNotInShow:
+                # TODO - replace this logic with a method call, or better a custom manager.
+                if piece.status not in [Piece.StatusNotInShow, Piece.StatusNotInShowLocked]:
                     total_pieces += 1
                 try:
                     top_bid = piece.top_bid()
@@ -266,15 +270,51 @@ class ArtistAdmin(AjaxSelectAdmin):
                 except Bid.DoesNotExist:
                     pass
             commission = total_winnings * decimal.Decimal(settings.ARTSHOW_COMMISSION)
-            if total_pieces > 0:
+            winnings_description = "%d piece%s, %d with bid%s" % (
+                total_pieces, total_pieces != 1 and "s" or "", pieces_with_bids,
+                pieces_with_bids != 1 and "s" or "")
+            commission_description = "%s%% of sales" % (decimal.Decimal(settings.ARTSHOW_COMMISSION) * 100)
+
+            try:
+                existing_winnings_payment = Payment.objects.get(artist=a, payment_type=pt_winning)
+            except Payment.MultipleObjectsReturned:
+                logger.warning("Multiple artshow sales payment objects found. Deleting them all and replacing.")
+                Payment.objects.filter(artist=a, payment_type=pt_winning).delete()
+                existing_winnings_payment = None
+            except Payment.DoesNotExist:
+                existing_winnings_payment = None
+
+            if existing_winnings_payment is not None:
+                if existing_winnings_payment.amount != total_winnings or \
+                                existing_winnings_payment.description != winnings_description:
+                    logger.info("Existing winnings payment has different details. Deleting it and re-creating it.")
+                    existing_winnings_payment.delete()
+                    existing_winnings_payment = None
+
+            try:
+                existing_commission_payment = Payment.objects.get(artist=a, payment_type=pt_commission)
+            except Payment.MultipleObjectsReturned:
+                logger.warning("Multiple artshow commission objects found. Deleting them all and replacing.")
+                Payment.objects.filter(artist=a, payment_type=pt_commission).delete()
+                existing_commission_payment = None
+            except Payment.DoesNotExist:
+                existing_commission_payment = None
+
+            if existing_commission_payment is not None:
+                if existing_commission_payment.amount != -commission or \
+                                existing_commission_payment.description != commission_description:
+                    logger.info("Existing commission deduction has different details. Deleting it and re-creating it.")
+                    existing_commission_payment.delete()
+                    existing_commission_payment = None
+
+            if existing_winnings_payment is None and total_pieces > 0:
                 payment = Payment(artist=a, amount=total_winnings, payment_type=pt_winning,
-                                  description="%d piece%s, %d with bid%s" % (
-                                  total_pieces, total_pieces != 1 and "s" or "", pieces_with_bids,
-                                  pieces_with_bids != 1 and "s" or ""), date=datetime.datetime.now())
+                                  description=winnings_description, date=datetime.datetime.now())
                 payment.save()
-            if commission > 0:
+
+            if existing_commission_payment is None and commission > 0:
                 payment = Payment(artist=a, amount=-commission, payment_type=pt_commission,
-                                  description="%s%% of sales" % (decimal.Decimal(settings.ARTSHOW_COMMISSION) * 100),
+                                  description=commission_description,
                                   date=datetime.datetime.now())
                 payment.save()
 

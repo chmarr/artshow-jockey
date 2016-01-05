@@ -151,6 +151,13 @@
                 <td style="text-align:right;">{{ p.amount|floatformat:"2" }}</td>
             </tr>
         {% endfor %}
+        {% if payment_remaining %}
+            <tr>
+                <td></td>
+                <td>Payment to cover reservations</td>
+                <td style="text-align:right;">{{ payment_remaining|floatformat:"2" }}</td>
+            </tr>
+        {% endif %}
         <tr class="totalsrow">
             <td colspan="2">Balance:</td>
             <td style="text-align:right;">{{ payments_total|floatformat:"2" }}</td>

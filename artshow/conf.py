@@ -86,3 +86,6 @@ class ArtshowAppConf(AppConf):
     # Change this if an offset has been applied to bidder ID MOD11 calculation.
     # Use "None" to disable check completely.
     BIDDERID_MOD11_OFFSET = 0
+
+    # If True, bid sheets will be printed to assist large stack cutting.
+    BID_SHEET_PRECOLLATION = False

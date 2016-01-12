@@ -254,6 +254,7 @@ class ArtistAdmin(AjaxSelectAdmin):
         pt_winning = PaymentType.objects.get(pk=settings.ARTSHOW_SALES_PK)
         pt_commission = PaymentType.objects.get(pk=settings.ARTSHOW_COMMISSION_PK)
         for a in artists:
+            Payment.objects.filter(artist=a, payment_type__in=(pt_winning, pt_commission)).delete()
             total_winnings = 0
             total_pieces = 0
             pieces_with_bids = 0

@@ -63,7 +63,7 @@ def cheque_to_text(cheque, f):
     grid.print_at(77, 3, date_str)
 
     grid.print_at(8, 7, cheque.payee.upper())
-    grid.print_at(77, 7, "$%-8.2f" % cheque_amount)
+    grid.print_at(78, 7, "$%-8.2f" % cheque_amount)
 
     grid.print_at(1, 9, cheque_words)
 

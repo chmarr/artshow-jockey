@@ -89,3 +89,6 @@ class ArtshowAppConf(AppConf):
 
     # If True, bid sheets will be printed to assist large stack cutting.
     BID_SHEET_PRECOLLATION = False
+
+    # Print Cheques as PDF instead of plain text.
+    CHEQUES_AS_PDF = False

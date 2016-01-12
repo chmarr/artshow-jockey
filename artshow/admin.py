@@ -1,26 +1,30 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
-from .models import *
-from django.contrib import admin, messages
-from django.core import urlresolvers
-from django.contrib.admin import helpers
-from django.shortcuts import render
-from django.utils.html import escape
-from django import forms
-from . import email1
-from . import processbatchscan
-from django.core.mail import send_mail
-import smtplib
+import StringIO
 import datetime
 import decimal
-from django.http import HttpResponse
+import smtplib
+
 from ajax_select import make_ajax_form
 from ajax_select.admin import AjaxSelectAdmin, AjaxSelectAdminTabularInline
 from ajax_select.fields import AutoCompleteSelectField
-from django.db.models import Max, Sum
+from django import forms
 from django.conf import settings
+from django.contrib import admin, messages
+from django.contrib.admin import helpers
 from django.contrib.auth import get_user_model
+from django.core import urlresolvers
+from django.core.mail import send_mail
+from django.db.models import Max, Sum
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.utils.html import escape
+
+from artshow import text2pdf
+from . import email1
+from . import processbatchscan
+from .models import *
 
 User = get_user_model()
 
@@ -666,9 +670,16 @@ class ChequePaymentAdmin(admin.ModelAdmin):
     def print_cheques(self, request, cheqs):
         import cheques
 
-        response = HttpResponse(content_type="text/plain")
-        for c in cheqs:
-            cheques.cheque_to_text(c, response)
+        if settings.ARTSHOW_CHEQUES_AS_PDF:
+            response = HttpResponse(content_type="application/pdf")
+            buf = StringIO.StringIO()
+            for c in cheqs:
+                cheques.cheque_to_text(c, buf)
+            text2pdf.text_to_pdf(buf.getvalue(), response)
+        else:
+            response = HttpResponse(content_type="text/plain")
+            for c in cheqs:
+                cheques.cheque_to_text(c, response)
         return response
 
     list_display = ('artist', 'date', 'payee', 'number', 'cheque_amount')

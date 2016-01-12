@@ -52,3 +52,5 @@ assert len(SECRET_KEY)>20, "Secret key cannot be empty or short. Please edit loc
 # Visit https://www.google.com/recaptcha/admin/create to create a keypair
 RECAPTCHA_PUBLIC_KEY = "YOUR_PUBLIC_KEY"
 RECAPTCHA_PRIVATE_KEY = "YOUR_PRIVATE_KEY"
+
+ARTSHOW_CHEQUES_AS_PDF = True

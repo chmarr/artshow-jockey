@@ -158,6 +158,14 @@ def cashier_bidder(request, bidder_id):
 
     return render(request, 'artshow/cashier_bidder.html', c)
 
+@permission_required('artshow.add_invoice')
+def cashier_bidder_invoices(request, bidder_id):
+
+    bidder = get_object_or_404(Bidder, pk=bidder_id)
+    invoices = Invoice.objects.filter(payer=bidder).order_by('id')
+    return render(request, 'artshow/cashier_bidder_invoices.html',
+                  {'bidder': bidder, 'invoices': invoices, 'money_precision': settings.ARTSHOW_MONEY_PRECISION})
+
 
 @permission_required('artshow.add_invoice')
 def cashier_invoice(request, invoice_id):

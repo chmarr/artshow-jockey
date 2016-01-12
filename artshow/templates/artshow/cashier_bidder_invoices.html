@@ -1,0 +1,28 @@
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.cashier.cashier' %}">Cashier</a></li>
+        <li class="current">Invoices for {{ bidder.person.name }}</li>
+    </ul>
+{% endblock %}
+{% block content %}
+<h3>Invoices for {{ bidder.person.name }}</h3>
+
+    {% if invoices %}
+    <table>
+    <tr><th>Invoice ID</th><th>Number of Items</th><th>Amount</th></tr>
+    {% for inv in invoices %}
+    <tr>
+        <td><a href="{% url "artshow.cashier.cashier_invoice" inv.id %}">{{ inv.id }}</a></td>
+        <td>{{ inv.invoiceitem_set.count }}</td>
+        <td class="money">{{ inv.total_paid|floatformat:money_precision }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+        {% else %}
+        <p>No invoices found</p>
+    {% endif %}
+
+{% endblock %}

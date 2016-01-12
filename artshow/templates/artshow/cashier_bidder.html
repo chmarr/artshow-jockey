@@ -204,6 +204,10 @@
 <tr><td>Name</td><td>{{ bidder.name }}</td></tr>
 <tr><td>Bidder ID{{ bidder.bidder_ids|pluralize }}</td><td>{{ bidder.bidder_ids|join:", " }}</td></tr>
 </table>
+
+{% if bidder.invoice_set %}
+    <a href="{% url "artshow.cashier.cashier_bidder_invoices" bidder.id %}">{{ bidder.invoice_set.count }} invoice{{ bidder.invoice_set.count|pluralize }} found</a>
+{% endif %}
 {% if pending_bids %}
 <hr>
 <p>{{ bidder.name }} has <strong>{{ pending_bids|length }}</strong> piece{{ pending_bids|pluralize }} with a top bid but pending resolution</p>

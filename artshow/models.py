@@ -479,6 +479,10 @@ class Invoice (models.Model):
     def __unicode__(self):
         return u"Invoice %d for %s" % (self.id, self.payer)
 
+    def get_absolute_url(self):
+        from django.core.urlresolvers import reverse
+        return reverse('artshow.cashier.cashier_invoice', args=[str(self.id)])
+
     class Meta:
         permissions = (
             ('view_invoice', 'Can view Invoice details outside of Admin system.'),

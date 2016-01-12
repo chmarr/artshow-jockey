@@ -239,6 +239,7 @@ class ArtistAdmin(AjaxSelectAdmin):
     def apply_space_fees(self, request, artists):
         payment_type = PaymentType.objects.get(pk=settings.ARTSHOW_SPACE_FEE_PK)
         for a in artists:
+            Payment.objects.filter(artist=a, payment_type=payment_type).delete()
             total = 0
             for alloc in a.allocation_set.all():
                 total += alloc.space.price * alloc.allocated

@@ -525,6 +525,7 @@ class BatchScan (models.Model):
     ]
     batchtype = models.IntegerField(choices=BATCHTYPES, default=0)
     data = models.TextField()
+    original_data = models.TextField(blank=True)
     date_scanned = models.DateTimeField()
     processed = models.BooleanField(default=False)
     processing_log = models.TextField(blank=True)

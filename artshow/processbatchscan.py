@@ -10,15 +10,6 @@ from django.db.models.query import transaction
 from django.core.exceptions import ValidationError
 
 
-class BatchProcessingError(Exception):
-    def __init__(self, detail, errorlist):
-        self.detail = detail
-        self.errorlist = errorlist
-
-    def __str__(self):
-        return "%s: %d errors listed" % (self.detail, len(self.errorlist))
-
-
 location_scan_re = re.compile(r'[PL](\w\d+)$')
 piece_scan_re = re.compile(r'A(\d+)P(\d+)$')
 end_location_scan_re = re.compile(r'[PL]END$')
@@ -34,6 +25,8 @@ not_for_sale_scan_re = re.compile(r'NFS$')
 
 person_scan_re = re.compile(r'P(\d+)$')
 
+comments_re = re.compile(r'\s+#.*')
+
 
 class StateL:
     start = 1
@@ -41,21 +34,32 @@ class StateL:
     error_skipping = 99
 
 
+def add_error(errors, lines, lineno, message):
+    if lineno is not None:
+        errors.append("line %d: %s" % (lineno+1, message))
+        if len(lines) < lineno+1:
+            lines.append("")
+        lines[lineno] += " # " + message
+    else:
+        errors.append(message)
+
+
 @transaction.atomic
 def process_locations(data):
     errors = []
     state = StateL.start
-    lines = 0
     current_location = None
-    for l in data.splitlines():
-        lines += 1
+    lines = data.splitlines()
+    for lineno, l in enumerate(lines):
         l = l.strip()
+        l = comments_re.sub('', l)
+        lines[lineno] = l
         if l == "":
             continue
         mo = location_scan_re.match(l)
         if mo:
             if state not in [StateL.start, StateL.error_skipping]:
-                errors.append("line %d: previous block incomplete" % lines)
+                add_error(errors, lines, lineno, "previous block incomplete")
             current_location = mo.group(1)
             state = StateL.read_location
         if not mo:
@@ -67,7 +71,7 @@ def process_locations(data):
                     try:
                         piece = Piece.objects.get(artist=int(mo.group(1)), pieceid=int(mo.group(2)))
                     except Piece.DoesNotExist:
-                        errors.append("line %d: piece %s does not exist" % (lines, l))
+                        add_error(errors, lines, lineno, "piece does not exist")
                         state = State.error_skipping
                         continue
                     piece.location = current_location
@@ -75,22 +79,22 @@ def process_locations(data):
                         piece.status = Piece.StatusInShow
                     piece.save()
                 else:
-                    errors.append("line %d: piece %s not found immediately after location" % (lines, l))
+                    add_error(errors, lines, lineno, "piece not found immediately after location")
         if not mo:
             mo = end_location_scan_re.match(l)
             if mo:
                 if state == StateL.read_location:
                     state = StateL.start
                 else:
-                    errors.append("line %d: location block ended without being begun" % lines)
+                    add_error(errors, lines, lineno, "location block ended without being begun")
         if not mo:
-            errors.append("line %d: unknown code %s" % (lines, l))
+            add_error(errors, lines, lineno, "unknown code")
             state = StateL.error_skipping
     if state != StateL.start:
-        errors.append("END: block incomplete")
+        add_error(errors, lines, None, "last block missing END")
 
-    if errors:
-        raise BatchProcessingError("found errors in processing", errors)
+    data = "\n".join(lines)
+    return data, errors
 
 
 class State:
@@ -105,23 +109,22 @@ class State:
 def process_bids(data, final_scan=False):
     errors = []
     state = State.start
-    lines = 0
     current_piece = None
     current_bidder = None
     current_price = None
-    for l in data.splitlines():
-        lines += 1
+    lines = data.splitlines()
+    for lineno, l in enumerate(lines):
         l = l.strip()
         if l == "":
             continue
         mo = piece_scan_re.match(l)
         if mo:
             if state not in [State.start, State.error_skipping]:
-                errors.append("line %d: previous block incomplete" % lines)
+                add_error(errors, lines, lineno, "previous block incomplete")
             try:
                 current_piece = Piece.objects.get(artist=int(mo.group(1)), pieceid=int(mo.group(2)))
             except Piece.DoesNotExist:
-                errors.append("line %d: piece %s does not exist" % (lines, l))
+                add_error(errors, lines, lineno, "piece does not exist")
                 state = State.error_skipping
             else:
                 state = State.read_piece
@@ -134,12 +137,12 @@ def process_bids(data, final_scan=False):
                     try:
                         current_bidder = BidderId.objects.get(id=mo.group(1)).bidder
                     except BidderId.DoesNotExist:
-                        errors.append("line %d: bidder %s does not exist" % (lines, l))
+                        add_error(errors, lines, lineno, "bidder does not exist")
                         state = State.error_skipping
                     else:
                         state = State.read_bidder
                 else:
-                    errors.append("line %d: found bidder scan not immediately after piece" % lines)
+                    add_error(errors, lines, lineno, "found bidder scan not immediately after piece")
                     state = State.error_skipping
         if not mo:
             mo = price_scan_re.match(l)
@@ -148,7 +151,7 @@ def process_bids(data, final_scan=False):
                     current_price = int(mo.group(1))
                     state = State.read_price
                 else:
-                    errors.append("line %d: found price not immediately after bidder" % lines)
+                    add_error(errors, lines, lineno, "found price not immediately after bidder")
                     state = State.error_skipping
         if not mo:
             mo = normal_sale_scan_re.match(l)
@@ -161,7 +164,7 @@ def process_bids(data, final_scan=False):
                     try:
                         bid.validate()
                     except ValidationError, x:
-                        errors.append("line %d: invalid bid: %s" % (lines, x))
+                        add_error(errors, lines, lineno, "invalid bid")
                         continue
                     bid.save()
                     if final_scan:
@@ -170,7 +173,7 @@ def process_bids(data, final_scan=False):
                     current_piece.save()
                     state = State.start
                 else:
-                    errors.append("Line %d: normal sale scan found not immediately after price" % lines)
+                    add_error(errors, lines, lineno, "normal sale scan found not immediately after price")
                     state = State.error_skipping
         if not mo:
             mo = buy_now_scan_re.match(l)
@@ -180,7 +183,7 @@ def process_bids(data, final_scan=False):
                     try:
                         bid.validate()
                     except ValidationError, x:
-                        errors.append("line %d: invalid bid: %s" % (lines, x))
+                        add_error(errors, lines, lineno, "invalid bid")
                         state = State.error_skipping
                         continue
                     bid.save()
@@ -190,7 +193,7 @@ def process_bids(data, final_scan=False):
                     current_piece.save()
                     state = State.start
                 else:
-                    errors.append("Line %d buy now scan found not immediately after price" % lines)
+                    add_error(errors, lines, lineno, "buy now scan found not immediately after price")
                     state = State.error_skipping
         if not mo:
             mo = auction_sale_scan_re.match(l)
@@ -200,7 +203,7 @@ def process_bids(data, final_scan=False):
                     try:
                         bid.validate()
                     except ValidationError, x:
-                        errors.append("line %d: invalid bid: %s" % (lines, x))
+                        add_error(errors, lines, lineno, "invalid bid")
                         state = State.error_skipping
                         continue
                     bid.save()
@@ -211,7 +214,7 @@ def process_bids(data, final_scan=False):
                     state = State.start
                     pass
                 else:
-                    errors.append("Line %d auction sale scan found not immediately after price" % lines)
+                    add_error(errors, lines, lineno, "auction sale scan found not immediately after price")
                     state = State.error_skipping
         if not mo:
             mo = auction_complete_scan_re.match(l)
@@ -221,7 +224,7 @@ def process_bids(data, final_scan=False):
                     try:
                         bid.validate()
                     except ValidationError, x:
-                        errors.append("line %d: invalid bid: %s" % ( lines, x ))
+                        add_error(errors, lines, lineno, "invalid bid")
                         state = State.error_skipping
                         continue
                     bid.save()
@@ -233,14 +236,14 @@ def process_bids(data, final_scan=False):
                     state = State.start
                     pass
                 else:
-                    errors.append("Line %d auction sale scan found not immediately after price" % lines)
+                    add_error(errors, lines, lineno, "auction sale scan found not immediately after price")
                     state = State.error_skipping
         if not mo:
             mo = not_for_sale_scan_re.match(l)
             if mo:
                 if state == State.read_piece:
                     if not current_piece.not_for_sale:
-                        errors.append("Line %d Not for sale found on non NFS piece" % lines)
+                        add_error(errors, lines, lineno, "Not for sale found on non NFS piece")
                         state = State.error_skipping
                         continue
                     if final_scan:
@@ -249,7 +252,7 @@ def process_bids(data, final_scan=False):
                     state = State.start
                     pass
                 else:
-                    errors.append("Line %d: not for sale scan found not immediately after piece" % lines)
+                    add_error(errors, lines, lineno, "not for sale scan found not immediately after piece")
                     state = State.error_skipping
         if not mo:
             mo = no_bids_scan_re.match(l)
@@ -257,7 +260,7 @@ def process_bids(data, final_scan=False):
                 if state == State.read_piece:
                     num_bids = current_piece.bid_set.count()
                     if num_bids > 0:
-                        errors.append("Line %d: No Bid found for pieces with bids" % lines)
+                        add_error(errors, lines, lineno, "No Bid found for pieces with bids")
                         state = State.error_skipping
                         continue
                     if final_scan:
@@ -265,17 +268,18 @@ def process_bids(data, final_scan=False):
                     current_piece.save()
                     state = State.start
                 else:
-                    errors.append("Line %d: no bids scan found not immediately after piece" % lines)
+                    add_error(errors, lines, lineno, "no bids scan found not immediately after piece")
                     state = State.error_skipping
 
         if not mo:
-            errors.append("Line %d: found unknown line %s" % (lines, l))
+            add_error(errors, lines, lineno, "unknown line")
             state = State.error_skipping
     if state != StateL.start:
-        errors.append("END: block incomplete")
+        add_error(errors, lines, None, "block incomplete")
 
-    if errors:
-        raise BatchProcessingError("found errors in processing", errors)
+    data = "\n".join(lines)
+    return data, errors
+
 
 
 class StateCB:
@@ -286,10 +290,9 @@ class StateCB:
 def process_create_bidderids(data):
     errors = []
     state = StateCB.start
-    lines = 0
     current_person = None
-    for l in data.splitlines():
-        lines += 1
+    lines = data.splitlines()
+    for lineno, l in enumerate(lines):
         l = l.strip()
         if l == "":
             continue
@@ -297,12 +300,12 @@ def process_create_bidderids(data):
         mo = person_scan_re.match(l)
         if mo:
             if state != StateCB.start:
-                errors.append("line %d: was expecting bidder ID, found %s" % (lines, l))
+                add_error(errors, lines, lineno, "was expecting bidder ID")
                 continue
             try:
                 person = Person.objects.get(id=int(mo.group(1)))
             except Person.DoesNotExist:
-                errors.append("line %d: person %s not found" % (lines, mo.group(1)))
+                add_error(errors, lines, lineno, "person not found")
                 continue
             current_person = person
             state = StateCB.read_person
@@ -311,12 +314,12 @@ def process_create_bidderids(data):
         mo = bidder_scan_re.match(l)
         if mo:
             if state != StateCB.read_person:
-                errors.append("line %d: found bidder id, was not expecting it: %s" % (lines, l))
+                add_error(errors, lines, lineno, "unexpected bidder id")
                 continue
             bidderid_str = mo.group(1)
             try:
                 BidderId.objects.get(id=bidderid_str)
-                errors.append("line %d: bidder id already exists: %s" % (lines, l))
+                add_error(errors, lines, lineno, "bidder id already exists")
                 continue
             except BidderId.DoesNotExist:
                 pass
@@ -327,14 +330,17 @@ def process_create_bidderids(data):
             continue
 
     if state != StateL.start:
-        errors.append("END: block incomplete")
+        add_error(errors, lines, None, "block incomplete")
 
-    if errors:
-        raise BatchProcessingError("found errors in processing", errors)
+    data = "\n".join(lines)
+    return data, errors
 
 
 def process_batchscan(id):
     batchscan = BatchScan.objects.get(id=id)
+    if not batchscan.original_data:
+        batchscan.original_data = batchscan.data
+        batchscan.save()
     now = datetime.datetime.now()
     if batchscan.processed:
         log_str = "%s\nAlready Processed" % now
@@ -345,19 +351,22 @@ def process_batchscan(id):
         batchscan.processing_log = log_str
         batchscan.save()
     else:
-        try:
-            if batchscan.batchtype == 1:
-                process_locations(batchscan.data)
-            elif batchscan.batchtype in [2, 3]:
-                process_bids(batchscan.data, final_scan=(batchscan.batchtype == 3))
-            elif batchscan.batchtype == 4:
-                process_create_bidderids(batchscan.data)
-        except BatchProcessingError, x:
-            log_str = "\n".join([str(now), str(x)] + x.errorlist)
+        if batchscan.batchtype == 1:
+            newdata, errors = process_locations(batchscan.data)
+        elif batchscan.batchtype in [2, 3]:
+            newdata, errors = process_bids(batchscan.data, final_scan=(batchscan.batchtype == 3))
+        elif batchscan.batchtype == 4:
+            newdata, errors = process_create_bidderids(batchscan.data)
+        else:
+            newdata = None
+            errors = ["Unknown batch type: %d" % batchscan.batchtype]
+        if newdata:
+            batchscan.data = newdata
+        if errors:
+            log_str = "\n".join(["Batch Processing error at " + str(now)] + errors)
             batchscan.processing_log = log_str
-            batchscan.save()
         else:
             log_str = "%s\nProcessing Complete" % now
             batchscan.processing_log = log_str
             batchscan.processed = True
-            batchscan.save()
+        batchscan.save()

@@ -635,8 +635,8 @@ admin.site.register(Checkoff, CheckoffAdmin)
 class BatchScanAdmin(admin.ModelAdmin):
     list_display = ('id', 'batchtype', 'date_scanned', 'processed')
     list_filter = ('batchtype', 'processed')
-    fields = ('id', 'batchtype', 'data', 'date_scanned', 'processed', 'processing_log')
-    readonly_fields = ('id',)
+    fields = ('id', 'batchtype', 'data', 'date_scanned', 'processed', 'processing_log', 'original_data')
+    readonly_fields = ('id', 'original_data')
     actions = ('process_batch',)
 
     def process_batch(self, request, queryset):

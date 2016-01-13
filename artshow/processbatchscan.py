@@ -52,7 +52,7 @@ def process_locations(data):
     lines = data.splitlines()
     for lineno, l in enumerate(lines):
         l = l.strip()
-        l = comments_re.sub('', l)
+        l = lines[lineno] = comments_re.sub('', l)
         lines[lineno] = l
         if l == "":
             continue
@@ -115,6 +115,7 @@ def process_bids(data, final_scan=False):
     lines = data.splitlines()
     for lineno, l in enumerate(lines):
         l = l.strip()
+        l = lines[lineno] = comments_re.sub('', l)
         if l == "":
             continue
         mo = piece_scan_re.match(l)
@@ -164,7 +165,8 @@ def process_bids(data, final_scan=False):
                     try:
                         bid.validate()
                     except ValidationError, x:
-                        add_error(errors, lines, lineno, "invalid bid")
+                        add_error(errors, lines, lineno, "invalid bid: %s" % str(x))
+                        state = State.error_skipping
                         continue
                     bid.save()
                     if final_scan:
@@ -179,14 +181,18 @@ def process_bids(data, final_scan=False):
             mo = buy_now_scan_re.match(l)
             if mo:
                 if state == State.read_price:
-                    bid = Bid(bidder=current_bidder, amount=current_price, piece=current_piece, buy_now_bid=True)
                     try:
-                        bid.validate()
-                    except ValidationError, x:
-                        add_error(errors, lines, lineno, "invalid bid")
-                        state = State.error_skipping
-                        continue
-                    bid.save()
+                        bid = Bid.objects.get(bidder=current_bidder, amount=current_price,
+                                              piece=current_piece, buy_now_bid=True, invalid=False)
+                    except Bid.DoesNotExist:
+                        bid = Bid(bidder=current_bidder, amount=current_price, piece=current_piece, buy_now_bid=True)
+                        try:
+                            bid.validate()
+                        except ValidationError, x:
+                            add_error(errors, lines, lineno, "invalid bid: %s" % str(x))
+                            state = State.error_skipping
+                            continue
+                        bid.save()
                     if final_scan:
                         current_piece.bidsheet_scanned = True
                         current_piece.status = Piece.StatusWon
@@ -199,14 +205,18 @@ def process_bids(data, final_scan=False):
             mo = auction_sale_scan_re.match(l)
             if mo:
                 if state == State.read_price:
-                    bid = Bid(bidder=current_bidder, amount=current_price, piece=current_piece)
                     try:
-                        bid.validate()
-                    except ValidationError, x:
-                        add_error(errors, lines, lineno, "invalid bid")
-                        state = State.error_skipping
-                        continue
-                    bid.save()
+                        bid = Bid.objects.get(bidder=current_bidder, amount=current_price,
+                                              piece=current_piece, buy_now_bid=False, invalid=False)
+                    except Bid.DoesNotExist:
+                        bid = Bid(bidder=current_bidder, amount=current_price, piece=current_piece)
+                        try:
+                            bid.validate()
+                        except ValidationError, x:
+                            add_error(errors, lines, lineno, "invalid bid: %s" % str(x))
+                            state = State.error_skipping
+                            continue
+                        bid.save()
                     if final_scan:
                         current_piece.bidsheet_scanned = True
                     current_piece.voice_auction = True
@@ -220,14 +230,18 @@ def process_bids(data, final_scan=False):
             mo = auction_complete_scan_re.match(l)
             if mo:
                 if state == State.read_price:
-                    bid = Bid(bidder=current_bidder, amount=current_price, piece=current_piece)
                     try:
-                        bid.validate()
-                    except ValidationError, x:
-                        add_error(errors, lines, lineno, "invalid bid")
-                        state = State.error_skipping
-                        continue
-                    bid.save()
+                        bid = Bid.objects.get(bidder=current_bidder, amount=current_price,
+                                              piece=current_piece, buy_now_bid=False, invalid=False)
+                    except Bid.DoesNotExist:
+                        bid = Bid(bidder=current_bidder, amount=current_price, piece=current_piece)
+                        try:
+                            bid.validate()
+                        except ValidationError, x:
+                            add_error(errors, lines, lineno, "invalid bid: %s" % str(x))
+                            state = State.error_skipping
+                            continue
+                        bid.save()
                     if final_scan:
                         current_piece.bidsheet_scanned = True
                         current_piece.status = Piece.StatusWon
@@ -274,7 +288,7 @@ def process_bids(data, final_scan=False):
         if not mo:
             add_error(errors, lines, lineno, "unknown line")
             state = State.error_skipping
-    if state != StateL.start:
+    if state not in (State.start, State.error_skipping) :
         add_error(errors, lines, None, "block incomplete")
 
     data = "\n".join(lines)
@@ -294,6 +308,7 @@ def process_create_bidderids(data):
     lines = data.splitlines()
     for lineno, l in enumerate(lines):
         l = l.strip()
+        l = lines[lineno] = comments_re.sub('', l)
         if l == "":
             continue
 

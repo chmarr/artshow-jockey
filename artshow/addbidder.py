@@ -1,9 +1,10 @@
 # Artshow Jockey
 # Copyright (C) 2009, 2010 Chris Cogdon
 # See file COPYING for licence details
-
+from django.contrib import messages
+from django.db.transaction import atomic
 from django.shortcuts import render, redirect
-from .models import Bidder, BidderId, Person, Piece
+from .models import Bidder, BidderId, Person, Piece, Bid
 from django import forms
 from django.core.exceptions import ValidationError
 from . import mod11codes
@@ -79,6 +80,8 @@ class BidAddForm (forms.Form):
 
     def clean_piece(self):
         piece_code = self.cleaned_data['piece']
+        if not piece_code:
+            return None
         mo = self.piece_code_1.match(piece_code)
         if not mo:
             mo = self.piece_code_2.match(piece_code)
@@ -94,6 +97,8 @@ class BidAddForm (forms.Form):
 
     def clean_bidder(self):
         bidder_code = self.cleaned_data['bidder']
+        if not bidder_code:
+            return None
         try:
             bidder = Bidder.objects.get(bidderid__id=bidder_code)
         except Bidder.DoesNotExist:
@@ -110,6 +115,7 @@ class BidAddForm (forms.Form):
         choices = dict(self.TYPE_CHOICES)
         type_text = choices[type]
         amount = cleaned_data['amount']
+        piece = cleaned_data['piece']
 
         if type in ('nobids', 'nfs'):
             if bidder:
@@ -126,6 +132,15 @@ class BidAddForm (forms.Form):
                 self._errors['amount'] = self.error_class(["Amount required for type \"%s\"" % type_text])
                 del cleaned_data['amount']
 
+        if bidder is not None:
+            try:
+                bid = Bid.objects.get(bidder=bidder, amount=amount, piece=piece, buy_now_bid=(type == 'buynow'))
+            except Bid.DoesNotExist:
+                bid = Bid(bidder=bidder, amount=amount, piece=piece, buy_now_bid=(type == 'buynow'))
+                bid.validate()
+                bid.save()
+            cleaned_data['bid'] = bid
+
         return cleaned_data
 
 BidAddFormSet = formset_factory(BidAddForm, extra=BIDS_PER_PAGE)
@@ -134,7 +149,7 @@ BidAddFormSet = formset_factory(BidAddForm, extra=BIDS_PER_PAGE)
 class BidAddOptionsForm (forms.Form):
 
     STAGE_CHOICES = (
-        ('mid', "Before close. Bids not counted as final."),
+        ('mid', "Before close. Bids, or lack of, not counted as final."),
         ('close', "After close, before Voice Auction. Non-Voice Auction bids counted as final."),
         ('final', "After close and Voice Auction. All bids counted as final."),
     )
@@ -142,19 +157,46 @@ class BidAddOptionsForm (forms.Form):
     stage = forms.ChoiceField(choices=STAGE_CHOICES, widget=forms.RadioSelect)
 
 
-@permission_required('artshow.add_bid')
-def bid_bulk_add(request):
 
-    raise NotImplementedError
+def finalize_bid(stage, piece, bid_type):
+
+    assert stage in ('mid', 'close', 'final')
+    assert bid_type in ('normal', 'buynow', 'auction')
+
+    if bid_type == 'auction':
+        # If the piece was already set voice_auction, leave it that way.
+        piece.voice_auction = True
+
+    if stage in ('close', 'final'):
+        piece.bidsheet_scanned = True
+
+    if (piece.status == Piece.StatusInShow and
+            (stage == 'final' or (stage == 'close' and bid_type in ('normal', 'buynow')))):
+        piece.status = Piece.StatusWon
+
+    piece.save()
+
+
+@permission_required('artshow.add_bid')
+@atomic
+def bid_bulk_add(request):
 
     if request.method == "POST":
         formset = BidAddFormSet(request.POST, prefix="bids")
         optionsform = BidAddOptionsForm(request.POST, prefix="options")
         if optionsform.is_valid() and formset.is_valid():
             stage = optionsform.cleaned_data['stage']
+            num_pieces_processed = 0
             for form in formset:
-                ## TODO something
-                pass
+                bid = form.cleaned_data.get('bid')
+                bid_type = form.cleaned_data.get('type')
+                piece = form.cleaned_data.get('piece')
+                if bid is not None:
+                    bid.save()
+                if piece is not None:
+                    finalize_bid(stage, piece, bid_type)
+                    num_pieces_processed += 1
+            messages.info(request, "%d entries processed" % num_pieces_processed)
             return redirect('.')
     else:
         formset = BidAddFormSet(prefix="bids")

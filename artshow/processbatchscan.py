@@ -161,14 +161,18 @@ def process_bids(data, final_scan=False):
                     # Skipping extraneous Normal Sale, a common scanning error
                     pass
                 elif state == State.read_price:
-                    bid = Bid(bidder=current_bidder, amount=current_price, piece=current_piece)
                     try:
-                        bid.validate()
-                    except ValidationError, x:
-                        add_error(errors, lines, lineno, "invalid bid: %s" % str(x))
-                        state = State.error_skipping
-                        continue
-                    bid.save()
+                        bid = Bid.objects.get(bidder=current_bidder, amount=current_price,
+                                              piece=current_piece, invalid=False)
+                    except Bid.DoesNotExist:
+                        bid = Bid(bidder=current_bidder, amount=current_price, piece=current_piece)
+                        try:
+                            bid.validate()
+                        except ValidationError, x:
+                            add_error(errors, lines, lineno, "invalid bid: %s" % str(x))
+                            state = State.error_skipping
+                            continue
+                        bid.save()
                     if final_scan:
                         current_piece.bidsheet_scanned = True
                         current_piece.status = Piece.StatusWon

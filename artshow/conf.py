@@ -27,7 +27,15 @@ class ArtshowAppConf(AppConf):
     
     # name of the module used to print forms, in python path format
     PREPRINT_MODULE = "artshow.preprint_dummy"
-    
+
+    # name of program that will do printing
+    # PRINT_COMMAND = "enscript -P printername -B -L 66 -f Courier-Bold10 -q"
+    # PRINT_COMMAND = "lp -d printername"
+    PRINT_COMMAND = _DISABLED
+
+    # To use a different printer for Pick lists, define this
+    PICKLIST_PRINT_COMMAND = _UNCONFIGURED
+
     SHOW_NAME = "Generic Art Show"
     SHOW_YEAR = "1999"
     TAX_RATE = "0.10"  # Used to initialise a Decimal object

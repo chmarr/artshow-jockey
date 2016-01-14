@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required
 import json
-from .conf import _DISABLED as SETTING_DISABLED
+from .conf import _DISABLED as SETTING_DISABLED, _UNCONFIGURED as SETTING_UNCONFIGURED
 
 
 class BidderSearchForm (forms.Form):
@@ -208,8 +208,12 @@ def do_print_invoices3(invoice, copy_name):
 
     try:
         if copy_name == "PICK LIST":
+            print_command = (settings.ARTSHOW_PICKLIST_PRINT_COMMAND
+                             if settings.ARTSHOW_PICKLIST_PRINT_COMMAND != SETTING_UNCONFIGURED
+                             else settings.ARTSHOW_PRINT_COMMAND)
             pdfreports.picklist_to_pdf(invoice, sbuf)
         else:
+            print_command = settings.ARTSHOW_PRINT_COMMAND
             pdfreports.invoice_to_pdf(invoice, sbuf)
     except Exception, x:
         logger.error("Could not generate invoice: %s", x)
@@ -218,7 +222,7 @@ def do_print_invoices3(invoice, copy_name):
     if not sbuf.getvalue():
         logger.error("nothing to generate")
     else:
-        if settings.ARTSHOW_PRINT_COMMAND is SETTING_DISABLED:
+        if print_command is SETTING_DISABLED:
             logger.error("Cannot print invoice. ARTSHOW_PRINT_COMMAND is DISABLED")
             raise invoicegen.PrintingError("Printing is DISABLED in configuration")
         p = subprocess.Popen(settings.ARTSHOW_PRINT_COMMAND, stderr=subprocess.PIPE, stdout=subprocess.PIPE,

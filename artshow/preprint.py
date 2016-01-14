@@ -21,3 +21,7 @@ def piece_stickers(pieces, output):
 
 def bidder_agreement(bidder, output):
     raise NotImplementedError
+
+
+def artist_quickref_stickers(artists, output):
+    raise NotImplementedError

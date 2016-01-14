@@ -4,7 +4,7 @@ from .conf import settings
 from .models import Piece
 
 preprint = __import__(settings.ARTSHOW_PREPRINT_MODULE, globals(), locals(),
-                      ['bid_sheets', 'control_forms', 'piece_stickers', 'mailing_labels'])
+                      ['bid_sheets', 'control_forms', 'piece_stickers', 'mailing_labels', 'artist_quickref_stickers'])
 
 
 def generate_bidsheets_for_artists(output, artists):
@@ -31,3 +31,7 @@ def generate_control_forms_for_pieces(output, pieces):
 
 def generate_piece_stickers(output, pieces):
     preprint.piece_stickers(pieces, output)
+
+
+def generate_artist_quickref_stickers(output, artists):
+    preprint.artist_quickref_stickers(artists, output)

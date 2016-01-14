@@ -240,6 +240,17 @@ class ArtistAdmin(AjaxSelectAdmin):
 
     print_piece_stickers.short_description = "Print Piece Stickers"
 
+    def print_quickref_stickers(self, request, artists):
+        artists = artists.order_by('artistid')
+        import bidsheets
+
+        response = HttpResponse(mimetype="application/pdf")
+        bidsheets.generate_artist_quickref_stickers(response, artists)
+        self.message_user(request, "Quickref Stickers printed.")
+        return response
+
+    print_quickref_stickers.short_description = "Print Quickref Stickers"
+
     def apply_space_fees(self, request, artists):
         payment_type = PaymentType.objects.get(pk=settings.ARTSHOW_SPACE_FEE_PK)
         for a in artists:
@@ -374,7 +385,7 @@ class ArtistAdmin(AjaxSelectAdmin):
 
     actions = ('send_email', 'print_bidsheets', 'print_control_forms', 'print_mailing_labels', 'apply_space_fees',
                'apply_winnings_and_commission', 'create_cheques', 'allocate_spaces', 'create_management_users',
-               'print_piece_stickers')
+               'print_piece_stickers', 'print_quickref_stickers')
     filter_horizontal = ('checkoffs',)
 
 

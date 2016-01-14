@@ -5,7 +5,7 @@ from django.contrib import messages, auth
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelChoiceField, forms, CharField
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.decorators import permission_required, login_required
 from django.views.decorators.csrf import csrf_exempt
 from .models import Artist, BidderId
 
@@ -19,7 +19,7 @@ def home(request):
         return render(request, "artshow/home.html")
 
 
-@permission_required('artshow.is_artshow_staff')
+@login_required
 def index(request):
     return render(request, 'artshow/index.html')
 

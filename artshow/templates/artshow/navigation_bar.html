@@ -7,6 +7,8 @@
     {% endif %}
     {% if has_add_invoice %}
         <li><a href="{% url 'artshow.cashier.cashier' %}">Cashier</a></li>{% endif %}
+    {% if is_artshow_kiosk %}
+        <li><a href="{% url 'artshow-bidderreg-wizard' %}">Bidder Registration</a></li>{% endif %}
     {% if is_artshow_staff %}
         <li><a href="{% url 'artshow.views.artist_self_access' %}">Artist Self-Access</a></li>
     {% endif %}

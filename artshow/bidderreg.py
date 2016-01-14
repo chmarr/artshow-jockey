@@ -1,12 +1,15 @@
-from StringIO import StringIO
+import logging
 import subprocess
+from StringIO import StringIO
+
 from django import forms
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.formtools.wizard.views import CookieWizardView
 from django.shortcuts import render, redirect
+
 from .conf import settings
 from .models import Person, Bidder, BidderId
-import logging
+
 logger = logging.getLogger(__name__)
 from .conf import _DISABLED as SETTING_DISABLED
 
@@ -112,7 +115,14 @@ class BidderRegistrationWizard(CookieWizardView):
         do_print_bidder_registration_form(b)
         return redirect(final)
 
-@permission_required('artshow.is_artshow_kiosk')
+
+def has_kiosk_permission(user):
+    # TODO if the user has hit the kiosk page, then we should try and clear what permissions
+    # They have, just in case.
+    return user.has_perm('artshow.is_artshow_kiosk') and not user.has_perm('artshow.is_artshow_staff')
+
+
+@user_passes_test(has_kiosk_permission)
 def final(request):
     return render(request, "artshow/bidderreg_final.html")
 
@@ -125,3 +135,4 @@ def process_step_2(wizard):
 bidderreg_wizard_view = BidderRegistrationWizard.as_view(
     [BidderRegistrationForm0, BidderRegistrationForm1, BidderRegistrationForm2],
     condition_dict={'2': process_step_2})
+

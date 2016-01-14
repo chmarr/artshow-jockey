@@ -18,4 +18,5 @@ def nagivation_bar(context):
                 get_announcement_counts(user)
     return {'user': user, 'has_add_invoice': user and user.has_perm('artshow.add_invoice'),
             'is_artshow_staff': user and user.has_perm('artshow.is_artshow_staff'),
-            'announcement_counts': announcement_counts}
+            'announcement_counts': announcement_counts,
+            'is_artshow_kiosk': user and user.has_perm('artshow.is_artshow_kiosk')}

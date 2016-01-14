@@ -3,10 +3,9 @@
 # See file COPYING for licence details
 
 from django.conf.urls import patterns, url
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.decorators import permission_required, user_passes_test
 
-from .bidderreg import bidderreg_wizard_view
-
+from .bidderreg import bidderreg_wizard_view, has_kiosk_permission
 
 urlpatterns = patterns('artshow',
                        (r'^$', 'views.index'),
@@ -45,7 +44,7 @@ urlpatterns = patterns('artshow',
                        (r'^reports/payments-csv/$', 'csvreports.payments'),
                        (r'^reports/cheques-csv/$', 'csvreports.cheques'),
                        (r'^access/$', 'views.artist_self_access'),
-                       url(r'^bidderreg/$', permission_required('artshow.is_artshow_kiosk')(bidderreg_wizard_view),
+                       url(r'^bidderreg/$', user_passes_test(has_kiosk_permission)(bidderreg_wizard_view),
                            name="artshow-bidderreg-wizard"),
                        (r'^bidderreg/done/$', 'bidderreg.final'),
                        (r'^bidder/$', 'views.bidder_results'),

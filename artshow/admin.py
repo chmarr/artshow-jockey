@@ -274,7 +274,8 @@ class ArtistAdmin(AjaxSelectAdmin):
             total_pieces = 0
             pieces_with_bids = 0
             for piece in a.piece_set.all():
-                if piece.status != Piece.StatusNotInShow:
+                # TODO replace this with a function or a custom manager
+                if piece.status not in (Piece.StatusNotInShow, Piece.StatusNotInShowLocked):
                     total_pieces += 1
                 try:
                     top_bid = piece.top_bid()
@@ -285,7 +286,7 @@ class ArtistAdmin(AjaxSelectAdmin):
             commission = total_winnings * decimal.Decimal(settings.ARTSHOW_COMMISSION)
             if total_pieces > 0:
                 payment = Payment(artist=a, amount=total_winnings, payment_type=pt_winning,
-                                  description="%d piece%s, %d with bid%s" % (
+                                  description="%d piece%s in show, %d with bid%s" % (
                                   total_pieces, total_pieces != 1 and "s" or "", pieces_with_bids,
                                   pieces_with_bids != 1 and "s" or ""), date=datetime.datetime.now())
                 payment.save()

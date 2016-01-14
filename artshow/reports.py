@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.db.models import Sum, Min, F, Count
 from django.contrib.auth.decorators import permission_required
 from .models import *
+from django.conf import settings
 
 
 @permission_required('artshow.is_artshow_staff')
@@ -231,3 +232,16 @@ def sales_percentiles(request):
         perc_amounts.append({'perc': 1.0, 'amount': float(amounts[-1])})
 
     return render(request, 'artshow/sales-percentiles.html', {'perc_amounts': perc_amounts})
+
+
+def uncollected_pieces(request):
+
+    pieces = Piece.objects.filter(status=Piece.StatusWon)
+    pieces = list(pieces)
+    for p in pieces:
+        p.top_bid_cached = p.top_bid()
+        p.top_bidder = p.top_bid_cached.bidder
+
+    pieces.sort(key = lambda p:(p.top_bidder.id, p.id))
+    return render(request, "artshow/uncollected_pieces.html", {'pieces': pieces,
+                                                               'money_precision': settings.ARTSHOW_MONEY_PRECISION})

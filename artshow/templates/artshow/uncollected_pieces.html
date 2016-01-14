@@ -1,0 +1,34 @@
+{% extends "artshow/base_generic.html" %}
+{% load url from future %}
+{% block breadcrumbs %}
+    <ul class="breadcrumbs">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'artshow.reports.index' %}">Reports</a></li>
+        <li class="current">Uncollected Pieces</li>
+    </ul>
+{% endblock %}
+{% block content %}
+    <h3>Uncollected Pieces</h3>
+    {% regroup pieces by top_bidder as bidder_groups %}
+    <table class="report">
+        {% for b in bidder_groups %}
+            <tr>
+                <th colspan="3"><a
+                        href="{% url "admin:artshow_bidder_change" b.grouper.id %}">{{ b.grouper }}</a></th>
+            </tr>
+            <tr>
+                <td colspan="3">{% if b.grouper.at_con_contact %}Contact: {{ b.grouper.at_con_contact }}{% else %}No
+                    at-con contact given.{% endif %}</td>
+            </tr>
+            <tbody>
+            {% for p in b.list %}
+                <tr>
+                    <td><a href="{% url "admin:artshow_piece_change" p.id %}">{{ p.code }}</a></td>
+                    <td><i>{{ p.name }}</i><br/>by {{ p.artistname }}</td>
+                    <td class="money">{{ p.top_bid_cached.amount|floatformat:money_precision }}</td>
+                </tr>{% endfor %}
+        {% endfor %}
+        </tbody>
+        <tr></tr>
+    </table>
+{% endblock %}

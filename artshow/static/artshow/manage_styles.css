@@ -242,3 +242,5 @@ table.winning-bidders-report tr:nth-child(even) { background-color:white; }
 table.winning-bidders-report tr:nth-child(odd) { background-color:lightgray; }
 table.winning-bidders-report tr.header { background-color:white; }
 table.winning-bidders-report th.bidder { background-color:black; color:white; border: 3px solid white; }
+
+table.report th a { color:white }

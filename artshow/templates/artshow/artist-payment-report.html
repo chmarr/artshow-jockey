@@ -24,13 +24,13 @@
                 <tr><td colspan="4">No Entries</td></tr>{% endfor %}
             {% if a.deduction_remaining %}
                 <tr>
-                    <td>Space fee deduction remaining</td>
+                    <td colspan="3" align="right">Space fee deduction remaining</td>
                     <td align="right">-{{ a.deduction_remaining|floatformat:2 }}</td>
                 </tr>
             {% endif %}
             <tr>
-                <td colspan="3" align="right">Balance</th>
-                <td align="right"><strong>{{ a.total|floatformat:2 }}</strong></th>
+                <td colspan="3" align="right">Balance</td>
+                <td align="right"><strong>{{ a.total|floatformat:2 }}</strong></td>
             </tr>
             </tbody>
             <tr></tr>

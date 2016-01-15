@@ -80,6 +80,7 @@ class BidAddForm (forms.Form):
 
     def clean_piece(self):
         piece_code = self.cleaned_data['piece']
+        piece_code = piece_code.strip()
         if not piece_code:
             return None
         mo = self.piece_code_1.match(piece_code)
@@ -97,6 +98,7 @@ class BidAddForm (forms.Form):
 
     def clean_bidder(self):
         bidder_code = self.cleaned_data['bidder']
+        bidder_code = bidder_code.strip()
         if not bidder_code:
             return None
         try:
@@ -138,7 +140,6 @@ class BidAddForm (forms.Form):
             except Bid.DoesNotExist:
                 bid = Bid(bidder=bidder, amount=amount, piece=piece, buy_now_bid=(type == 'buynow'))
                 bid.validate()
-                bid.save()
             cleaned_data['bid'] = bid
 
         return cleaned_data

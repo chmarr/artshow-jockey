@@ -225,7 +225,7 @@ def do_print_invoices3(invoice, copy_name):
         if print_command is SETTING_DISABLED:
             logger.error("Cannot print invoice. ARTSHOW_PRINT_COMMAND is DISABLED")
             raise invoicegen.PrintingError("Printing is DISABLED in configuration")
-        p = subprocess.Popen(settings.ARTSHOW_PRINT_COMMAND, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+        p = subprocess.Popen(print_command, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
                              stdin=subprocess.PIPE, shell=True)
         output, error = p.communicate(sbuf.getvalue())
         if output:

@@ -70,6 +70,7 @@ class BidAddForm (forms.Form):
         ('buynow', 'Buy Now'),
         ('auction', 'Auction'),
         ('nfs', 'Not For Sale'),
+        ('bidsheet', 'To Bid Sheet'),
         ('', "Clear"),
     )
     type = forms.ChoiceField(choices=TYPE_CHOICES, widget=forms.RadioSelect)
@@ -119,7 +120,7 @@ class BidAddForm (forms.Form):
         amount = cleaned_data['amount']
         piece = cleaned_data['piece']
 
-        if type in ('nobids', 'nfs'):
+        if type in ('nobids', 'nfs', 'bidsheet'):
             if bidder:
                 self._errors['bidder'] = self.error_class(["Bidder not permitted for type \"%s\"" % type_text])
                 del cleaned_data['bidder']
@@ -133,6 +134,12 @@ class BidAddForm (forms.Form):
             if not amount:
                 self._errors['amount'] = self.error_class(["Amount required for type \"%s\"" % type_text])
                 del cleaned_data['amount']
+
+        if type == 'bidsheet' and not piece.voice_auction:
+            raise ValidationError("Cannot specify \"To Bid Sheet\" for a piece not in the voice auction")
+
+        if type == 'nfs' and not piece.not_for_sale:
+            raise ValidationError("A Not For Sale piece must be scanned as Not For Sale")
 
         if bidder is not None:
             try:
@@ -162,7 +169,7 @@ class BidAddOptionsForm (forms.Form):
 def finalize_bid(stage, piece, bid_type):
 
     assert stage in ('mid', 'close', 'final')
-    assert bid_type in ('normal', 'buynow', 'auction')
+    assert bid_type in ('normal', 'buynow', 'auction', 'nfs', 'bidsheet')
 
     if bid_type == 'auction':
         # If the piece was already set voice_auction, leave it that way.
@@ -172,7 +179,7 @@ def finalize_bid(stage, piece, bid_type):
         piece.bidsheet_scanned = True
 
     if (piece.status == Piece.StatusInShow and
-            (stage == 'final' or (stage == 'close' and bid_type in ('normal', 'buynow')))):
+            ((stage == 'final' and bid_type != 'nfs') or (stage == 'close' and bid_type in ('normal', 'buynow')))):
         piece.status = Piece.StatusWon
 
     piece.save()

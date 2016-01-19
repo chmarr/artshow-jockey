@@ -174,3 +174,35 @@ def cheques(request):
         c.writerow(d)
 
     return response
+
+
+# noinspection PyUnusedLocal
+@permission_required('artshow.view_invoice')
+def invoices(request):
+    ii = Invoice.objects.all().order_by('id')
+
+    field_names = ['invoiceid', 'date', 'payer', 'bidderids', 'num_items', 'item_total', 'tax_paid', 'total_paid']
+
+    field_names_d = {}
+    for n in field_names:
+        field_names_d[n] = n
+
+    response = HttpResponse(mimetype="text/csv")
+    response['Content-Disposition'] = "attachment; filename=invoices.csv"
+    c = unicodewriter.UnicodeDictWriter(response, field_names)
+    c.writerow(field_names_d)
+
+    for i in ii:
+        d = dict(
+            invoiceid=i.id,
+            date=i.paid_date,
+            payer=i.payer.name(),
+            bidderids=", ".join(i.payer.bidder_ids()),
+            num_items=i.invoiceitem_set.count(),
+            item_total=i.item_total(),
+            tax_paid=i.tax_paid,
+            total_paid=i.total_paid(),
+        )
+        c.writerow(d)
+
+    return response

@@ -696,7 +696,7 @@ class ChequePaymentAdmin(admin.ModelAdmin):
 
     list_display = ('artist', 'date', 'payee', 'number', 'cheque_amount')
     list_editable = ('number', )
-    search_fields = ('artist__artistid', 'artist__name', 'payee', 'number')
+    search_fields = ('artist__artistid', 'artist__person__name', 'payee', 'number')
     fields = ('artist', 'date', 'payee', 'number', 'amount')
     raw_id_fields = ('artist', )
     actions = ('print_cheques',)
